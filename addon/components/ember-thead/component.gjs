@@ -1,12 +1,13 @@
 /* global ResizeSensor */
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
+import { next } from '@ember/runloop';
 import EmberObject, { action, get } from '@ember/object';
 import { A as emberA } from '@ember/array';
 import { assert } from '@ember/debug';
 import { isPresent } from '@ember/utils';
 import { registerDestructor } from '@ember/destroyable';
-import { didInsert } from '@ember/render-modifiers';
+import { didInsert, didUpdate } from '@ember/render-modifiers';
 import { closest } from '../../-private/utils/element';
 import MetaCache from '../../-private/meta-cache';
 import { sortMultiple, compareValues } from '../../-private/utils/sort';
@@ -31,6 +32,8 @@ export default class EmberThead extends Component {
     });
     this.validateUniqueColumnKeys();
     this.syncModels();
+    this._syncedColumns = this.args.columns;
+    this._syncedSorts = this.args.sorts;
     registerDestructor(this, () => this.teardown());
   }
 
@@ -93,6 +96,16 @@ export default class EmberThead extends Component {
     this._tableResizeSensor = new ResizeSensor(this._container, this.fillupHandler);
   }
 
+  @action
+  syncAfterArgsChange() {
+    let columns = this.args.columns;
+    let sorts = this.args.sorts;
+    if (columns === this._syncedColumns && sorts === this._syncedSorts) return;
+    this._syncedColumns = columns;
+    this._syncedSorts = sorts;
+    next(this, this.syncModels);
+  }
+
   teardown() {
     this._tableResizeSensor?.detach(this._container);
     this.columnTree.destroy();
@@ -105,7 +118,6 @@ export default class EmberThead extends Component {
   }
 
   get wrappedRows() {
-    this.syncModels();
     let rows = this.columnTree.rows;
     return emberA(rows.map((row, index) => {
       let rowMeta = this.rowMetaCache.get(row) ?? EmberObject.create();
@@ -130,7 +142,7 @@ export default class EmberThead extends Component {
   @action fillupHandler() { if (!this.isDestroying) this.columnTree.ensureWidthConstraint(); }
 
   <template>
-    <thead ...attributes data-test-row-count={{this.wrappedRowsCount}} data-layout-revision={{this.layoutRevision}} {{didInsert this.setup}}>
+    <thead ...attributes data-test-row-count={{this.wrappedRowsCount}} data-layout-revision={{this.layoutRevision}} {{didInsert this.setup}} {{didUpdate this.syncAfterArgsChange this.args.columns this.args.sorts}}>
       {{#each this.wrappedRows as |api|}}
         {{#if (has-block)}}
           {{yield (hash
