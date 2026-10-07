@@ -124,6 +124,7 @@ export default class EmberThead extends Component {
     this._container = closest(element, '.ember-table-overflow');
     this.columnTree.registerContainer(this._container);
     this.columnTree.performInitialLayout();
+    this.columnTree.syncResizedColumnElements();
     this.layoutRevision++;
     this._tableResizeSensor = new ResizeSensor(this._container, this.fillupHandler);
   }
