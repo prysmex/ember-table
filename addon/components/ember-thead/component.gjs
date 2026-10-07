@@ -1,5 +1,6 @@
 /* global ResizeSensor */
 import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
 import EmberObject, { action, get } from '@ember/object';
 import { A as emberA } from '@ember/array';
 import { assert } from '@ember/debug';
@@ -16,6 +17,7 @@ let isTestingThead = false;
 export function setupTHeadForTest(value) { isTestingThead = value; }
 
 export default class EmberThead extends Component {
+  @tracked layoutRevision = 0;
   rowMetaCache = new Map();
 
   constructor(owner, args) {
@@ -84,9 +86,10 @@ export default class EmberThead extends Component {
   @action
   setup(element) {
     this.syncModels();
-    this.columnTree.performInitialLayout();
     this._container = closest(element, '.ember-table-overflow');
     this.columnTree.registerContainer(this._container);
+    this.columnTree.performInitialLayout();
+    this.layoutRevision++;
     this._tableResizeSensor = new ResizeSensor(this._container, this.fillupHandler);
   }
 
@@ -127,7 +130,7 @@ export default class EmberThead extends Component {
   @action fillupHandler() { if (!this.isDestroying) this.columnTree.ensureWidthConstraint(); }
 
   <template>
-    <thead ...attributes data-test-row-count={{this.wrappedRowsCount}} {{didInsert this.setup}}>
+    <thead ...attributes data-test-row-count={{this.wrappedRowsCount}} data-layout-revision={{this.layoutRevision}} {{didInsert this.setup}}>
       {{#each this.wrappedRows as |api|}}
         {{#if (has-block)}}
           {{yield (hash

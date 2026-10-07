@@ -1,7 +1,8 @@
 import Component from '@glimmer/component';
-import { get, set } from '@ember/object';
+import { action, get } from '@ember/object';
 import { assert } from '@ember/debug';
 import { registerDestructor } from '@ember/destroyable';
+import { didUpdate } from '@ember/render-modifiers';
 import { VerticalCollection } from '@html-next/vertical-collection';
 import CollapseTree, { SELECT_MODE } from '../../-private/collapse-tree';
 import RowWrapper from '../-private/row-wrapper';
@@ -51,8 +52,9 @@ export default class EmberTbody extends Component {
   get containerSelector() { return this.args.containerSelector || `#${this.unwrappedApi.tableId}`; }
   get dataTestRowCount() { return setupRowCountForTest ? this.collapseTree.length : null; }
 
-  get wrappedRows() {
-    let properties = {
+  @action
+  syncModels() {
+    this.collapseTree.setProperties({
       rowMetaCache: this.rowMetaCache,
       rows: this.args.rows ?? [],
       sorts: this.unwrappedApi.sorts,
@@ -64,12 +66,10 @@ export default class EmberTbody extends Component {
       selection: this.args.selection,
       selectionMatchFunction: this.args.selectionMatchFunction,
       selectingChildrenSelectsParent: this.args.selectingChildrenSelectsParent ?? true,
-    };
-    for (let [key, value] of Object.entries(properties)) {
-      if (get(this.collapseTree, key) !== value) {
-        set(this.collapseTree, key, value);
-      }
-    }
+    });
+  }
+
+  get wrappedRows() {
     return this.collapseTree;
   }
 
@@ -82,7 +82,7 @@ export default class EmberTbody extends Component {
   }
 
   <template>
-    <tbody ...attributes data-test-row-count={{this.dataTestRowCount}}>
+    <tbody ...attributes data-test-row-count={{this.dataTestRowCount}} {{didUpdate this.syncModels}}>
       <VerticalCollection
         @items={{this.wrappedRows}}
         @containerSelector={{this.containerSelector}}

@@ -1,5 +1,5 @@
 import BaseTableCell from '../-private/base-table-cell';
-import { action } from '@ember/object';
+import { action, set } from '@ember/object';
 import { on } from '@ember/modifier';
 import { didInsert, didUpdate } from '@ember/render-modifiers';
 import { SELECT_MODE } from '../../-private/collapse-tree';
@@ -13,6 +13,14 @@ export function setSimpleCheckboxForTest(value) {
 export default class EmberTd extends BaseTableCell {
   get api() { return this.args.api?.api ?? this.args.api; }
   get cellValue() { return this.api?.cellValue; }
+  set cellValue(value) {
+    let rowValue = this.rowValue;
+    let valuePath = this.columnValue?.valuePath;
+    if (rowValue && valuePath) {
+      set(rowValue, valuePath, value);
+    }
+    return value;
+  }
   get cellMeta() { return this.api?.cellMeta; }
   get columnValue() { return this.api?.columnValue; }
   get columnMeta() { return this.api?.columnMeta; }
