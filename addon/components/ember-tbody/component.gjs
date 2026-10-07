@@ -16,8 +16,6 @@ export function setSetupRowCountForTest(value) { setupRowCountForTest = value; }
 
 export default class EmberTbody extends Component {
   @tracked selectionRevision = 0;
-  @tracked treeRevision = 0;
-  @tracked items;
   rowMetaCache = new Map();
 
   constructor(owner, args) {
@@ -27,8 +25,9 @@ export default class EmberTbody extends Component {
       Boolean(this.unwrappedApi?.columnTree)
     );
     this.collapseTree = this.createCollapseTree();
-    this.items = this.collapseTree;
-    this.unwrappedApi.registerBody?.(this);
+    if (this.constructor === EmberTbody) {
+      this.unwrappedApi.registerBody?.(this);
+    }
     this._rows = this.args.rows ?? [];
     this._sortSignature = this.sortSignature;
     registerDestructor(this, () => this.teardown());
@@ -61,9 +60,9 @@ export default class EmberTbody extends Component {
 
   updateSorts(sorts) {
     this._sortSignature = sorts.map(sort => `${get(sort, 'valuePath')}:${get(sort, 'isAscending')}`).join('|');
-    this.collapseTree = this.createCollapseTree(sorts);
-    this.items = this.collapseTree;
-    this.treeRevision++;
+    this.collapseTree.set('sorts', sorts);
+    notifyPropertyChange(this.collapseTree, 'sorts');
+    notifyPropertyChange(this.collapseTree, '[]');
   }
 
   get unwrappedApi() { return this.args.api?.api ?? this.args.api; }
@@ -86,14 +85,8 @@ export default class EmberTbody extends Component {
     let rows = this.args.rows ?? [];
     let sortSignature = this.sortSignature;
     if (rows !== this._rows || sortSignature !== this._sortSignature) {
-      let oldTree = this.collapseTree;
       this._rows = rows;
       this._sortSignature = sortSignature;
-      this.collapseTree = this.createCollapseTree();
-      this.items = this.collapseTree;
-      oldTree.destroy();
-      this.treeRevision++;
-      return;
     }
     if (this.args.selection !== this._lastSelection) {
       this._lastSelection = this.args.selection;
@@ -123,7 +116,7 @@ export default class EmberTbody extends Component {
     notifyPropertyChange(this.collapseTree, '[]');
   }
 
-  get wrappedRows() { return this.items; }
+  get wrappedRows() { return this.collapseTree; }
 
   teardown() {
     for (let [row, meta] of this.rowMetaCache) {
@@ -134,9 +127,9 @@ export default class EmberTbody extends Component {
   }
 
   <template>
-    <tbody ...attributes data-test-row-count={{this.dataTestRowCount}} data-selection={{this.args.selection}} data-selection-revision={{this.selectionRevision}} data-api-revision={{@api.revision}} data-tree-revision={{this.treeRevision}} {{didUpdate this.syncModels}}>
+    <tbody ...attributes data-test-row-count={{this.dataTestRowCount}} data-selection={{this.args.selection}} data-selection-revision={{this.selectionRevision}} {{didUpdate this.syncModels}}>
       <VerticalCollection
-        @items={{this.items}}
+        @items={{this.wrappedRows}}
         @containerSelector={{this.containerSelector}}
         @estimateHeight={{this.estimateRowHeight}}
         @key={{this.key}}

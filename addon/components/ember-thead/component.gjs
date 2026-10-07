@@ -115,10 +115,7 @@ export default class EmberThead extends Component {
     if (columns === this._syncedColumns && sorts === this._syncedSorts) return;
     this._syncedColumns = columns;
     this._syncedSorts = sorts;
-    next(this, () => {
-      this.syncModels();
-      this.unwrappedApi.notifyRevision?.();
-    });
+    next(this, this.syncModels);
   }
 
   teardown() {
