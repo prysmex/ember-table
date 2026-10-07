@@ -1,8 +1,8 @@
 import Component from '@glimmer/component';
+import { get, set } from '@ember/object';
 import { assert } from '@ember/debug';
 import { registerDestructor } from '@ember/destroyable';
 import { VerticalCollection } from '@html-next/vertical-collection';
-import { component } from '@ember/component/helper';
 import CollapseTree, { SELECT_MODE } from '../../-private/collapse-tree';
 import RowWrapper from '../-private/row-wrapper';
 import EmberTr from '../ember-tr/component';
@@ -19,7 +19,20 @@ export default class EmberTbody extends Component {
       'You must create an <EmberThead /> with columns before creating an <EmberTbody />',
       Boolean(this.unwrappedApi?.columnTree)
     );
-    this.collapseTree = CollapseTree.create({ onSelect: this.args.onSelect?.bind(this) });
+    this.collapseTree = CollapseTree.create({
+      rows: this.args.rows ?? [],
+      onSelect: this.args.onSelect?.bind(this),
+      rowMetaCache: this.rowMetaCache,
+      sorts: this.unwrappedApi.sorts,
+      sortFunction: this.unwrappedApi.sortFunction,
+      compareFunction: this.unwrappedApi.compareFunction,
+      sortEmptyLast: this.unwrappedApi.sortEmptyLast,
+      enableCollapse: this.args.enableCollapse ?? true,
+      enableTree: this.args.enableTree ?? true,
+      selection: this.args.selection,
+      selectionMatchFunction: this.args.selectionMatchFunction,
+      selectingChildrenSelectsParent: this.args.selectingChildrenSelectsParent ?? true,
+    });
     registerDestructor(this, () => this.teardown());
   }
 
@@ -39,7 +52,7 @@ export default class EmberTbody extends Component {
   get dataTestRowCount() { return setupRowCountForTest ? this.collapseTree.length : null; }
 
   get wrappedRows() {
-    this.collapseTree.setProperties({
+    let properties = {
       rowMetaCache: this.rowMetaCache,
       rows: this.args.rows ?? [],
       sorts: this.unwrappedApi.sorts,
@@ -51,7 +64,12 @@ export default class EmberTbody extends Component {
       selection: this.args.selection,
       selectionMatchFunction: this.args.selectionMatchFunction,
       selectingChildrenSelectsParent: this.args.selectingChildrenSelectsParent ?? true,
-    });
+    };
+    for (let [key, value] of Object.entries(properties)) {
+      if (get(this.collapseTree, key) !== value) {
+        set(this.collapseTree, key, value);
+      }
+    }
     return this.collapseTree;
   }
 

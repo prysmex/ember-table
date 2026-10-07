@@ -1,6 +1,5 @@
 import Component from '@glimmer/component';
 import { action } from '@ember/object';
-import { tracked } from '@glimmer/tracking';
 import { guidFor } from '@ember/object/internals';
 import { didInsert, willDestroy } from '@ember/render-modifiers';
 import {
@@ -12,25 +11,19 @@ import EmberThead from '../ember-thead/component';
 import EmberTbody from '../ember-tbody/component';
 import EmberTfoot from '../ember-tfoot/component';
 import EmberTableLoadingMore from '../ember-table-loading-more/component';
-import { component } from '@ember/component/helper';
 
 export default class EmberTable extends Component {
-  @tracked columnTree = null;
-
   tableId = `${guidFor(this)}-overflow`;
-
-  get api() {
-    return {
-      columns: null,
-      columnTree: this.columnTree,
-      registerColumnTree: this.registerColumnTree,
-      tableId: this.tableId,
-    };
-  }
+  api = {
+    columns: null,
+    columnTree: null,
+    registerColumnTree: this.registerColumnTree,
+    tableId: this.tableId,
+  };
 
   @action
   registerColumnTree(columnTree) {
-    this.columnTree = columnTree;
+    this.api.columnTree = columnTree;
   }
 
   @action

@@ -6,7 +6,6 @@ import { assert } from '@ember/debug';
 import { isPresent } from '@ember/utils';
 import { registerDestructor } from '@ember/destroyable';
 import { didInsert } from '@ember/render-modifiers';
-import { component } from '@ember/component/helper';
 import { closest } from '../../-private/utils/element';
 import MetaCache from '../../-private/meta-cache';
 import { sortMultiple, compareValues } from '../../-private/utils/sort';
@@ -95,7 +94,7 @@ export default class EmberThead extends Component {
     this._tableResizeSensor?.detach(this._container);
     this.columnTree.destroy();
     for (let cache of [this.columnMetaCache, this.rowMetaCache]) {
-      for (let [key, meta] of cache) {
+      for (let [key, meta] of cache.entries()) {
         meta.destroy();
         cache.delete(key);
       }

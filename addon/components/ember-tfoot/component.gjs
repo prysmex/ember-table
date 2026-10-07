@@ -1,5 +1,4 @@
 import EmberTbody from '../ember-tbody/component';
-import { component } from '@ember/component/helper';
 import RowWrapper from '../-private/row-wrapper';
 import EmberTr from '../ember-tr/component';
 

@@ -1,7 +1,6 @@
 import Component from '@glimmer/component';
 import { action } from '@ember/object';
 import { on } from '@ember/modifier';
-import { component } from '@ember/component/helper';
 import { closest } from '../../-private/utils/element';
 import { SELECT_MODE } from '../../-private/collapse-tree';
 import EmberTh from '../ember-th/component';
