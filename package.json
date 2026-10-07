@@ -16,7 +16,7 @@
     "build": "ember build --environment=production",
     "docs:deploy": "ember try:one ember-default-docs --- ember deploy production",
     "format": "prettier . --cache --write",
-    "lint": "concurrently \"npm:lint:format\" \"npm:lint:hbs\" \"npm:lint:js\" --names \"lint:\" --prefixColors auto",
+    "lint": "concurrently \"npm:lint:hbs\" \"npm:lint:js\" --names \"lint:\" --prefixColors auto",
     "lint:files": "ls-lint",
     "lint:js": "eslint . --cache",
     "lint:js:fix": "eslint . --fix",

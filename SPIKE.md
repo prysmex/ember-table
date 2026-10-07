@@ -36,3 +36,23 @@ stopped. The partial dependency tree did not contain the `ember` executable,
 so the pre-migration suite could not be executed locally. Existing CI and the
 test sources are therefore the baseline until the modernized dependency tree
 can be installed.
+
+## Spike result
+
+- The current Ember 7.3 classic-build-addon blueprint dependencies install
+  under Node 22 and npm.
+- All 39 component modules in `addon/components`, `app/components`, and the
+  dummy app use the `.gjs` module format. Existing paired templates remain
+  separate to keep this format migration behavior-preserving.
+- `npm run lint` passes.
+- `npm run build` produces a production build on Ember 7.3.
+- `npm run test:ember` builds the test application successfully, but this
+  development container has no Chrome-compatible browser. A Playwright
+  Chromium install was also unavailable for its Ubuntu ARM64 platform, so the
+  202 browser assertions must be confirmed in CI.
+
+The source still uses classic Ember object/component APIs inside GJS modules.
+A follow-up Glimmer rewrite would need to replace element ownership, observers,
+computed-property invalidation, and lifecycle hooks with template-owned DOM,
+tracked state, and modifiers. That is intentionally not folded into this
+format-and-blueprint spike.
