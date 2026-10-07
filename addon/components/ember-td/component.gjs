@@ -19,7 +19,6 @@ export default class EmberTd extends BaseTableCell {
     if (rowValue && valuePath) {
       set(rowValue, valuePath, value);
     }
-    return value;
   }
   get cellMeta() { return this.api?.cellMeta; }
   get columnValue() { return this.api?.columnValue; }
