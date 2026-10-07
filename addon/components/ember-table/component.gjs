@@ -47,6 +47,7 @@ export default class EmberTable extends Component {
 
   <template>
     <div
+      ...attributes
       class="ember-table"
       data-test-ember-table
       {{didInsert this.setup}}
