@@ -1,10 +1,19 @@
+import EmberObject from '@ember/object';
 import EmberTbody from '../ember-tbody/component';
 import RowWrapper from '../-private/row-wrapper';
 import EmberTr from '../ember-tr/component';
 
 export default class EmberTfoot extends EmberTbody {
   get wrappedRowArray() {
-    return Array.from(this.wrappedRows);
+    let rows = Array.from(this.args.rows ?? []);
+    return rows.map((rowValue, index) => {
+      let rowMeta = this.rowMetaCache.get(rowValue);
+      if (!rowMeta) {
+        rowMeta = EmberObject.create({ index, _cellMetaCache: new Map() });
+        this.rowMetaCache.set(rowValue, rowMeta);
+      }
+      return rowValue;
+    });
   }
 
   <template>

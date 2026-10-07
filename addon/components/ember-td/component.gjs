@@ -71,7 +71,7 @@ export default class EmberTd extends BaseTableCell {
       class={{this.cellClass}}
       data-test-ember-table-slack={{if this.isSlack true}}
       {{didInsert this.updateStyles}}
-      {{didUpdate this.updateStyles this.columnMeta.width this.columnMeta.offsetLeft this.columnMeta.offsetRight}}
+      {{didUpdate this.updateStyles this.columnMeta?.width this.columnMeta?.offsetLeft this.columnMeta?.offsetRight}}
       {{on "click" this.click}}
       {{on "dblclick" this.doubleClick}}
     >

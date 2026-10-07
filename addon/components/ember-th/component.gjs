@@ -113,7 +113,7 @@ export default class EmberTh extends BaseTableCell {
       class="{{this.cellClass}} {{if this.isSortable 'is-sortable'}} {{if this.isResizable 'is-resizable'}} {{if this.isReorderable 'is-reorderable'}}"
       data-test-ember-table-slack={{if this.isSlack true}}
       {{didInsert this.setup}}
-      {{didUpdate this.updateStyles this.columnMeta.width this.columnMeta.offsetLeft this.columnMeta.offsetRight}}
+      {{didUpdate this.updateStyles this.columnMeta?.width this.columnMeta?.offsetLeft this.columnMeta?.offsetRight}}
       {{willDestroy this.teardown}}
       {{on "click" this.click}}
       {{on "contextmenu" this.contextMenu}}
