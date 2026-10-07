@@ -25,8 +25,8 @@ export default class EmberThead extends Component {
     super(owner, args);
     this.columnMetaCache = new MetaCache({ keyPath: this.args.columnKeyPath });
     this.columnTree = ColumnTree.create({
-      onReorder: this.args.onReorder?.bind(this),
-      onResize: this.args.onResize?.bind(this),
+      onReorder: (...values) => this.handleLayoutChange(this.args.onReorder, values),
+      onResize: (...values) => this.handleLayoutChange(this.args.onResize, values),
       columnMetaCache: this.columnMetaCache,
       containerWidthAdjustment: this.args.containerWidthAdjustment,
     });
@@ -35,6 +35,11 @@ export default class EmberThead extends Component {
     this._syncedColumns = this.args.columns;
     this._syncedSorts = this.args.sorts;
     registerDestructor(this, () => this.teardown());
+  }
+
+  handleLayoutChange(callback, values) {
+    this.layoutRevision++;
+    callback?.(...values);
   }
 
   get unwrappedApi() { return this.args.api?.api ?? this.args.api; }
@@ -126,7 +131,8 @@ export default class EmberThead extends Component {
       return {
         cells: emberA(row.map(columnValue => ({
           columnValue,
-          columnMeta: this.columnMetaCache.get(columnValue),
+              columnMeta: this.columnMetaCache.get(columnValue),
+              layoutRevision: this.layoutRevision,
           rowMeta,
           sorts: this.sorts,
           sendUpdateSort: this.sendUpdateSort,
@@ -138,8 +144,16 @@ export default class EmberThead extends Component {
     }));
   }
 
-  @action sendUpdateSort(sorts) { this.args.onUpdateSorts?.(sorts); }
-  @action fillupHandler() { if (!this.isDestroying) this.columnTree.ensureWidthConstraint(); }
+  @action sendUpdateSort(sorts) {
+    this.layoutRevision++;
+    this.args.onUpdateSorts?.(sorts);
+  }
+  @action fillupHandler() {
+    if (!this.isDestroying) {
+      this.columnTree.ensureWidthConstraint();
+      this.layoutRevision++;
+    }
+  }
 
   <template>
     <thead ...attributes data-test-row-count={{this.wrappedRowsCount}} data-layout-revision={{this.layoutRevision}} {{didInsert this.setup}} {{didUpdate this.syncAfterArgsChange this.args.columns this.args.sorts}}>

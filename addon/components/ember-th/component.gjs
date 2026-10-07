@@ -19,6 +19,7 @@ export default class EmberTh extends BaseTableCell {
   get api() { return this.args.api; }
   get columnValue() { return this.api?.columnValue; }
   get columnMeta() { return this.api?.columnMeta; }
+  get layoutRevision() { return this.api?.layoutRevision; }
   get rowMeta() { return this.api?.rowMeta; }
   get sorts() { return this.api?.sorts ?? []; }
   get isSortable() { return this.columnMeta?.isSortable; }
@@ -111,6 +112,7 @@ export default class EmberTh extends BaseTableCell {
       colspan={{this.columnSpan}}
       rowspan={{this.rowSpan}}
       class="{{this.cellClass}} {{if this.isSortable 'is-sortable'}} {{if this.isResizable 'is-resizable'}} {{if this.isReorderable 'is-reorderable'}}"
+      data-layout-revision={{this.layoutRevision}}
       data-test-ember-table-slack={{if this.isSlack true}}
       {{didInsert this.setup}}
       {{didUpdate this.updateStyles this.columnMeta?.width this.columnMeta?.offsetLeft this.columnMeta?.offsetRight}}

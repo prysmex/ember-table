@@ -26,20 +26,20 @@ export default class EmberThSortIndicator extends Component {
   }
 
   <template>
-    {{#if this.isSorted}}
+    {{#if @columnMeta.isSorted}}
       <span
         data-test-sort-indicator
-        class="et-sort-indicator {{if this.isSortedAsc 'is-ascending' 'is-descending'}}"
+        class="et-sort-indicator {{if @columnMeta.isSortedAsc 'is-ascending' 'is-descending'}}"
       >
         {{#if (has-block)}}
           {{yield this.columnMeta}}
-        {{else if this.isMultiSorted}}
-          {{this.sortIndex}}
+        {{else if @columnMeta.isMultiSorted}}
+          {{@columnMeta.sortIndex}}
         {{/if}}
       </span>
     {{/if}}
 
-    {{#if this.isSortable}}
+    {{#if @columnMeta.isSortable}}
       <button type="button" data-test-sort-toggle class="et-sort-toggle et-speech-only">
         Toggle Sort
       </button>
