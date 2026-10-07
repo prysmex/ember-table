@@ -7,6 +7,7 @@ import EmberTh from '../ember-th/component';
 import EmberTd from '../ember-td/component';
 
 export default class EmberTr extends Component {
+  get customClass() { return this.args.class ?? ''; }
   get api() { return this.args.api; }
   get rowValue() { return this.api?.rowValue; }
   get rowMeta() { return this.api?.rowMeta; }
@@ -50,7 +51,7 @@ export default class EmberTr extends Component {
   <template>
     <tr
       ...attributes
-      class="et-tr {{if this.isEven 'is-even' 'is-odd'}} {{if this.isGroupSelected 'is-group-selected'}} {{if this.isSelectable 'is-selectable'}} {{if this.isSelected 'is-selected'}}"
+      class="et-tr {{this.customClass}} {{if this.isEven 'is-even' 'is-odd'}} {{if this.isGroupSelected 'is-group-selected'}} {{if this.isSelectable 'is-selectable'}} {{if this.isSelected 'is-selected'}}"
       {{on "click" this.click}}
       {{on "dblclick" this.doubleClick}}
     >

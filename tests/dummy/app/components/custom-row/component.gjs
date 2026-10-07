@@ -1,5 +1,5 @@
 import EmberTableRow from 'ember-table/components/ember-tr/component';
 
-export default EmberTableRow.extend({
-  classNames: ['custom-row'],
-});
+export default class CustomRow extends EmberTableRow {
+  get customClass() { return 'custom-row'; }
+}
