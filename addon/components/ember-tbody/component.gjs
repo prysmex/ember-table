@@ -3,6 +3,7 @@ import { tracked } from '@glimmer/tracking';
 import { next } from '@ember/runloop';
 import { action, get } from '@ember/object';
 import { assert } from '@ember/debug';
+import { notifyPropertyChange } from '../../-private/utils/ember';
 import { registerDestructor } from '@ember/destroyable';
 import { didUpdate } from '@ember/render-modifiers';
 import { VerticalCollection } from '@html-next/vertical-collection';
@@ -15,6 +16,8 @@ export function setSetupRowCountForTest(value) { setupRowCountForTest = value; }
 
 export default class EmberTbody extends Component {
   @tracked selectionRevision = 0;
+  @tracked treeRevision = 0;
+  @tracked items;
   rowMetaCache = new Map();
 
   constructor(owner, args) {
@@ -23,7 +26,20 @@ export default class EmberTbody extends Component {
       'You must create an <EmberThead /> with columns before creating an <EmberTbody />',
       Boolean(this.unwrappedApi?.columnTree)
     );
-    this.collapseTree = CollapseTree.create({
+    this.collapseTree = this.createCollapseTree();
+    this.items = this.collapseTree;
+    this.unwrappedApi.registerBody?.(this);
+    this._rows = this.args.rows ?? [];
+    this._sortSignature = this.sortSignature;
+    registerDestructor(this, () => this.teardown());
+  }
+
+  get sortSignature() {
+    return (this.unwrappedApi.sorts ?? []).map(sort => `${get(sort, 'valuePath')}:${get(sort, 'isAscending')}`).join('|');
+  }
+
+  createCollapseTree(sorts = this.unwrappedApi.sorts) {
+    return CollapseTree.create({
       rows: this.args.rows ?? [],
       onSelect: (...args) => {
         this.args.onSelect?.(...args);
@@ -31,7 +47,7 @@ export default class EmberTbody extends Component {
         next(this, this.syncModels);
       },
       rowMetaCache: this.rowMetaCache,
-      sorts: this.unwrappedApi.sorts,
+      sorts,
       sortFunction: this.unwrappedApi.sortFunction,
       compareFunction: this.unwrappedApi.compareFunction,
       sortEmptyLast: this.unwrappedApi.sortEmptyLast,
@@ -41,8 +57,13 @@ export default class EmberTbody extends Component {
       selectionMatchFunction: this.args.selectionMatchFunction,
       selectingChildrenSelectsParent: this.args.selectingChildrenSelectsParent ?? true,
     });
-    this._lastSelection = this.args.selection;
-    registerDestructor(this, () => this.teardown());
+  }
+
+  updateSorts(sorts) {
+    this._sortSignature = sorts.map(sort => `${get(sort, 'valuePath')}:${get(sort, 'isAscending')}`).join('|');
+    this.collapseTree = this.createCollapseTree(sorts);
+    this.items = this.collapseTree;
+    this.treeRevision++;
   }
 
   get unwrappedApi() { return this.args.api?.api ?? this.args.api; }
@@ -62,13 +83,25 @@ export default class EmberTbody extends Component {
 
   @action
   syncModels() {
+    let rows = this.args.rows ?? [];
+    let sortSignature = this.sortSignature;
+    if (rows !== this._rows || sortSignature !== this._sortSignature) {
+      let oldTree = this.collapseTree;
+      this._rows = rows;
+      this._sortSignature = sortSignature;
+      this.collapseTree = this.createCollapseTree();
+      this.items = this.collapseTree;
+      oldTree.destroy();
+      this.treeRevision++;
+      return;
+    }
     if (this.args.selection !== this._lastSelection) {
       this._lastSelection = this.args.selection;
       this.selectionRevision++;
     }
     this.collapseTree.setProperties({
       rowMetaCache: this.rowMetaCache,
-      rows: this.args.rows ?? [],
+      rows,
       sorts: this.unwrappedApi.sorts,
       sortFunction: this.unwrappedApi.sortFunction,
       compareFunction: this.unwrappedApi.compareFunction,
@@ -79,11 +112,18 @@ export default class EmberTbody extends Component {
       selectionMatchFunction: this.args.selectionMatchFunction,
       selectingChildrenSelectsParent: this.args.selectingChildrenSelectsParent ?? true,
     });
+    // The host application commonly mutates EmberArrays in place (sorting,
+    // selection, or changing rows).  Setting the same array reference does not
+    // invalidate the classic computed properties used by CollapseTree, so
+    // explicitly notify both the dependent properties and its array facade.
+    notifyPropertyChange(this.collapseTree, 'rows');
+    notifyPropertyChange(this.collapseTree, 'sorts');
+    notifyPropertyChange(this.collapseTree, 'selection');
+    notifyPropertyChange(this.collapseTree, 'selectionMatchFunction');
+    notifyPropertyChange(this.collapseTree, '[]');
   }
 
-  get wrappedRows() {
-    return this.collapseTree;
-  }
+  get wrappedRows() { return this.items; }
 
   teardown() {
     for (let [row, meta] of this.rowMetaCache) {
@@ -94,9 +134,9 @@ export default class EmberTbody extends Component {
   }
 
   <template>
-    <tbody ...attributes data-test-row-count={{this.dataTestRowCount}} data-selection={{this.args.selection}} data-selection-revision={{this.selectionRevision}} {{didUpdate this.syncModels}}>
+    <tbody ...attributes data-test-row-count={{this.dataTestRowCount}} data-selection={{this.args.selection}} data-selection-revision={{this.selectionRevision}} data-api-revision={{@api.revision}} data-tree-revision={{this.treeRevision}} {{didUpdate this.syncModels}}>
       <VerticalCollection
-        @items={{this.wrappedRows}}
+        @items={{this.items}}
         @containerSelector={{this.containerSelector}}
         @estimateHeight={{this.estimateRowHeight}}
         @key={{this.key}}

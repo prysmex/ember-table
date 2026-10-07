@@ -10,6 +10,7 @@ import { registerDestructor } from '@ember/destroyable';
 import { didInsert, didUpdate } from '@ember/render-modifiers';
 import { closest } from '../../-private/utils/element';
 import MetaCache from '../../-private/meta-cache';
+import { notifyPropertyChange } from '../../-private/utils/ember';
 import { sortMultiple, compareValues } from '../../-private/utils/sort';
 import ColumnTree, { RESIZE_MODE, FILL_MODE, WIDTH_CONSTRAINT } from '../../-private/column-tree';
 import EmberTr from '../ember-tr/component';
@@ -74,6 +75,12 @@ export default class EmberThead extends Component {
       enableResize: this.enableResize,
       enableReorder: this.enableReorder,
     });
+    // Columns and sorts are often EmberArrays mutated in place.  In that case
+    // the reference is unchanged, so invalidate the classic computed tree
+    // explicitly after synchronizing the Glimmer args.
+    notifyPropertyChange(this.columnTree, 'columns');
+    notifyPropertyChange(this.columnTree, 'sorts');
+    notifyPropertyChange(this.columnTree, '[]');
   }
 
   validateUniqueColumnKeys() {
@@ -108,7 +115,10 @@ export default class EmberThead extends Component {
     if (columns === this._syncedColumns && sorts === this._syncedSorts) return;
     this._syncedColumns = columns;
     this._syncedSorts = sorts;
-    next(this, this.syncModels);
+    next(this, () => {
+      this.syncModels();
+      this.unwrappedApi.notifyRevision?.();
+    });
   }
 
   teardown() {
@@ -147,6 +157,7 @@ export default class EmberThead extends Component {
   @action sendUpdateSort(sorts) {
     this.layoutRevision++;
     this.args.onUpdateSorts?.(sorts);
+    this.unwrappedApi.body?.updateSorts(sorts);
   }
   @action fillupHandler() {
     if (!this.isDestroying) {
