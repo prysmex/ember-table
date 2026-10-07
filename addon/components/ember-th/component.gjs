@@ -1,226 +1,131 @@
 /* global Hammer */
 import BaseTableCell from '../-private/base-table-cell';
+import { action, get } from '@ember/object';
 import { next } from '@ember/runloop';
-
-import { readOnly } from '@ember/object/computed';
+import { on } from '@ember/modifier';
+import { didInsert, didUpdate, willDestroy } from '@ember/render-modifiers';
 import { closest } from '../../-private/utils/element';
+import SortIndicator from './sort-indicator/component';
+import ResizeHandle from './resize-handle/component';
 
-import layout from './template';
-import { get, action } from '@ember/object';
+const INACTIVE = 0;
+const RESIZING = 1;
+const REORDERING = 2;
 
-const COLUMN_INACTIVE = 0;
-const COLUMN_RESIZING = 1;
-const COLUMN_REORDERING = 2;
+export default class EmberTh extends BaseTableCell {
+  _columnState = INACTIVE;
+  _hammer = null;
 
-/**
-  The table header cell component. This component manages header cell level
-  concerns, and yields the column value and column meta data objects.
+  get api() { return this.args.api; }
+  get columnValue() { return this.api?.columnValue; }
+  get columnMeta() { return this.api?.columnMeta; }
+  get rowMeta() { return this.api?.rowMeta; }
+  get sorts() { return this.api?.sorts ?? []; }
+  get isSortable() { return this.columnMeta?.isSortable; }
+  get isResizable() { return this.columnMeta?.isResizable; }
+  get isReorderable() { return this.columnMeta?.isReorderable; }
+  get columnSpan() { return this.columnMeta?.columnSpan; }
+  get rowSpan() { return this.columnMeta?.rowSpan; }
 
-  ```hbs
-  <EmberTable as |t|>
-    <t.head @columns={{this.columns}} as |h|>
-      <h.row as |r|>
-        <r.cell as |columnValue columnMeta|>
-
-        </r.cell>
-      </h.row>
-    </t.head>
-
-    <t.body @rows={{this.rows}} />
-  </EmberTable>
-  ```
-  @yield {object} columnValue - The column definition
-  @yield {object} columnMeta - The meta object associated with this column
-  @class <EmberTh />
-  @public
-*/
-export default BaseTableCell.extend({
-  layout,
-  tagName: 'th',
-  attributeBindings: ['columnSpan:colspan', 'rowSpan:rowspan'],
-  classNameBindings: ['isSortable', 'isResizable', 'isReorderable'],
-
-  /**
-    The API object passed in by the table row
-    @argument api
-    @required
-    @type object
-  */
-  api: null,
-
-  /**
-    Action sent when the user clicks right this element
-    @argument onContextMenu
-    @type Action?
-  */
-  onContextMenu: null,
-
-  columnValue: readOnly('api.columnValue'),
-
-  columnMeta: readOnly('api.columnMeta'),
-
-  rowMeta: readOnly('api.rowMeta'),
-
-  /**
-    Any sorts applied to the table.
-  */
-  sorts: readOnly('api.sorts'),
-
-  /**
-    Whether or not the column is sortable. Is true IFF the column is a leaf node
-    onUpdateSorts is set on the thead.
-  */
-  isSortable: readOnly('columnMeta.isSortable'),
-
-  /**
-    Indicates if this column can be resized.
-  */
-  isResizable: readOnly('columnMeta.isResizable'),
-
-  /**
-   Indicates if this column can be reordered.
-  */
-  isReorderable: readOnly('columnMeta.isReorderable'),
-
-  columnSpan: readOnly('columnMeta.columnSpan'),
-
-  rowSpan: readOnly('columnMeta.rowSpan'),
-
-  /**
-    A variable used for column resizing & ordering. When user press mouse at a point that's close
-    to column boundary (using some threshold), this variable set whether it's the left or right
-    column.
-  */
-  _columnState: COLUMN_INACTIVE,
-
-  /**
-    An object that listens to touch/ press/ drag events.
-  */
-  _hammer: null,
-
-  didInsertElement() {
-    this._super(...arguments);
-
-    this.get('columnMeta').registerElement(this.element);
-
-    let hammer = new Hammer(this.element);
-
+  @action
+  setup(element) {
+    this.columnMeta.registerElement(element);
+    let hammer = new Hammer(element);
     hammer.add(new Hammer.Press({ time: 0 }));
-
-    hammer.on('press', this.pressHandler.bind(this));
-    hammer.on('panstart', this.panStartHandler.bind(this));
-    hammer.on('panmove', this.panMoveHandler.bind(this));
-    hammer.on('panend', this.panEndHandler.bind(this));
-
+    hammer.on('press', this.pressHandler);
+    hammer.on('panstart', this.panStartHandler);
+    hammer.on('panmove', this.panMoveHandler);
+    hammer.on('panend', this.panEndHandler);
     this._hammer = hammer;
-  },
+    this.updateStyles(element);
+  }
 
-  willDestroyElement() {
-    let hammer = this._hammer;
+  @action
+  teardown() {
+    if (!this._hammer) return;
+    for (let event of ['press', 'panstart', 'panmove', 'panend']) this._hammer.off(event);
+    this._hammer.destroy();
+  }
 
-    hammer.off('press');
-    hammer.off('panstart');
-    hammer.off('panmove');
-    hammer.off('panend');
+  @action sendDropdownAction(...args) { this.args.onDropdownAction?.(...args); }
 
-    hammer.destroy();
-
-    this._super(...arguments);
-  },
-
-  sendDropdownAction: action(function(...args) {
-    this.onDropdownAction?.(...args);
-  }),
-
+  @action
   click(event) {
-    let isSortable = this.get('isSortable');
-    let inputParent = closest(event.target, 'button:not(.et-sort-toggle), input, label, a, select');
-
-    if (this._columnState === COLUMN_INACTIVE && !inputParent && isSortable) {
-      let toggle = event.ctrlKey || event.metaKey;
-
-      this.updateSort({ toggle });
+    let input = closest(event.target, 'button:not(.et-sort-toggle), input, label, a, select');
+    if (this._columnState === INACTIVE && !input && this.isSortable) {
+      this.updateSort({ toggle: event.ctrlKey || event.metaKey });
     }
-  },
+  }
 
-  contextMenu(event) {
-    this.onContextMenu?.(event);
-    return false;
-  },
+  @action contextMenu(event) { this.args.onContextMenu?.(event); }
 
+  @action
   keyUp(event) {
-    let isSortable = this.get('isSortable');
-    let inputParent = closest(event.target, 'button:not(.et-sort-toggle), input, label, a, select');
-
-    if (
-      this._columnState === COLUMN_INACTIVE &&
-      !inputParent &&
-      event.key === 'Enter' &&
-      isSortable
-    ) {
+    let input = closest(event.target, 'button:not(.et-sort-toggle), input, label, a, select');
+    if (this._columnState === INACTIVE && !input && event.key === 'Enter' && this.isSortable) {
       this.updateSort({ toggle: false });
     }
-  },
+  }
 
   updateSort({ toggle }) {
-    let valuePath = this.get('columnValue.valuePath');
-    let sorts = this.get('sorts');
+    let valuePath = this.columnValue.valuePath;
+    let existing = this.sorts.find(sort => get(sort, 'valuePath') === valuePath);
+    let updated = toggle ? this.sorts.filter(sort => get(sort, 'valuePath') !== valuePath) : [];
+    if (!existing) updated.push({ valuePath, isAscending: false });
+    else if (existing.isAscending === false) updated.push({ valuePath, isAscending: true });
+    this.api.sendUpdateSort(updated);
+  }
 
-    let existingSorting = sorts.find(s => get(s, 'valuePath') === valuePath);
-    let newSortings = toggle ? sorts.filter(s => get(s, 'valuePath') !== valuePath) : [];
-
-    if (!existingSorting) {
-      newSortings.push({ valuePath, isAscending: false });
-    } else if (existingSorting.isAscending === false) {
-      newSortings.push({ valuePath, isAscending: true });
-    }
-
-    this.get('api').sendUpdateSort(newSortings);
-  },
-
-  pressHandler(event) {
+  @action pressHandler(event) {
     let [{ clientX, target }] = event.pointers;
-
     this._originalClientX = clientX;
     this._originalTargetWasResize = target.classList.contains('et-header-resize-area');
-  },
+  }
 
-  panStartHandler(event) {
-    let isResizable = this.get('isResizable');
-    let isReorderable = this.get('isReorderable');
-
+  @action panStartHandler(event) {
     let [{ clientX }] = event.pointers;
-
-    if (isResizable && this._originalTargetWasResize) {
-      this._columnState = COLUMN_RESIZING;
-
-      this.get('columnMeta').startResize(this._originalClientX);
-    } else if (isReorderable) {
-      this._columnState = COLUMN_REORDERING;
-
-      this.get('columnMeta').startReorder(clientX);
+    if (this.isResizable && this._originalTargetWasResize) {
+      this._columnState = RESIZING;
+      this.columnMeta.startResize(this._originalClientX);
+    } else if (this.isReorderable) {
+      this._columnState = REORDERING;
+      this.columnMeta.startReorder(clientX);
     }
-  },
+  }
 
-  panMoveHandler(event) {
+  @action panMoveHandler(event) {
     let [{ clientX }] = event.pointers;
+    if (this._columnState === RESIZING) this.columnMeta.updateResize(clientX);
+    else if (this._columnState === REORDERING) this.columnMeta.updateReorder(clientX);
+  }
 
-    if (this._columnState === COLUMN_RESIZING) {
-      this.get('columnMeta').updateResize(clientX);
-      this._prevClientX = clientX;
-    } else if (this._columnState === COLUMN_REORDERING) {
-      this.get('columnMeta').updateReorder(clientX);
-      this._columnState = COLUMN_REORDERING;
-    }
-  },
+  @action panEndHandler() {
+    if (this._columnState === RESIZING) this.columnMeta.endResize();
+    else if (this._columnState === REORDERING) this.columnMeta.endReorder();
+    next(() => (this._columnState = INACTIVE));
+  }
 
-  panEndHandler() {
-    if (this._columnState === COLUMN_RESIZING) {
-      this.get('columnMeta').endResize();
-    } else if (this._columnState === COLUMN_REORDERING) {
-      this.get('columnMeta').endReorder();
-    }
-
-    next(() => (this._columnState = COLUMN_INACTIVE));
-  },
-});
+  <template>
+    <th
+      ...attributes
+      colspan={{this.columnSpan}}
+      rowspan={{this.rowSpan}}
+      class="{{this.cellClass}} {{if this.isSortable 'is-sortable'}} {{if this.isResizable 'is-resizable'}} {{if this.isReorderable 'is-reorderable'}}"
+      data-test-ember-table-slack={{if this.isSlack true}}
+      {{didInsert this.setup}}
+      {{didUpdate this.updateStyles this.columnMeta.width this.columnMeta.offsetLeft this.columnMeta.offsetRight}}
+      {{willDestroy this.teardown}}
+      {{on "click" this.click}}
+      {{on "contextmenu" this.contextMenu}}
+      {{on "keyup" this.keyUp}}
+    >
+      {{#if (has-block)}}
+        {{yield this.columnValue this.columnMeta this.rowMeta}}
+      {{else}}
+        {{this.columnValue.name}}
+        <SortIndicator @columnMeta={{this.columnMeta}} />
+        <ResizeHandle @columnMeta={{this.columnMeta}} />
+      {{/if}}
+    </th>
+  </template>
+}

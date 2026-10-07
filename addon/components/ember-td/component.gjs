@@ -1,186 +1,119 @@
 import BaseTableCell from '../-private/base-table-cell';
-
-import { computed, action } from '@ember/object';
-import { alias, readOnly } from '@ember/object/computed';
-
-import layout from './template';
+import { action } from '@ember/object';
+import { on } from '@ember/modifier';
+import { didInsert, didUpdate } from '@ember/render-modifiers';
 import { SELECT_MODE } from '../../-private/collapse-tree';
+import EmberTableSimpleCheckbox from '../ember-table-simple-checkbox';
 
 let setupSimpleCheckboxForTest = false;
-export function setSimpleCheckboxForTest(bool) {
-  setupSimpleCheckboxForTest = bool;
+export function setSimpleCheckboxForTest(value) {
+  setupSimpleCheckboxForTest = value;
 }
 
-/**
- The table cell component. This component manages cell level concerns, yields
- the cell value, column value, row value, and all of their associated meta
- objects.
+export default class EmberTd extends BaseTableCell {
+  get api() { return this.args.api?.api ?? this.args.api; }
+  get cellValue() { return this.api?.cellValue; }
+  get cellMeta() { return this.api?.cellMeta; }
+  get columnValue() { return this.api?.columnValue; }
+  get columnMeta() { return this.api?.columnMeta; }
+  get rowValue() { return this.api?.rowValue; }
+  get rowMeta() { return this.api?.rowMeta; }
+  get rowsCount() { return this.api?.rowsCount; }
+  get rowSelectionMode() { return this.api?.rowSelectionMode; }
+  get checkboxSelectionMode() { return this.api?.checkboxSelectionMode; }
+  get canCollapse() { return this.rowMeta?.canCollapse; }
+  get depthClass() { return `depth-${this.rowMeta?.depth}`; }
+  get isTesting() { return setupSimpleCheckboxForTest; }
 
- ```hbs
- <EmberTable as |t|>
- <t.head @columns={{this.columns}} />
+  get shouldShowCheckbox() {
+    return [SELECT_MODE.MULTIPLE, SELECT_MODE.SINGLE].includes(this.checkboxSelectionMode);
+  }
 
- <t.body @rows={{this.rows}} as |b|>
- <b.row as |r|>
- <r.cell as |cellValue columnValue rowValue cellMeta columnMeta rowMeta|>
+  get canSelect() {
+    return this.shouldShowCheckbox ||
+      [SELECT_MODE.MULTIPLE, SELECT_MODE.SINGLE].includes(this.rowSelectionMode);
+  }
 
- </r.cell>
- </b.row>
- </t.body>
- </EmberTable>
- ```
-
- @yield {any} cellValue - The value of the cell
- @yield {object} columnValue - The column definition
- @yield {object} rowValue - The row definition
-
- @yield {object} cellMeta - The meta object associated with the cell
- @yield {object} columnMeta - The meta object associated with the column
- @yield {object} rowMeta - The meta object associated with the row
- @class <EmberTd />
- @public
- */
-export default BaseTableCell.extend({
-  layout,
-  tagName: 'td',
-
-  init() {
-    this._super(...arguments);
-
-    if (setupSimpleCheckboxForTest) {
-      this.set('isTesting', true);
+  @action
+  onSelectionToggled(event) {
+    let mode = this.checkboxSelectionMode || this.rowSelectionMode;
+    if (this.rowMeta && mode === SELECT_MODE.MULTIPLE) {
+      this.rowMeta.select({ toggle: true, range: event.shiftKey });
+    } else if (this.rowMeta && mode === SELECT_MODE.SINGLE) {
+      this.rowMeta.select();
     }
-  },
-  /**
-   The API object passed in by the table row
-   @argument api
-   @required
-   @type object
-  */
-  api: null,
+    this.sendFullAction(this.args.onSelect);
+  }
 
-  /**
-   Action sent when the user clicks this element
-   @argument onClick
-   @type Action?
-  */
-  onClick: null,
+  @action
+  onCollapseToggled() {
+    this.rowMeta.toggleCollapse();
+    this.sendFullAction(this.args.onCollapse);
+  }
 
-  /**
-   Action sent when the user double clicks this element
-   @argument onDoubleClick
-   @type Action?
-  */
-  onDoubleClick: null,
+  @action click(event) { this.sendFullAction(this.args.onClick, { event }); }
+  @action doubleClick(event) { this.sendFullAction(this.args.onDoubleClick, { event }); }
 
-  // only watch `api` due to a bug in Ember
-  // eslint-disable-next-line ember/require-computed-macros
-  unwrappedApi: computed('api', function() {
-    return this.get('api.api') || this.get('api');
-  }),
+  sendFullAction(callback, values = {}) {
+    callback?.(Object.assign(values, {
+      cellValue: this.cellValue,
+      cellMeta: this.cellMeta,
+      columnValue: this.columnValue,
+      columnMeta: this.columnMeta,
+      rowValue: this.rowValue,
+      rowMeta: this.rowMeta,
+    }));
+  }
 
-  cellValue: alias('unwrappedApi.cellValue'),
-
-  cellMeta: readOnly('unwrappedApi.cellMeta'),
-
-  columnValue: readOnly('unwrappedApi.columnValue'),
-
-  columnMeta: readOnly('unwrappedApi.columnMeta'),
-
-  rowValue: readOnly('unwrappedApi.rowValue'),
-
-  rowMeta: readOnly('unwrappedApi.rowMeta'),
-
-  rowsCount: readOnly('unwrappedApi.rowsCount'),
-
-  rowSelectionMode: readOnly('unwrappedApi.rowSelectionMode'),
-
-  checkboxSelectionMode: readOnly('unwrappedApi.checkboxSelectionMode'),
-
-  canCollapse: readOnly('rowMeta.canCollapse'),
-
-  depthClass: computed('rowMeta.depth', function() {
-    return `depth-${this.get('rowMeta.depth')}`;
-  }),
-
-  canSelect: computed('shouldShowCheckbox', 'rowSelectionMode', function() {
-    let rowSelectionMode = this.get('rowSelectionMode');
-    let shouldShowCheckbox = this.get('shouldShowCheckbox');
-
-    return (
-      shouldShowCheckbox ||
-      rowSelectionMode === SELECT_MODE.MULTIPLE ||
-      rowSelectionMode === SELECT_MODE.SINGLE
-    );
-  }),
-
-  shouldShowCheckbox: computed('checkboxSelectionMode', function() {
-    let checkboxSelectionMode = this.get('checkboxSelectionMode');
-
-    return (
-      checkboxSelectionMode === SELECT_MODE.MULTIPLE || checkboxSelectionMode === SELECT_MODE.SINGLE
-    );
-  }),
-
-  onSelectionToggled: action(function(event) {
-    let rowMeta = this.get('rowMeta');
-    let checkboxSelectionMode = this.get('checkboxSelectionMode') || this.get('rowSelectionMode');
-
-    if (rowMeta && checkboxSelectionMode === SELECT_MODE.MULTIPLE) {
-      let toggle = true;
-      let range = event.shiftKey;
-
-      rowMeta.select({ toggle, range });
-    } else if (rowMeta && checkboxSelectionMode === SELECT_MODE.SINGLE) {
-      rowMeta.select();
-    }
-
-    this.sendFullAction('onSelect');
-  }),
-
-  onCollapseToggled: action(function() {
-    let rowMeta = this.get('rowMeta');
-
-    rowMeta.toggleCollapse();
-
-    this.sendFullAction('onCollapse');
-  }),
-
-  click(event) {
-    this.sendFullAction('onClick', { event });
-  },
-
-  doubleClick(event) {
-    this.sendFullAction('onDoubleClick', { event });
-  },
-
-  sendFullAction(action, values = {}) {
-    // If the action doesn't exist, it's not being used. Do nothing
-    if (!this.get(action)) {
-      return;
-    }
-
-    let cellValue = this.get('cellValue');
-    let cellMeta = this.get('cellMeta');
-
-    let columnValue = this.get('columnValue');
-    let columnMeta = this.get('columnMeta');
-
-    let rowValue = this.get('rowValue');
-    let rowMeta = this.get('rowMeta');
-
-    Object.assign(values, {
-      cellValue,
-      cellMeta,
-
-      columnValue,
-      columnMeta,
-
-      rowValue,
-      rowMeta,
-    });
-
-    let closureAction = this[action];
-    closureAction?.(values);
-  },
-});
+  <template>
+    <td
+      ...attributes
+      class={{this.cellClass}}
+      data-test-ember-table-slack={{if this.isSlack true}}
+      {{didInsert this.updateStyles}}
+      {{didUpdate this.updateStyles this.columnMeta.width this.columnMeta.offsetLeft this.columnMeta.offsetRight}}
+      {{on "click" this.click}}
+      {{on "dblclick" this.doubleClick}}
+    >
+      {{#if this.isFirstColumn}}
+        <div class="et-cell-container">
+          {{#if this.canSelect}}
+            <span class="et-toggle-select {{unless this.shouldShowCheckbox 'et-speech-only'}}" data-test-select-row-container>
+              <EmberTableSimpleCheckbox
+                @checked={{this.rowMeta.isGroupSelected}}
+                @onClick={{this.onSelectionToggled}}
+                @ariaLabel="Select row"
+                @dataTestSelectRow={{this.isTesting}}
+              />
+              <span></span>
+            </span>
+          {{/if}}
+          {{#if this.canCollapse}}
+            <span class="et-toggle-collapse et-depth-indent {{this.depthClass}}">
+              <EmberTableSimpleCheckbox
+                @checked={{this.rowMeta.isCollapsed}}
+                @onChange={{this.onCollapseToggled}}
+                @ariaLabel="Collapse row"
+                @dataTestCollapseRow={{this.isTesting}}
+              />
+              <span></span>
+            </span>
+          {{else}}
+            <div class="et-depth-indent et-depth-placeholder {{this.depthClass}}"></div>
+          {{/if}}
+          <div class="et-cell-content">
+            {{#if (has-block)}}
+              {{yield this.cellValue this.columnValue this.rowValue this.cellMeta this.columnMeta this.rowMeta this.rowsCount}}
+            {{else}}
+              {{this.cellValue}}
+            {{/if}}
+          </div>
+        </div>
+      {{else if (has-block)}}
+        {{yield this.cellValue this.columnValue this.rowValue this.cellMeta this.columnMeta this.rowMeta this.rowsCount}}
+      {{else}}
+        {{this.cellValue}}
+      {{/if}}
+    </td>
+  </template>
+}

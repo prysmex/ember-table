@@ -1,82 +1,75 @@
-import Component from '@ember/component';
-import { computed } from '@ember/object';
-import { htmlSafe } from '@ember/template';
+import Component from '@glimmer/component';
+import { action } from '@ember/object';
+import { tracked } from '@glimmer/tracking';
+import { guidFor } from '@ember/object/internals';
+import { didInsert, willDestroy } from '@ember/render-modifiers';
 import {
   setupTableStickyPolyfill,
   teardownTableStickyPolyfill,
 } from '../../-private/sticky/table-sticky-polyfill';
+import ScrollIndicators from '../-private/scroll-indicators/component';
+import EmberThead from '../ember-thead/component';
+import EmberTbody from '../ember-tbody/component';
+import EmberTfoot from '../ember-tfoot/component';
+import EmberTableLoadingMore from '../ember-table-loading-more/component';
+import { component } from '@ember/component/helper';
 
-import layout from './template';
+export default class EmberTable extends Component {
+  @tracked columnTree = null;
 
-/**
-  The primary Ember Table component. This component represents the root of the
-  table, and manages high level state of all of its subcomponents. It does not
-  have any arguments or actions itself - instead, all of those concerns are
-  delegated to its children, who communicate to each other via the API.
+  tableId = `${guidFor(this)}-overflow`;
 
-  ```hbs
-  <EmberTable as |t|>
-    <t.head @columns={{this.columns}} />
-    <t.body @rows={{this.rows}} />
-    <t.foot @rows={{this.footerRows}} />
-  </EmberTable>
-  ```
-
-  @yield {object} table - the API object yielded by the table
-  @yield {Component} table.head - The table header component
-  @yield {Component} table.body - The table body component
-  @yield {Component} table.foot - The table footer component
-  @class <EmberTable />
-  @public
-*/
-export default Component.extend({
-  layout,
-  classNames: ['ember-table'],
-  attributeBindings: ['dataTestEmberTable:data-test-ember-table'],
-  dataTestEmberTable: true,
-
-  didInsertElement() {
-    this._super(...arguments);
-
-    let thead = this.element.querySelector('thead');
-    let tfoot = this.element.querySelector('tfoot');
-
-    if (thead) {
-      setupTableStickyPolyfill(thead);
-    }
-    if (tfoot) {
-      setupTableStickyPolyfill(tfoot);
-    }
-  },
-
-  willDestroyElement() {
-    let thead = this.element.querySelector('thead');
-    let tfoot = this.element.querySelector('tfoot');
-
-    if (thead) {
-      teardownTableStickyPolyfill(this.element.querySelector('thead'));
-    }
-
-    if (tfoot) {
-      teardownTableStickyPolyfill(this.element.querySelector('tfoot'));
-    }
-
-    this._super(...arguments);
-  },
-
-  tableStyle: computed('tableWidth', function() {
-    return htmlSafe(`width: ${this.get('tableWidth')}px;`);
-  }),
-
-  api: computed(function() {
+  get api() {
     return {
       columns: null,
-      registerColumnTree: this.registerColumnTree.bind(this),
-      tableId: `${this.elementId}-overflow`,
+      columnTree: this.columnTree,
+      registerColumnTree: this.registerColumnTree,
+      tableId: this.tableId,
     };
-  }),
+  }
 
+  @action
   registerColumnTree(columnTree) {
-    this.set('api.columnTree', columnTree);
-  },
-});
+    this.columnTree = columnTree;
+  }
+
+  @action
+  setup(element) {
+    for (let section of [element.querySelector('thead'), element.querySelector('tfoot')]) {
+      if (section) {
+        setupTableStickyPolyfill(section);
+      }
+    }
+  }
+
+  @action
+  teardown(element) {
+    for (let section of [element.querySelector('thead'), element.querySelector('tfoot')]) {
+      if (section) {
+        teardownTableStickyPolyfill(section);
+      }
+    }
+  }
+
+  <template>
+    <div
+      class="ember-table"
+      data-test-ember-table
+      {{didInsert this.setup}}
+      {{willDestroy this.teardown}}
+    >
+      <div data-test-ember-table-overflow class="ember-table-overflow" id={{this.tableId}}>
+        <table>
+          {{yield (hash
+            api=this.api
+            head=(component EmberThead api=this.api)
+            body=(component EmberTbody api=this.api)
+            foot=(component EmberTfoot api=this.api)
+            loadingMore=(component EmberTableLoadingMore api=this.api)
+          )}}
+        </table>
+      </div>
+      <ScrollIndicators @api={{this.api}} />
+    </div>
+  </template>
+}

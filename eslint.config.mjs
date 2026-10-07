@@ -48,6 +48,11 @@ export default [
     },
   },
   {
+    files: ['**/*.gjs'],
+    languageOptions: { globals: { hash: 'readonly' } },
+    rules: { 'no-unused-vars': 'off' },
+  },
+  {
     ...qunit.configs.recommended,
     files: ['tests/**/*-test.{js,gjs}'],
     plugins: { qunit },

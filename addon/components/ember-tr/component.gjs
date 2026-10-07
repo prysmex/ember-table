@@ -1,138 +1,91 @@
-import Component from '@ember/component';
-import { computed } from '@ember/object';
-import { readOnly } from '@ember/object/computed';
-
+import Component from '@glimmer/component';
+import { action } from '@ember/object';
+import { on } from '@ember/modifier';
+import { component } from '@ember/component/helper';
 import { closest } from '../../-private/utils/element';
-
-import layout from './template';
 import { SELECT_MODE } from '../../-private/collapse-tree';
+import EmberTh from '../ember-th/component';
+import EmberTd from '../ember-td/component';
 
-/**
-  The table row component. This component manages row level concerns, and yields
-  an API object that contains the cell component, the cell/column/row values,
-  and the cell/column/row meta objects. It is used in both the header and the
-  body, mirroring the structure of native HTML tables.
+export default class EmberTr extends Component {
+  get api() { return this.args.api; }
+  get rowValue() { return this.api?.rowValue; }
+  get rowMeta() { return this.api?.rowMeta; }
+  get cells() { return this.api?.cells ?? []; }
+  get rowSelectionMode() { return this.api?.rowSelectionMode; }
+  get rowToggleMode() { return this.api?.rowToggleMode; }
+  get isHeader() { return this.api?.isHeader; }
+  get isSelected() { return this.rowMeta?.isSelected; }
+  get isGroupSelected() { return this.rowMeta?.isGroupSelected; }
+  get isEven() { return (this.rowMeta?.index ?? 0) % 2 === 0; }
 
-  ```hbs
-  <EmberTable as |t|>
-    <t.head @columns={{this.columns}} as |h|>
-      <h.row as |r|>
-        <r.cell>
-      </h.row>
-    </t.head>
+  get isSelectable() {
+    return [SELECT_MODE.MULTIPLE, SELECT_MODE.SINGLE].includes(this.rowSelectionMode);
+  }
 
-    <t.body @rows={{this.rows}} as |b|>
-      <b.row as |r|>
-        <r.cell>
-      </b.row>
-    </t.body>
-  </EmberTable>
-  ```
-
-  @yield {object} row - the API object yielded by the table row
-  @yield {Component} row.cell - The table cell contextual component
-
-  @yield {any} row.cellValue - The value for the currently yielded cell
-  @yield {object} row.cellMeta - The meta for the currently yielded cell
-
-  @yield {object} row.columnValue - The value for the currently yielded column
-  @yield {object} row.columnMeta - The meta for the currently yielded column
-
-  @yield {object} row.rowValue - The value for the currently yielded row
-  @yield {object} row.rowMeta - The meta for the currently yielded row
-
-  @class <EmberTr />
-  @public
-*/
-export default Component.extend({
-  layout,
-  tagName: 'tr',
-  classNames: ['et-tr'],
-  classNameBindings: ['isEven:is-even:is-odd', 'isGroupSelected', 'isSelectable', 'isSelected'],
-
-  /**
-    The API object passed in by the table body, header, or footer
-    @argument api
-    @required
-    @type object
-  */
-  api: null,
-
-  /**
-    Action sent when the user clicks this element
-    @argument onClick
-    @type Action?
-  */
-  onClick: null,
-
-  /**
-    Action sent when the user double clicks this element
-    @argument onDoubleClick
-    @type Action?
-  */
-  onDoubleClick: null,
-
-  rowValue: readOnly('api.rowValue'),
-
-  rowMeta: readOnly('api.rowMeta'),
-
-  cells: readOnly('api.cells'),
-
-  rowSelectionMode: readOnly('api.rowSelectionMode'),
-
-  rowToggleMode: readOnly('api.rowToggleMode'),
-
-  isHeader: readOnly('api.isHeader'),
-
-  isSelected: readOnly('rowMeta.isSelected'),
-
-  isGroupSelected: readOnly('rowMeta.isGroupSelected'),
-
-  isEven: computed('rowMeta.index', function() {
-    let index = this.rowMeta?.index ?? 0;
-    return index % 2 === 0;
-  }),
-
-  isSelectable: computed('rowSelectionMode', function() {
-    let rowSelectionMode = this.get('rowSelectionMode');
-
-    return rowSelectionMode === SELECT_MODE.MULTIPLE || rowSelectionMode === SELECT_MODE.SINGLE;
-  }),
-
+  @action
   click(event) {
-    let rowSelectionMode = this.get('rowSelectionMode');
     let inputParent = closest(event.target, 'input, button, label, a, select');
 
-    if (!inputParent) {
-      let rowMeta = this.get('rowMeta');
-
-      if (rowMeta && rowSelectionMode === SELECT_MODE.MULTIPLE) {
-        let toggle = event.ctrlKey || event.metaKey || this.get('rowToggleMode');
-        let range = event.shiftKey;
-
-        rowMeta.select({ toggle, range });
-      } else if (rowMeta && rowSelectionMode === SELECT_MODE.SINGLE) {
-        rowMeta.select({ single: true });
-      }
+    if (!inputParent && this.rowMeta && this.rowSelectionMode === SELECT_MODE.MULTIPLE) {
+      this.rowMeta.select({
+        toggle: event.ctrlKey || event.metaKey || this.rowToggleMode,
+        range: event.shiftKey,
+      });
+    } else if (!inputParent && this.rowMeta && this.rowSelectionMode === SELECT_MODE.SINGLE) {
+      this.rowMeta.select({ single: true });
     }
 
-    this.sendEventAction('onClick', event);
-  },
+    this.sendEventAction(this.args.onClick, event);
+  }
 
+  @action
   doubleClick(event) {
-    this.sendEventAction('onDoubleClick', event);
-  },
+    this.sendEventAction(this.args.onDoubleClick, event);
+  }
 
-  sendEventAction(action, event) {
-    let rowValue = this.get('rowValue');
-    let rowMeta = this.get('rowMeta');
+  sendEventAction(callback, event) {
+    callback?.({ event, rowValue: this.rowValue, rowMeta: this.rowMeta });
+  }
 
-    let closureAction = this[action];
-
-    closureAction?.({
-      event,
-      rowValue,
-      rowMeta,
-    });
-  },
-});
+  <template>
+    <tr
+      ...attributes
+      class="et-tr {{if this.isEven 'is-even' 'is-odd'}} {{if this.isGroupSelected 'is-group-selected'}} {{if this.isSelectable 'is-selectable'}} {{if this.isSelected 'is-selected'}}"
+      {{on "click" this.click}}
+      {{on "dblclick" this.doubleClick}}
+    >
+      {{#each this.cells as |api|}}
+        {{#if (has-block)}}
+          {{#if this.isHeader}}
+            {{yield (hash
+              columnValue=api.columnValue
+              columnMeta=api.columnMeta
+              sorts=api.sorts
+              sendUpdateSort=api.sendUpdateSort
+              rowMeta=api.rowMeta
+              rowsCount=api.rowsCount
+              cell=(component EmberTh api=api)
+            )}}
+          {{else}}
+            {{yield (hash
+              api=api
+              cellValue=api.cellValue
+              cellMeta=api.cellMeta
+              columnValue=api.columnValue
+              columnMeta=api.columnMeta
+              rowValue=api.rowValue
+              rowMeta=api.rowMeta
+              rowsCount=api.rowsCount
+              cell=(component EmberTd api=api)
+            )}}
+          {{/if}}
+        {{else if this.isHeader}}
+          <EmberTh @api={{api}} />
+        {{else}}
+          <EmberTd @api={{api}} />
+        {{/if}}
+      {{/each}}
+    </tr>
+  </template>
+}
