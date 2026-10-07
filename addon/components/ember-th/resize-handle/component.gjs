@@ -1,40 +1,13 @@
-import Component from '@ember/component';
-import layout from './template';
+import Component from '@glimmer/component';
 
-import { readOnly } from '@ember/object/computed';
+export default class EmberThResizeHandle extends Component {
+  get isResizable() {
+    return this.args.columnMeta?.isResizable;
+  }
 
-/**
-  The table header cell resize handle component. This component renders an area to grab to resize a column.
-
-  ```hbs
-  <EmberTable as |t|>
-    <t.head @columns={{this.columns}} as |h|>
-      <h.row as |r|>
-        <r.cell as |columnValue columnMeta|>
-          {{columnValue.name}}
-
-          <EmberTh::ResizeHandle @columnMeta={{columnMeta}} />
-        </r.cell>
-      </h.row>
-    </t.head>
-
-    <t.body @rows={{this.rows}} />
-  </EmberTable>
-  ```
-  @class <EmberTh::ResizeHandle />
-  @public
-*/
-export default Component.extend({
-  layout,
-  tagName: '',
-
-  /**
-    The API object passed in by the table header cell
-    @argument columnMeta
-    @required
-    @type object
-  */
-  columnMeta: null,
-
-  isResizable: readOnly('columnMeta.isResizable'),
-});
+  <template>
+    {{#if this.isResizable}}
+      <div data-test-resize-handle class="et-header-resize-area"></div>
+    {{/if}}
+  </template>
+}

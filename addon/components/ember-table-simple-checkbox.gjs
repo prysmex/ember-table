@@ -1,43 +1,53 @@
-import Component from '@ember/component';
-import defaultTo from '../-private/utils/default-to';
+import Component from '@glimmer/component';
+import { action } from '@ember/object';
+import { didInsert, didUpdate } from '@ember/render-modifiers';
+import { on } from '@ember/modifier';
 
-export default Component.extend({
-  tagName: 'input',
+export default class EmberTableSimpleCheckbox extends Component {
+  get type() {
+    return this.args.type ?? 'checkbox';
+  }
 
-  attributeBindings: [
-    'ariaLabel:aria-label',
-    'checked',
-    'disabled',
-    'indeterminate',
-    'type',
-    'value',
-    'dataTestSelectRow:data-test-select-row',
-    'dataTestCollapseRow:data-test-collapse-row',
-  ],
+  @action
+  captureElement(element) {
+    element.indeterminate = Boolean(this.args.indeterminate);
+  }
 
-  ariaLabel: undefined,
-  checked: defaultTo(false),
-  disabled: defaultTo(false),
-  indeterminate: defaultTo(false),
-  onChange: null,
-  onClick: null,
-  type: 'checkbox',
-  value: null,
+  @action
+  updateIndeterminate(element, [indeterminate]) {
+    element.indeterminate = Boolean(indeterminate);
+  }
 
+  @action
   click(event) {
-    this.onClick?.(event);
-  },
+    this.args.onClick?.(event);
+  }
 
+  @action
   change(event) {
-    let checked = this.element.checked;
-    let indeterminate = this.element.indeterminate;
-    let value = this.get('value');
+    let element = event.currentTarget;
+    let checked = element.checked;
+    let indeterminate = element.indeterminate;
 
-    // Checked and indeterminate state have been changed, but that's not DDAU!
-    // Reset the change, send the action and wait for it to be changed manually
-    this.element.checked = this.get('checked');
-    this.element.indeterminate = this.get('indeterminate');
+    element.checked = Boolean(this.args.checked);
+    element.indeterminate = Boolean(this.args.indeterminate);
 
-    this.onChange?.(checked, { value, indeterminate }, event);
-  },
-});
+    this.args.onChange?.(checked, { value: this.args.value, indeterminate }, event);
+  }
+
+  <template>
+    <input
+      type={{this.type}}
+      aria-label={{@ariaLabel}}
+      checked={{@checked}}
+      disabled={{@disabled}}
+      value={{@value}}
+      data-test-select-row={{@dataTestSelectRow}}
+      data-test-collapse-row={{@dataTestCollapseRow}}
+      {{didInsert this.captureElement}}
+      {{didUpdate this.updateIndeterminate @indeterminate}}
+      {{on "click" this.click}}
+      {{on "change" this.change}}
+    />
+  </template>
+}

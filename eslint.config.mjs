@@ -33,6 +33,7 @@ export default [
       'ember/require-computed-property-dependencies': 'off',
       'ember/require-tagless-components': 'off',
       'ember/no-component-lifecycle-hooks': 'off',
+      'ember/no-at-ember-render-modifiers': 'off',
     },
   },
   {

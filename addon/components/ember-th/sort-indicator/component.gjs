@@ -1,49 +1,48 @@
-import Component from '@ember/component';
-import layout from './template';
+import Component from '@glimmer/component';
 
-import { readOnly } from '@ember/object/computed';
+export default class EmberThSortIndicator extends Component {
+  get columnMeta() {
+    return this.args.columnMeta;
+  }
 
-/**
-  The table header cell sort indicator component. This component renders the state of the sort on the column (ascending/descending/none).
+  get isSortable() {
+    return this.columnMeta?.isSortable;
+  }
 
-  ```hbs
-  <EmberTable as |t|>
-    <t.head @columns={{this.columns}} as |h|>
-      <h.row as |r|>
-        <r.cell as |columnValue columnMeta|>
-          {{columnValue.name}}
+  get isSorted() {
+    return this.columnMeta?.isSorted;
+  }
 
-          <EmberTh::SortIndicator @columnMeta={{columnMeta}} />
-        </r.cell>
-      </h.row>
-    </t.head>
+  get isSortedAsc() {
+    return this.columnMeta?.isSortedAsc;
+  }
 
-    <t.body @rows={{this.rows}} />
-  </EmberTable>
-  ```
-  @yield {object} columnMeta - The meta object associated with this column
-  @class <EmberTh::SortIndicator />
-*/
+  get isMultiSorted() {
+    return this.columnMeta?.isMultiSorted;
+  }
 
-export default Component.extend({
-  layout,
-  tagName: '',
+  get sortIndex() {
+    return this.columnMeta?.sortIndex;
+  }
 
-  /**
-    The API object passed in by the table header cell
-    @argument columnMeta
-    @required
-    @type object
-  */
-  columnMeta: null,
+  <template>
+    {{#if this.isSorted}}
+      <span
+        data-test-sort-indicator
+        class="et-sort-indicator {{if this.isSortedAsc 'is-ascending' 'is-descending'}}"
+      >
+        {{#if (has-block)}}
+          {{yield this.columnMeta}}
+        {{else if this.isMultiSorted}}
+          {{this.sortIndex}}
+        {{/if}}
+      </span>
+    {{/if}}
 
-  isSortable: readOnly('columnMeta.isSortable'),
-
-  isSorted: readOnly('columnMeta.isSorted'),
-
-  isSortedAsc: readOnly('columnMeta.isSortedAsc'),
-
-  isMultiSorted: readOnly('columnMeta.isMultiSorted'),
-
-  sortIndex: readOnly('columnMeta.sortIndex'),
-});
+    {{#if this.isSortable}}
+      <button type="button" data-test-sort-toggle class="et-sort-toggle et-speech-only">
+        Toggle Sort
+      </button>
+    {{/if}}
+  </template>
+}
