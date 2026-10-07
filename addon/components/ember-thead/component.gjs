@@ -11,6 +11,7 @@ import { didInsert, didUpdate } from '@ember/render-modifiers';
 import { closest } from '../../-private/utils/element';
 import MetaCache from '../../-private/meta-cache';
 import { notifyPropertyChange } from '../../-private/utils/ember';
+import { addObserver, removeObserver } from '../../-private/utils/observer';
 import { sortMultiple, compareValues } from '../../-private/utils/sort';
 import ColumnTree, { RESIZE_MODE, FILL_MODE, WIDTH_CONSTRAINT } from '../../-private/column-tree';
 import EmberTr from '../ember-tr/component';
@@ -35,7 +36,26 @@ export default class EmberThead extends Component {
     this.syncModels();
     this._syncedColumns = this.args.columns;
     this._syncedSorts = this.args.sorts;
+    this.watchColumns();
     registerDestructor(this, () => this.teardown());
+  }
+
+  watchColumns() {
+    let columns = this.args.columns;
+    if (columns === this._observedColumns) return;
+    if (this._observedColumns) removeObserver(this._observedColumns, '[]', this.syncColumnMutation);
+    this._observedColumns = columns;
+    if (columns) addObserver(columns, '[]', this.syncColumnMutation);
+  }
+
+  @action
+  syncColumnMutation() {
+    next(this, () => {
+      if (this.isDestroying) return;
+      this.syncModels();
+      this.fillupHandler();
+      this.layoutRevision++;
+    });
   }
 
   handleLayoutChange(callback, values) {
@@ -115,10 +135,16 @@ export default class EmberThead extends Component {
     if (columns === this._syncedColumns && sorts === this._syncedSorts) return;
     this._syncedColumns = columns;
     this._syncedSorts = sorts;
-    next(this, this.syncModels);
+    this.watchColumns();
+    next(this, () => {
+      this.syncModels();
+      this.fillupHandler();
+      this.layoutRevision++;
+    });
   }
 
   teardown() {
+    if (this._observedColumns) removeObserver(this._observedColumns, '[]', this.syncColumnMutation);
     this._tableResizeSensor?.detach(this._container);
     this.columnTree.destroy();
     for (let cache of [this.columnMetaCache, this.rowMetaCache]) {
@@ -159,6 +185,7 @@ export default class EmberThead extends Component {
   @action fillupHandler() {
     if (!this.isDestroying) {
       this.columnTree.ensureWidthConstraint();
+      this.columnTree.syncResizedColumnElements();
       this.layoutRevision++;
     }
   }
