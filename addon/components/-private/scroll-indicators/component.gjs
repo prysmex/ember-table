@@ -1,349 +1,145 @@
 /* global ResizeSensor */
-import Component from '@ember/component';
-import { computed } from '@ember/object';
-import { readOnly } from '@ember/object/computed';
-import { bind, scheduleOnce } from '@ember/runloop';
+import Component from '@glimmer/component';
+import { action, get } from '@ember/object';
+import { tracked } from '@glimmer/tracking';
 import { htmlSafe } from '@ember/template';
-import { isEmpty, isNone } from '@ember/utils';
-import { addObserver } from 'ember-table/-private/utils/observer';
-import layout from './template';
+import { registerDestructor } from '@ember/destroyable';
+import { didInsert, didUpdate } from '@ember/render-modifiers';
 
-function capitalize(s) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
+export default class ScrollIndicators extends Component {
+  @tracked geometry = {};
+  _isListening = false;
 
-/**
-   Computed property macro that builds the CSS styles (position, height)
-   for each horizontal scroll indicator element.
+  constructor(owner, args) {
+    super(owner, args);
+    registerDestructor(this, () => this.removeListeners());
+  }
 
-   @param {string} side - which side we are computing styles for: `left` or `right`
- */
-const horizontalIndicatorStyle = side => {
-  return computed(
-    `columnTree.${side}FixedNodes.@each.width`,
-    'overflowHeight',
-    'scrollbarWidth',
-    'tableHeight',
-    function() {
-      let style = [];
-
-      // left/right position
-      let offset = 0;
-
-      let fixedNodes = this.get(`columnTree.${side}FixedNodes`);
-      if (!isEmpty(fixedNodes)) {
-        let fixedWidth = fixedNodes.reduce((acc, node) => acc + node.get('width'), 0);
-        offset += fixedWidth;
-      }
-
-      if (side === 'right') {
-        let scrollbarWidth = this.get('scrollbarWidth') || 0;
-        offset += scrollbarWidth;
-      }
-
-      style.push(`${side}:${offset}px;`);
-
-      // height
-      let overflowHeight = this.get('overflowHeight');
-      if (!isNone(overflowHeight)) {
-        let tableHeight = this.get('tableHeight');
-        let height = isNone(tableHeight) ? overflowHeight : Math.min(overflowHeight, tableHeight);
-        style.push(`height:${height}px;`);
-      }
-
-      return htmlSafe(style.join(''));
+  get api() { return this.args.api?.api ?? this.args.api; }
+  get columnTree() { return this.api?.columnTree; }
+  get enabledIndicators() {
+    switch (this.api?.scrollIndicators) {
+      case true: case 'all': return ['left', 'right', 'top', 'bottom'];
+      case 'horizontal': return ['left', 'right'];
+      case 'vertical': return ['top', 'bottom'];
+      default: return [];
     }
-  );
-};
+  }
+  get showLeft() { return this.enabledIndicators.includes('left') && this.geometry.scrollLeft > 0; }
+  get showRight() { return this.enabledIndicators.includes('right') && this.geometry.scrollRight > 0; }
+  get showTop() { return this.enabledIndicators.includes('top') && this.geometry.scrollTop > 0; }
+  get showBottom() { return this.enabledIndicators.includes('bottom') && this.geometry.scrollBottom > 0; }
 
-/**
-   Computed property macro that builds the CSS styles (position, width)
-   for each vertical scroll indicator element.
-
-   @param {string} location - which location we are computing styles for: `top` or `bottom`
- */
-const verticalIndicatorStyle = location => {
-  return computed(
-    `columnTree.${location}FixedNodes.@each.width`,
-    'overflowHeight',
-    'overflowWidth',
-    'tableWidth',
-    'headerHeight',
-    'scrollbarHeight',
-    'visibleFooterHeight',
-    'footerRatio',
-    function() {
-      let style = [];
-      let offset = 0;
-
-      // top/bottom offset
-      if (location === 'top') {
-        let headerHeight = this.get('headerHeight') || 0;
-        offset += headerHeight;
-      }
-
-      if (location === 'bottom') {
-        let visibleFooterHeight = this.get('visibleFooterHeight') || 0;
-        let scrollbarHeight = this.get('scrollbarHeight') || 0;
-        let footerRatio = this.get('footerRatio');
-
-        // when footer occupies > 50% of the overflow height, we are now
-        // scrolling the footer rows, so indicator should jump to table bottom
-        if (footerRatio <= 0.5) {
-          offset += visibleFooterHeight;
-        }
-
-        offset += scrollbarHeight;
-      }
-
-      style.push(`${location}:${offset}px;`);
-
-      // width
-      let tableWidth = this.get('tableWidth');
-      if (!isNone(tableWidth)) {
-        let overflowWidth = this.get('overflowWidth');
-        let width = Math.min(tableWidth, overflowWidth);
-        style.push(`width:${width}px;`);
-      }
-
-      return htmlSafe(style.join(''));
+  horizontalStyle(side) {
+    let fixed = get(this.columnTree, `${side}FixedNodes`) ?? [];
+    let offset = fixed.reduce((sum, node) => sum + get(node, 'width'), 0);
+    if (side === 'right') offset += this.geometry.scrollbarWidth || 0;
+    let height = Math.min(this.geometry.overflowHeight ?? Infinity, this.geometry.tableHeight ?? Infinity);
+    return htmlSafe(`${side}:${offset}px;${Number.isFinite(height) ? `height:${height}px` : ''}`);
+  }
+  verticalStyle(side) {
+    let offset = side === 'top' ? this.geometry.headerHeight || 0 : 0;
+    if (side === 'bottom') {
+      if ((this.geometry.footerRatio ?? 0) <= 0.5) offset += this.geometry.visibleFooterHeight || 0;
+      offset += this.geometry.scrollbarHeight || 0;
     }
-  );
-};
+    let width = Math.min(this.geometry.tableWidth ?? Infinity, this.geometry.overflowWidth ?? Infinity);
+    return htmlSafe(`${side}:${offset}px;${Number.isFinite(width) ? `width:${width}px` : ''}`);
+  }
+  get leftStyle() { return this.horizontalStyle('left'); }
+  get rightStyle() { return this.horizontalStyle('right'); }
+  get topStyle() { return this.verticalStyle('top'); }
+  get bottomStyle() { return this.verticalStyle('bottom'); }
 
-/**
-   Computed property macro that builds a boolean to determine whether or not
-   to show a scroll indicator in the given position.
+  @action setup() { this.updateListeners(); }
+  @action update() { this.updateListeners(); }
 
-   @param {string} location - `left`, `right`, `top`, or `bottom`
- */
-const showIndicator = location => {
-  let scrollProp = `scroll${capitalize(location)}`;
-  return computed('enabledIndicators', scrollProp, function() {
-    return this.get('enabledIndicators').includes(location) && this.get(scrollProp) > 0;
-  });
-};
+  updateListeners() {
+    let enabled = this.enabledIndicators.length > 0;
+    if (enabled && !this._isListening) this.addListeners();
+    else if (!enabled && this._isListening) this.removeListeners();
+  }
 
-export default Component.extend({
-  layout,
-  tagName: '',
-
-  /**
-    The API object passed in by the table
-
-    @argument api
-    @required
-    @type object
-  */
-  api: null,
-
-  scrollLeft: null,
-  scrollRight: null,
-  scrollTop: null,
-  scrollBottom: null,
-
-  scrollbarWidth: null,
-  scrollbarHeight: null,
-
-  overflowHeight: null,
-  overflowWidth: null,
-  tableHeight: null,
-  tableWidth: null,
-  headerHeight: null,
-  visibleFooterHeight: null,
-  footerRatio: null,
-
-  columnTree: readOnly('api.columnTree'),
-  containerWidthAdjustment: readOnly('api.columnTree.containerWidthAdjustment'),
-  scrollIndicators: readOnly('api.scrollIndicators'),
-  tableScrollId: readOnly('api.tableId'),
-
-  showLeft: showIndicator('left'),
-  showRight: showIndicator('right'),
-  showTop: showIndicator('top'),
-  showBottom: showIndicator('bottom'),
-
-  leftStyle: horizontalIndicatorStyle('left'),
-  rightStyle: horizontalIndicatorStyle('right'),
-  topStyle: verticalIndicatorStyle('top'),
-  bottomStyle: verticalIndicatorStyle('bottom'),
-
-  enabledIndicators: computed('scrollIndicators', function() {
-    switch (this.get('scrollIndicators')) {
-      case true:
-      case 'all':
-        return ['left', 'right', 'top', 'bottom'];
-      case 'horizontal':
-        return ['left', 'right'];
-      case 'vertical':
-        return ['top', 'bottom'];
-      case false:
-      case 'none':
-      default:
-        return [];
-    }
-  }),
-
-  init() {
-    this._super(...arguments);
-
-    // common callback for event listeners; the `bind` appears redundant, but is
-    // required by the test suite
-    this._updateIndicators = bind(this, () => {
-      scheduleOnce('actions', this, this.updateIndicators);
-    });
-  },
-
-  _addListeners() {
+  addListeners() {
+    this._scrollElement = document.getElementById(this.api.tableId);
+    if (!this._scrollElement) return;
     this._isListening = true;
-
-    // cache static elements for performance
-    this._scrollElement = document.getElementById(this.get('tableScrollId'));
     this._tableElement = this._scrollElement.querySelector('table');
     this._headerElement = this._tableElement.querySelector('thead');
+    this._scrollElement.addEventListener('scroll', this.updateIndicators);
+    this._tableResizeSensor = new ResizeSensor(this._tableElement, this.updateIndicators);
+    this.addFooterListeners();
+    this.updateIndicators();
+  }
 
-    this._scrollElement.addEventListener('scroll', this._updateIndicators);
-    this._tableResizeSensor = new ResizeSensor(this._tableElement, this._updateIndicators);
-    this._addFooterListeners();
-  },
-
-  _removeListeners() {
+  removeListeners() {
+    if (!this._isListening) return;
     this._isListening = false;
+    this._scrollElement?.removeEventListener('scroll', this.updateIndicators);
+    this._tableResizeSensor?.detach();
+    this.removeFooterListeners();
+  }
 
-    this._scrollElement.removeEventListener('scroll', this._updateIndicators);
-    this._tableResizeSensor.detach();
-    this._removeFooterListeners();
-  },
-
-  // footer can appear/disappear dynamically, so this listener needs to be
-  // added/removed occasionally
-  _addFooterListeners() {
-    let footerElement = this._tableElement.querySelector('tfoot');
-
-    if (!footerElement) {
-      return;
-    }
-
-    if (!this._footerResizeSensor) {
-      // triggers when entire footer changes size
-      this._footerResizeSensor = new ResizeSensor(footerElement, this._updateIndicators);
-    }
-
+  addFooterListeners() {
+    let footer = this._tableElement?.querySelector('tfoot');
+    if (!footer) return;
+    this._footerResizeSensor ??= new ResizeSensor(footer, this.updateIndicators);
     if (!this._footerMutationObserver) {
-      // triggers when individual footer cells are updated by sticky polyfill
-      this._footerMutationObserver = new MutationObserver(this._updateIndicators);
-      this._footerMutationObserver.observe(footerElement, {
-        subtree: true,
-        attributes: true,
-        attributesFilter: ['style'],
-        childList: true,
+      this._footerMutationObserver = new MutationObserver(this.updateIndicators);
+      this._footerMutationObserver.observe(footer, {
+        subtree: true, attributes: true, attributesFilter: ['style'], childList: true,
       });
     }
-  },
+  }
 
-  _removeFooterListeners() {
-    if (this._footerResizeSensor) {
-      this._footerResizeSensor.detach();
-      this._footerResizeSensor = null;
-    }
+  removeFooterListeners() {
+    this._footerResizeSensor?.detach();
+    this._footerResizeSensor = null;
+    this._footerMutationObserver?.disconnect();
+    this._footerMutationObserver = null;
+  }
 
-    if (this._footerMutationObserver) {
-      this._footerMutationObserver.disconnect();
-      this._footerMutationObserver = null;
-    }
-  },
-
-  /**
-    Recomputes table geometry and triggers update of scroll indicator positions
-    and dimensions.
-  */
+  @action
   updateIndicators() {
-    let el = this._scrollElement;
+    let element = this._scrollElement;
     let table = this._tableElement;
-    let header = this._headerElement;
-
-    let scrollLeft = el.scrollLeft;
-    let scrollRight = el.scrollWidth - el.clientWidth - scrollLeft;
-    let scrollTop = el.scrollTop;
-    let scrollBottom = el.scrollHeight - el.clientHeight - scrollTop;
-
-    let scrollbarWidth = el.offsetWidth - el.clientWidth;
-    let scrollbarHeight = el.offsetHeight - el.clientHeight;
-
-    let overflowHeight = el.clientHeight;
-    let overflowWidth = el.clientWidth;
-    let tableWidth = table ? table.offsetWidth : null;
-    let tableHeight = table ? table.offsetHeight : null;
-    let headerHeight = header ? header.offsetHeight : null;
-
-    // part of the footer can be obscured until the table is scrolled to the
-    // bottom; see `addon/-private/sticky/table-sticky-polyfill.js`
+    if (!element || !table) return;
+    let scrollLeft = element.scrollLeft;
+    let scrollTop = element.scrollTop;
     let visibleFooterHeight = 0;
     let footerCell = table.querySelector('tfoot td');
     if (footerCell) {
-      this._addFooterListeners();
+      this.addFooterListeners();
+      let rect = element.getBoundingClientRect();
+      let scale = element.offsetHeight / rect.height;
+      visibleFooterHeight = Math.max(0, Math.min(
+        element.clientHeight - scale * (footerCell.getBoundingClientRect().y - rect.y),
+        element.clientHeight
+      ));
+    } else this.removeFooterListeners();
 
-      let footerCellY = footerCell.getBoundingClientRect().y;
-      let overflowRect = el.getBoundingClientRect();
-      let scale = el.offsetHeight / overflowRect.height;
-
-      visibleFooterHeight = Math.min(
-        el.clientHeight - scale * (footerCellY - overflowRect.y),
-        el.clientHeight
-      );
-
-      // can be negative if sticky footers don't work in browser (e.g. Safari)
-      visibleFooterHeight = Math.max(visibleFooterHeight, 0);
-    } else {
-      this._removeFooterListeners();
-    }
-
-    let footerRatio;
-    if (overflowHeight > 0) {
-      footerRatio = visibleFooterHeight / el.offsetHeight;
-    }
-
-    this.setProperties({
+    this.geometry = {
       scrollLeft,
-      scrollRight,
+      scrollRight: element.scrollWidth - element.clientWidth - scrollLeft,
       scrollTop,
-      scrollBottom,
-
-      scrollbarHeight,
-      scrollbarWidth,
-
-      overflowHeight,
-      overflowWidth,
-      tableHeight,
-      tableWidth,
-      headerHeight,
-
+      scrollBottom: element.scrollHeight - element.clientHeight - scrollTop,
+      scrollbarWidth: element.offsetWidth - element.clientWidth,
+      scrollbarHeight: element.offsetHeight - element.clientHeight,
+      overflowHeight: element.clientHeight,
+      overflowWidth: element.clientWidth,
+      tableWidth: table.offsetWidth,
+      tableHeight: table.offsetHeight,
+      headerHeight: this._headerElement?.offsetHeight,
       visibleFooterHeight,
-      footerRatio,
-    });
-  },
+      footerRatio: element.offsetHeight ? visibleFooterHeight / element.offsetHeight : undefined,
+    };
+  }
 
-  _updateListeners() {
-    let hasIndicators = !isEmpty(this.get('enabledIndicators'));
-
-    if (hasIndicators && !this._isListening) {
-      this._addListeners();
-      this._updateIndicators();
-    } else if (!hasIndicators && this._isListening) {
-      this._removeListeners();
-    }
-  },
-
-  didInsertElement() {
-    this._super(...arguments);
-    this._updateListeners();
-    addObserver(this, 'enabledIndicators', this._updateListeners);
-  },
-
-  // eslint-disable-next-line ember/require-super-in-lifecycle-hooks
-  willDestroy() {
-    if (this._isListening) {
-      this._removeListeners();
-    }
-  },
-});
+  <template>
+    <span hidden {{didInsert this.setup}} {{didUpdate this.update this.api.scrollIndicators}}></span>
+    {{#if this.showLeft}}<div data-test-ember-table-scroll-indicator="left" class="scroll-indicator scroll-indicator__left" style={{this.leftStyle}}></div>{{/if}}
+    {{#if this.showRight}}<div data-test-ember-table-scroll-indicator="right" class="scroll-indicator scroll-indicator__right" style={{this.rightStyle}}></div>{{/if}}
+    {{#if this.showTop}}<div data-test-ember-table-scroll-indicator="top" class="scroll-indicator scroll-indicator__top" style={{this.topStyle}}></div>{{/if}}
+    {{#if this.showBottom}}<div data-test-ember-table-scroll-indicator="bottom" class="scroll-indicator scroll-indicator__bottom" style={{this.bottomStyle}}></div>{{/if}}
+  </template>
+}

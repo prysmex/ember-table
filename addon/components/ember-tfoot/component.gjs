@@ -1,48 +1,38 @@
-import EmberTBody from '../ember-tbody/component';
-import { A as emberA } from '@ember/array';
+import EmberTbody from '../ember-tbody/component';
+import { component } from '@ember/component/helper';
+import RowWrapper from '../-private/row-wrapper';
+import EmberTr from '../ember-tr/component';
 
-import { computed } from '@ember/object';
+export default class EmberTfoot extends EmberTbody {
+  get wrappedRowArray() {
+    return Array.from(this.wrappedRows);
+  }
 
-import layout from './template';
-
-/**
-  The table footer component. This component manages any footer rows which may
-  be attached to the table, and has the same API as EmberTBody. It does not
-  provide occlusion, because the number of footer rows is expected to be
-  relatively small.
-
-  ```hbs
-  <EmberTable as |t|>
-    <t.head @columns={{this.columns}} />
-    <t.body @rows={{this.rows}} />
-
-    <t.foot @rows={{this.footerRows}} as |f|>
-      <f.row />
-    </t.foot>
-  </EmberTable>
-  ```
-
-  @yield {object} foot - the API object yielded by the table footer
-  @yield {Component} foot.row - The table row component
-  @yield {object} foot.rowValue - The value for the currently yielded row
-  @yield {object} foot.rowMeta - The meta for the currently yielded row
-  @class <EmberTfoot />
-  @public
-*/
-export default EmberTBody.extend({
-  layout,
-  tagName: 'tfoot',
-
-  wrappedRowArray: computed('wrappedRows.[]', function() {
-    let wrappedRows = this.get('wrappedRows');
-    let wrappedRowsLength = wrappedRows.get('length');
-
-    let arr = [];
-
-    for (let i = 0; i < wrappedRowsLength; i++) {
-      arr.push(wrappedRows.objectAt(i));
-    }
-
-    return emberA(arr);
-  }),
-});
+  <template>
+    <tfoot ...attributes data-test-row-count={{this.dataTestRowCount}}>
+      {{#each this.wrappedRowArray as |rowValue|}}
+        <RowWrapper
+          @rowValue={{rowValue}}
+          @columns={{this.columns}}
+          @columnMetaCache={{this.columnMetaCache}}
+          @rowMetaCache={{this.rowMetaCache}}
+          @canSelect={{this.canSelect}}
+          @rowSelectionMode={{this.rowSelectionMode}}
+          @checkboxSelectionMode={{this.checkboxSelectionMode}}
+          @rowsCount={{this.wrappedRowArray.length}}
+          as |api|
+        >
+          {{#if (has-block)}}
+            {{yield (hash
+              rowValue=api.rowValue rowMeta=api.rowMeta cells=api.cells
+              rowSelectionMode=api.rowSelectionMode rowsCount=api.rowsCount
+              row=(component EmberTr api=api)
+            )}}
+          {{else}}
+            <EmberTr @api={{api}} />
+          {{/if}}
+        </RowWrapper>
+      {{/each}}
+    </tfoot>
+  </template>
+}

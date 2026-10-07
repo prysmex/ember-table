@@ -50,7 +50,11 @@ export default [
   {
     files: ['**/*.gjs'],
     languageOptions: { globals: { hash: 'readonly' } },
-    rules: { 'no-unused-vars': 'off' },
+    rules: {
+      'no-unused-vars': 'off',
+      'ember/no-computed-properties-in-native-classes': 'off',
+      'ember/no-side-effects': 'off',
+    },
   },
   {
     ...qunit.configs.recommended,

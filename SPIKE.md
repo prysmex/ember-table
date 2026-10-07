@@ -41,11 +41,10 @@ can be installed.
 
 - The current Ember 7.3 classic-build-addon blueprint dependencies install
   under Node 22 and npm.
-- All component module filenames use `.gjs`, but that rename alone is not a
-  Glimmer migration. The checkbox, sort indicator, and resize handle now use
-  native `@glimmer/component` classes with embedded `<template>` blocks. The
-  remaining shipped components still require the same conversion before this
-  spike can be considered complete.
+- Every shipped addon component now uses a native `@glimmer/component` class
+  with an embedded `<template>` block. The separate addon `.hbs` files have
+  been removed. The table's non-component models (`CollapseTree`, `ColumnTree`,
+  and cached row/cell metadata) intentionally remain EmberObject-based.
 - `npm run lint` passes.
 - `npm run build` produces a production build on Ember 7.3.
 - `npm run test:ember` builds the test application successfully, but this
@@ -53,7 +52,6 @@ can be installed.
   Chromium install was also unavailable for its Ubuntu ARM64 platform, so the
   202 browser assertions must be confirmed in CI.
 
-The remaining source uses classic Ember object/component APIs inside GJS
-modules. Completing the Glimmer rewrite requires replacing element ownership,
-observers, computed-property invalidation, and lifecycle hooks with
-template-owned DOM, tracked state, and modifiers.
+DOM ownership and component lifecycle behavior now live in templates and
+modifiers. Classic EmberObject APIs remain only in the table's model/cache
+layer and can be modernized independently of the component migration.
