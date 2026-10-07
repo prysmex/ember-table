@@ -113,6 +113,9 @@ export default class EmberTbody extends Component {
     notifyPropertyChange(this.collapseTree, 'sorts');
     notifyPropertyChange(this.collapseTree, 'selection');
     notifyPropertyChange(this.collapseTree, 'selectionMatchFunction');
+    // Materialize the new root before notifying VerticalCollection. Its Radar
+    // reads the collection synchronously from the `items.[]` notification.
+    this.collapseTree.get('length');
     notifyPropertyChange(this.collapseTree, '[]');
   }
 
@@ -127,7 +130,21 @@ export default class EmberTbody extends Component {
   }
 
   <template>
-    <tbody ...attributes data-test-row-count={{this.dataTestRowCount}} data-selection={{this.args.selection}} data-selection-revision={{this.selectionRevision}} {{didUpdate this.syncModels}}>
+    <tbody
+      ...attributes
+      data-test-row-count={{this.dataTestRowCount}}
+      data-selection={{this.args.selection}}
+      data-selection-revision={{this.selectionRevision}}
+      {{didUpdate
+        this.syncModels
+        this.args.rows
+        this.args.selection
+        this.args.selectionMatchFunction
+        this.args.enableTree
+        this.args.enableCollapse
+        this.args.selectingChildrenSelectsParent
+      }}
+    >
       <VerticalCollection
         @items={{this.wrappedRows}}
         @containerSelector={{this.containerSelector}}
