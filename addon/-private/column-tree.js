@@ -726,6 +726,7 @@ export default EmberObject.extend({
     }
 
     this._isSorting = false;
+    this.syncResizedColumnElements();
   },
 
   /**
@@ -1141,6 +1142,11 @@ export default EmberObject.extend({
         element.style.width = width;
         element.style.minWidth = width;
         element.style.maxWidth = width;
+        let fixed = get(node, 'isFixed');
+        element.style.left = fixed === 'left' ? `${Math.round(get(node, 'offsetLeft'))}px` : '';
+        element.style.right = fixed === 'right' ? `${Math.round(get(node, 'offsetRight'))}px` : '';
+        element.classList.toggle('is-fixed-left', fixed === 'left');
+        element.classList.toggle('is-fixed-right', fixed === 'right');
         element.classList.toggle('is-resizing', get(node, 'isResizing'));
       }
     }
