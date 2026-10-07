@@ -1,4 +1,5 @@
 import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 import { on } from '@ember/modifier';
 import { closest } from '../../-private/utils/element';
@@ -7,6 +8,7 @@ import EmberTh from '../ember-th/component';
 import EmberTd from '../ember-td/component';
 
 export default class EmberTr extends Component {
+  @tracked interactionRevision = 0;
   get customClass() { return this.args.class ?? ''; }
   get api() { return this.args.api; }
   get rowValue() { return this.api?.rowValue; }
@@ -15,7 +17,20 @@ export default class EmberTr extends Component {
   get rowSelectionMode() { return this.api?.rowSelectionMode; }
   get rowToggleMode() { return this.api?.rowToggleMode; }
   get isHeader() { return this.api?.isHeader; }
-  get isSelected() { return this.rowMeta?.isSelected; }
+  get isSelected() {
+    let selection = this.api?.selection;
+    if (Array.isArray(selection) || selection?.length !== undefined && typeof selection !== 'string') {
+      return selection?.some(item => this.api.selectionMatchFunction
+        ? this.api.selectionMatchFunction(item, this.rowValue)
+        : item === this.rowValue) ?? false;
+    }
+    if (selection != null) {
+      return this.api.selectionMatchFunction
+        ? this.api.selectionMatchFunction(selection, this.rowValue)
+        : selection === this.rowValue;
+    }
+    return this.rowMeta?.isSelected;
+  }
   get isGroupSelected() { return this.rowMeta?.isGroupSelected; }
   get isEven() { return (this.rowMeta?.index ?? 0) % 2 === 0; }
 
@@ -36,6 +51,8 @@ export default class EmberTr extends Component {
       this.rowMeta.select({ single: true });
     }
 
+    this.interactionRevision++;
+
     this.sendEventAction(this.args.onClick, event);
   }
 
@@ -52,6 +69,7 @@ export default class EmberTr extends Component {
     <tr
       ...attributes
       class="et-tr {{this.customClass}} {{if this.isEven 'is-even' 'is-odd'}} {{if this.isGroupSelected 'is-group-selected'}} {{if this.isSelectable 'is-selectable'}} {{if this.isSelected 'is-selected'}}"
+      data-interaction-revision={{this.interactionRevision}}
       {{on "click" this.click}}
       {{on "dblclick" this.doubleClick}}
     >

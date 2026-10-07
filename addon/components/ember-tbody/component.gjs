@@ -1,4 +1,6 @@
 import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { next } from '@ember/runloop';
 import { action, get } from '@ember/object';
 import { assert } from '@ember/debug';
 import { registerDestructor } from '@ember/destroyable';
@@ -12,6 +14,7 @@ let setupRowCountForTest = false;
 export function setSetupRowCountForTest(value) { setupRowCountForTest = value; }
 
 export default class EmberTbody extends Component {
+  @tracked selectionRevision = 0;
   rowMetaCache = new Map();
 
   constructor(owner, args) {
@@ -22,7 +25,11 @@ export default class EmberTbody extends Component {
     );
     this.collapseTree = CollapseTree.create({
       rows: this.args.rows ?? [],
-      onSelect: this.args.onSelect?.bind(this),
+      onSelect: (...args) => {
+        this.args.onSelect?.(...args);
+        this.selectionRevision++;
+        next(this, this.syncModels);
+      },
       rowMetaCache: this.rowMetaCache,
       sorts: this.unwrappedApi.sorts,
       sortFunction: this.unwrappedApi.sortFunction,
@@ -34,6 +41,7 @@ export default class EmberTbody extends Component {
       selectionMatchFunction: this.args.selectionMatchFunction,
       selectingChildrenSelectsParent: this.args.selectingChildrenSelectsParent ?? true,
     });
+    this._lastSelection = this.args.selection;
     registerDestructor(this, () => this.teardown());
   }
 
@@ -54,6 +62,10 @@ export default class EmberTbody extends Component {
 
   @action
   syncModels() {
+    if (this.args.selection !== this._lastSelection) {
+      this._lastSelection = this.args.selection;
+      this.selectionRevision++;
+    }
     this.collapseTree.setProperties({
       rowMetaCache: this.rowMetaCache,
       rows: this.args.rows ?? [],
@@ -82,7 +94,7 @@ export default class EmberTbody extends Component {
   }
 
   <template>
-    <tbody ...attributes data-test-row-count={{this.dataTestRowCount}} {{didUpdate this.syncModels}}>
+    <tbody ...attributes data-test-row-count={{this.dataTestRowCount}} data-selection={{this.args.selection}} data-selection-revision={{this.selectionRevision}} {{didUpdate this.syncModels}}>
       <VerticalCollection
         @items={{this.wrappedRows}}
         @containerSelector={{this.containerSelector}}
@@ -107,6 +119,8 @@ export default class EmberTbody extends Component {
             @checkboxSelectionMode={{this.checkboxSelectionMode}}
             @rowSelectionMode={{this.rowSelectionMode}}
             @rowToggleMode={{this.rowToggleMode}}
+            @selection={{this.args.selection}}
+            @selectionMatchFunction={{this.args.selectionMatchFunction}}
             @rowsCount={{this.wrappedRows.length}}
             as |api|
           >
