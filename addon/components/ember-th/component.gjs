@@ -109,13 +109,13 @@ export default class EmberTh extends BaseTableCell {
   <template>
     <th
       ...attributes
-      colspan={{this.columnSpan}}
-      rowspan={{this.rowSpan}}
-      class="{{this.cellClass}} {{if this.isSortable 'is-sortable'}} {{if this.isResizable 'is-resizable'}} {{if this.isReorderable 'is-reorderable'}}"
+      colspan={{@api.columnMeta.columnSpan}}
+      rowspan={{@api.columnMeta.rowSpan}}
+      class="{{this.cellClass}} {{if @api.columnMeta.isSortable 'is-sortable'}} {{if @api.columnMeta.isResizable 'is-resizable'}} {{if @api.columnMeta.isReorderable 'is-reorderable'}}"
       data-layout-revision={{this.layoutRevision}}
-      data-test-ember-table-slack={{if this.isSlack true}}
+      data-test-ember-table-slack={{if @api.columnMeta.isSlack true}}
       {{didInsert this.setup}}
-      {{didUpdate this.updateStyles this.columnMeta?.width this.columnMeta?.offsetLeft this.columnMeta?.offsetRight}}
+      {{didUpdate this.updateStyles @api.columnMeta.width @api.columnMeta.offsetLeft @api.columnMeta.offsetRight}}
       {{willDestroy this.teardown}}
       {{on "click" this.click}}
       {{on "contextmenu" this.contextMenu}}
