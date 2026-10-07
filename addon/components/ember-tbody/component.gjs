@@ -133,16 +133,16 @@ export default class EmberTbody extends Component {
     <tbody
       ...attributes
       data-test-row-count={{this.dataTestRowCount}}
-      data-selection={{this.args.selection}}
+      data-selection={{@selection}}
       data-selection-revision={{this.selectionRevision}}
       {{didUpdate
         this.syncModels
-        this.args.rows
-        this.args.selection
-        this.args.selectionMatchFunction
-        this.args.enableTree
-        this.args.enableCollapse
-        this.args.selectingChildrenSelectsParent
+        @rows
+        @selection
+        @selectionMatchFunction
+        @enableTree
+        @enableCollapse
+        @selectingChildrenSelectsParent
       }}
     >
       <VerticalCollection
@@ -169,8 +169,8 @@ export default class EmberTbody extends Component {
             @checkboxSelectionMode={{this.checkboxSelectionMode}}
             @rowSelectionMode={{this.rowSelectionMode}}
             @rowToggleMode={{this.rowToggleMode}}
-            @selection={{this.args.selection}}
-            @selectionMatchFunction={{this.args.selectionMatchFunction}}
+            @selection={{@selection}}
+            @selectionMatchFunction={{@selectionMatchFunction}}
             @rowsCount={{this.wrappedRows.length}}
             as |api|
           >

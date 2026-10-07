@@ -164,7 +164,7 @@ export default class EmberThead extends Component {
   }
 
   <template>
-    <thead ...attributes data-test-row-count={{this.wrappedRowsCount}} data-layout-revision={{this.layoutRevision}} {{didInsert this.setup}} {{didUpdate this.syncAfterArgsChange this.args.columns this.args.sorts}}>
+    <thead ...attributes data-test-row-count={{this.wrappedRowsCount}} data-layout-revision={{this.layoutRevision}} {{didInsert this.setup}} {{didUpdate this.syncAfterArgsChange @columns @sorts}}>
       {{#each this.wrappedRows as |api|}}
         {{#if (has-block)}}
           {{yield (hash
