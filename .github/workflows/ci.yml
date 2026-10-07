@@ -24,25 +24,20 @@ jobs:
         with:
           install: true
           cache: true
-      - name: Enable corepack
-        run: corepack enable
-
-      - name: Node Modules Cache
-        id: cache-npm
-        uses: actions/cache@v5
+      - name: Install Node
+        uses: actions/setup-node@v6
         with:
-          path: '**/node_modules'
-          key: ci-yarn-${{ hashFiles('**/yarn.lock') }}
+          node-version: 22
+          cache: npm
 
       - name: Install Dependencies
-        if: steps.cache-npm.outputs.cache-hit != 'true'
-        run: yarn install --frozen-lockfile
+        run: npm ci --legacy-peer-deps
 
       - name: Lint
-        run: yarn lint
+        run: npm run lint
 
       - name: Run Tests
-        run: yarn test
+        run: npm run test:ember
         env:
           CI: true
 
@@ -58,11 +53,8 @@ jobs:
           [
             embroider-safe,
             # embroider-optimized,
-            ember-lts-3.28,
-            ember-lts-4.4,
-            ember-lts-4.12,
-            ember-lts-5.4,
             ember-lts-5.12,
+            ember-lts-6.4,
             ember-release,
             # ember-production,
             ember-default-docs
@@ -83,28 +75,14 @@ jobs:
         with:
           install: true
           cache: true
-      - name: Enable corepack
-        run: corepack enable
-
-      - name: Stash yarn.lock for cache key
-        run: cp yarn.lock __cache-key
-
-      - name: Node Modules Cache
-        id: cache-npm
-        uses: actions/cache@v5
+      - name: Install Node
+        uses: actions/setup-node@v6
         with:
-          path: |
-            node_modules
-            package.json
-            yarn.lock
-            __env
-          key: ci-yarn-v3-${{ matrix.ember-version }}-${{ hashFiles('tests/dummy/config/ember-try.js', '__cache-key') }}
-          restore-keys: |
-            ci-yarn-${{ hashFiles('yarn.lock') }}
+          node-version: 22
+          cache: npm
 
       - name: Install Dependencies
-        if: steps.cache-npm.outputs.cache-hit != 'true'
-        run: yarn install --frozen-lockfile
+        run: npm ci --legacy-peer-deps
 
       - name: Run Tests
-        run: yarn test:ember-compatibility ${{ matrix.ember-version }} --skip-cleanup
+        run: npx ember try:one ${{ matrix.ember-version }} --skip-cleanup
