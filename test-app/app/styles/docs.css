@@ -106,3 +106,28 @@
   padding-top: 1rem;
   border-top: 1px solid #e2e8f0;
 }
+
+/* Markdown tables (the API reference); demo tables are nested deeper. */
+.docs-content > table {
+  width: 100%;
+  margin: 1rem 0 1.5rem;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.docs-content > table th,
+.docs-content > table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  vertical-align: top;
+}
+
+.docs-content > table thead th {
+  border-bottom-width: 2px;
+  white-space: nowrap;
+}
+
+.docs-content > table td:first-child code {
+  white-space: nowrap;
+}

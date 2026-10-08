@@ -49,7 +49,9 @@ The documentation site deploys to [Vercel](https://vercel.com) from the reposito
 (`vercel.json`): it installs the workspace, builds the addon, and serves the test app's
 production build. It is built with [Docfy](https://docfy.dev) from the Markdown in
 [`test-app/docs`](./test-app/docs). Every example is a live `gjs` component whose source is shown
-alongside it. To run the docs locally, clone the repo, run `pnpm install && pnpm start`, and open
+alongside it, highlighted with Shiki's Glimmer grammars. The API reference pages are generated
+from the addon's type declarations (`test-app/scripts/api-docs.mjs`), so argument tables, defaults
+and descriptions come from the doc comments in `ember-table/src`. To run the docs locally, clone the repo, run `pnpm install && pnpm start`, and open
 the URL Vite prints (`/docs`).
 
 ## Usage

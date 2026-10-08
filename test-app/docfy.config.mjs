@@ -19,6 +19,7 @@ export default {
     header: { label: 'Header', order: 2 },
     body: { label: 'Body', order: 3 },
     testing: { label: 'Testing', order: 2 },
+    api: { label: 'API Reference', order: 3 },
   },
   repository: {
     url: 'https://github.com/Addepar/ember-table',
