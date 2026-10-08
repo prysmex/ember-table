@@ -6,13 +6,15 @@ import { componentModule } from '../../helpers/module';
 import { findAll } from '@ember/test-helpers';
 
 import TablePage from 'ember-table/test-support/pages/ember-table';
+import type { PageObject, TableTestContext } from '../../helpers/table-test-context';
+import type { EmberTableSort } from 'ember-table';
 
 let table = new TablePage();
 
-function checkRowOrder(table, expectedRowOrder) {
+function checkRowOrder(table: PageObject, expectedRowOrder: string[]) {
   let rowOrderCorrect = true;
 
-  table.rows.forEach((r, i) => {
+  table.rows.forEach((r: PageObject, i: number) => {
     rowOrderCorrect = rowOrderCorrect && r.text === expectedRowOrder[i];
   });
 
@@ -21,7 +23,7 @@ function checkRowOrder(table, expectedRowOrder) {
 
 module('Integration | sort', function() {
   componentModule('basic', function() {
-    test('can sort a column', async function(assert) {
+    test('can sort a column', async function (this: TableTestContext, assert) {
       let columns = [
         {
           name: 'Name',
@@ -48,7 +50,7 @@ module('Integration | sort', function() {
       assert.true(checkRowOrder(table, ['Zoe', 'Alex', 'Liz']));
     });
 
-    test('can sort a second column', async function(assert) {
+    test('can sort a second column', async function (this: TableTestContext, assert) {
       let columns = [
         {
           name: 'Name',
@@ -76,7 +78,7 @@ module('Integration | sort', function() {
       assert.true(checkRowOrder(table, ['Alex 43', 'Zoe 34', 'Liz 25']));
     });
 
-    test('can sort empty values', async function(assert) {
+    test('can sort empty values', async function (this: TableTestContext, assert) {
       let columns = [
         {
           name: 'Name',
@@ -103,7 +105,7 @@ module('Integration | sort', function() {
       assert.true(checkRowOrder(table, ['Zoe', '', 'Alex']), '3rd state / initial state works');
     });
 
-    test('can sort empty values last', async function(assert) {
+    test('can sort empty values last', async function (this: TableTestContext, assert) {
       let columns = [
         {
           name: 'Name',
@@ -130,11 +132,11 @@ module('Integration | sort', function() {
       assert.true(checkRowOrder(table, ['Zoe', '', 'Alex']), '3rd state / initial state works');
     });
 
-    test('sends the onUpdateSorts action', async function(assert) {
-      this.set('onUpdateSorts', sorts => {
+    test('sends the onUpdateSorts action', async function (this: TableTestContext, assert) {
+      this.set('onUpdateSorts', (sorts: EmberTableSort[]) => {
         assert.strictEqual(sorts.length, 1);
-        assert.strictEqual(sorts[0].valuePath, 'name');
-        assert.false(sorts[0].isAscending);
+        assert.strictEqual(sorts[0]!.valuePath, 'name');
+        assert.false(sorts[0]!.isAscending);
       });
 
       let columns = [
@@ -153,7 +155,7 @@ module('Integration | sort', function() {
       await firstHeader.click();
     });
 
-    test('sort indicator works', async function(assert) {
+    test('sort indicator works', async function (this: TableTestContext, assert) {
       await generateTable(this);
 
       let firstHeader = table.headers.objectAt(0);
@@ -175,7 +177,7 @@ module('Integration | sort', function() {
       assert.false(firstHeader.sortIndicator.isPresent);
     });
 
-    test('sort indicator works on second column', async function(assert) {
+    test('sort indicator works on second column', async function (this: TableTestContext, assert) {
       await generateTable(this);
 
       let firstHeader = table.headers.objectAt(0);
@@ -196,7 +198,7 @@ module('Integration | sort', function() {
       assert.true(secondHeader.sortIndicator.isDescending);
     });
 
-    test('can sort multiple columns', async function(assert) {
+    test('can sort multiple columns', async function (this: TableTestContext, assert) {
       let columns = [
         {
           name: 'Name',
@@ -303,7 +305,7 @@ module('Integration | sort', function() {
       assert.true(firstHeader.sortIndicator.isAscending, 'sort indicators show correct direction');
     });
 
-    test('can sort trees', async function(assert) {
+    test('can sort trees', async function (this: TableTestContext, assert) {
       let columns = [
         {
           name: 'Name',
@@ -402,7 +404,7 @@ module('Integration | sort', function() {
       );
     });
 
-    test('can disable sorting per column', async function(assert) {
+    test('can disable sorting per column', async function (this: TableTestContext, assert) {
       let columns = [
         {
           name: 'Name',
@@ -431,7 +433,7 @@ module('Integration | sort', function() {
       assert.true(checkRowOrder(table, ['Alex 43', 'Zoe 34', 'Liz 25']));
     });
 
-    test('can disable sorting per column by leaving out value path', async function(assert) {
+    test('can disable sorting per column by leaving out value path', async function (this: TableTestContext, assert) {
       let columns = [
         {
           name: 'Empty',
@@ -449,7 +451,7 @@ module('Integration | sort', function() {
       assert.strictEqual(findAll('.is-sortable').length, 1, 'only one column is sortable');
     });
 
-    test('can sort a column with keyboard enter on header', async function(assert) {
+    test('can sort a column with keyboard enter on header', async function (this: TableTestContext, assert) {
       let columns = [
         {
           name: 'Name',

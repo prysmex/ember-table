@@ -5,12 +5,13 @@ import { componentModule } from '../../../helpers/module';
 import { toBase26 } from 'test-app/utils/base-26';
 
 import TablePage from 'ember-table/test-support/pages/ember-table';
+import type { PageObject, TableTestContext } from '../../../helpers/table-test-context';
 
 const table = new TablePage();
 
 module('Integration | header | main', function() {
   componentModule('initial render', function() {
-    test('min column widths respected', async function(assert) {
+    test('min column widths respected', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         columnCount: 1,
         columnOptions: {
@@ -23,7 +24,7 @@ module('Integration | header | main', function() {
       assert.strictEqual(header.logicalWidth, 200, 'column has min width');
     });
 
-    test('max column widths respected', async function(assert) {
+    test('max column widths respected', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         columnCount: 1,
         columnOptions: {
@@ -38,7 +39,7 @@ module('Integration | header | main', function() {
   });
 
   componentModule('widthConstraint', function() {
-    test('eq-container when smaller', async function(assert) {
+    test('eq-container when smaller', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         widthConstraint: 'eq-container',
         columnCount: 2,
@@ -59,7 +60,7 @@ module('Integration | header | main', function() {
       assert.false(slackHeader.isPresent, 'slack column does not exist');
     });
 
-    test('eq-container when larger', async function(assert) {
+    test('eq-container when larger', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         widthConstraint: 'eq-container',
         columnCount: 2,
@@ -80,7 +81,7 @@ module('Integration | header | main', function() {
       assert.false(slackHeader.isPresent, 'slack column does not exist');
     });
 
-    test('eq-container with containerWidthAdjustment', async function(assert) {
+    test('eq-container with containerWidthAdjustment', async function (this: TableTestContext, assert) {
       let adjustmentValue = -10;
       await generateTable(this, {
         widthConstraint: 'eq-container',
@@ -101,7 +102,7 @@ module('Integration | header | main', function() {
       assert.false(slackHeader.isPresent, 'slack column does not exist');
     });
 
-    test('gte-container', async function(assert) {
+    test('gte-container', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         widthConstraint: 'gte-container',
         columnCount: 2,
@@ -122,7 +123,7 @@ module('Integration | header | main', function() {
       assert.false(slackHeader.isPresent, 'slack column does not exist');
     });
 
-    test('lte-container', async function(assert) {
+    test('lte-container', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         widthConstraint: 'lte-container',
         columnCount: 2,
@@ -143,7 +144,7 @@ module('Integration | header | main', function() {
       assert.false(slackHeader.isPresent, 'slack column does not exist');
     });
 
-    test('eq-container-slack', async function(assert) {
+    test('eq-container-slack', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         widthConstraint: 'eq-container-slack',
         columnCount: 1,
@@ -185,7 +186,7 @@ module('Integration | header | main', function() {
       assert.false(slackHeader.isRendered, 'slack column is not rendered');
     });
 
-    test('gte-container-slack', async function(assert) {
+    test('gte-container-slack', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         widthConstraint: 'gte-container-slack',
         columnCount: 1,
@@ -233,12 +234,12 @@ module('Integration | header | main', function() {
   });
 
   componentModule('fillMode', function() {
-    test('equal column mode', async function(assert) {
+    test('equal column mode', async function (this: TableTestContext, assert) {
       await generateTable(this, { widthConstraint: 'eq-container' });
 
       let expectedWidth = table.logicalWidth / table.headers.length;
 
-      table.headers.forEach(header => {
+      table.headers.forEach((header: PageObject) => {
         assert.true(
           Math.abs(header.logicalWidth - expectedWidth) <= 1,
           'Table header have same width in equal resize mode.'
@@ -246,7 +247,7 @@ module('Integration | header | main', function() {
       });
     });
 
-    test('first column mode', async function(assert) {
+    test('first column mode', async function (this: TableTestContext, assert) {
       let columnWidth = 30;
 
       await generateTable(this, {
@@ -273,7 +274,7 @@ module('Integration | header | main', function() {
       );
     });
 
-    test('last column mode', async function(assert) {
+    test('last column mode', async function (this: TableTestContext, assert) {
       let columnWidth = 30;
 
       await generateTable(this, {
@@ -300,7 +301,7 @@ module('Integration | header | main', function() {
       );
     });
 
-    test('nth column mode for first column', async function(assert) {
+    test('nth column mode for first column', async function (this: TableTestContext, assert) {
       let columnWidth = 30;
 
       await generateTable(this, {
@@ -323,7 +324,7 @@ module('Integration | header | main', function() {
       );
     });
 
-    test('nth column mode', async function(assert) {
+    test('nth column mode', async function (this: TableTestContext, assert) {
       let columnWidth = 30;
 
       await generateTable(this, {
@@ -358,7 +359,7 @@ module('Integration | header | main', function() {
   });
 
   componentModule('initialFillMode', function() {
-    test('eq-container-slack with no initialFillMode', async function(assert) {
+    test('eq-container-slack with no initialFillMode', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         widthConstraint: 'eq-container-slack',
         fillMode: 'equal-column',
@@ -405,7 +406,7 @@ module('Integration | header | main', function() {
       assert.strictEqual(slackHeader.logicalWidth, 50, 'slack column receives the balance');
     });
 
-    test('eq-container-slack with initialFillMode', async function(assert) {
+    test('eq-container-slack with initialFillMode', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         widthConstraint: 'eq-container-slack',
         initialFillMode: 'first-column',
@@ -445,7 +446,7 @@ module('Integration | header | main', function() {
     });
 
     // eslint-disable-next-line qunit/no-identical-names
-    test('gte-container-slack', async function(assert) {
+    test('gte-container-slack', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         widthConstraint: 'gte-container-slack',
         initialFillMode: 'equal-column',
@@ -477,7 +478,7 @@ module('Integration | header | main', function() {
   });
 
   componentModule('subcolumns', function() {
-    test('they work', async function(assert) {
+    test('they work', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         columnOptions: {
           columnCount: 4,
@@ -499,7 +500,7 @@ module('Integration | header | main', function() {
       }
     });
 
-    test('they do not render by default', async function(assert) {
+    test('they do not render by default', async function (this: TableTestContext, assert) {
       await generateTable(this);
 
       assert.strictEqual(table.header.rows.length, 1, 'There is only one row in the header.');

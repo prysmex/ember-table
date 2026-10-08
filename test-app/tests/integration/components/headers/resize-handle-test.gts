@@ -5,12 +5,13 @@ import { ResizePage } from 'ember-table/test-support/pages/-private/ember-table-
 
 import { componentModule } from '../../../helpers/module';
 import { EmberThResizeHandle } from 'ember-table';
+import type { TableTestContext } from '../../../helpers/table-test-context';
 
 let resize = new ResizePage();
 
 module('Integration | Component | ember-th/resize-handle', function() {
   componentModule('basic', function() {
-    test('it renders', async function(assert) {
+    test('it renders', async function (this: TableTestContext, assert) {
       this.set('columnMeta', {
         isResizable: true,
       });

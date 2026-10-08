@@ -43,8 +43,14 @@ export default ts.config(
   },
   {
     files: ['**/*.{ts,gts}'],
-    languageOptions: { parser: ember.parser },
-    extends: [...ts.configs.recommended, ember.configs.gts],
+    languageOptions: {
+      parser: ember.parser,
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    extends: [...ts.configs.recommendedTypeChecked, ember.configs.gts],
     rules: {
       // House style declares bindings with `let`.
       'prefer-const': 'off',
@@ -64,6 +70,20 @@ export default ts.config(
       // Strict-mode templates cannot see the test context's `this`, so tests
       // bind it to a local (`const ctx = this`) for their templates.
       '@typescript-eslint/no-this-alias': 'off',
+    },
+  },
+  {
+    files: ['tests/**/*.{ts,gts}'],
+    rules: {
+      // Page objects build their properties at runtime and the test context
+      // holds whatever a test sets on it, so both are `any`.
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      // ember.configs.gts turns this back on; see the rules for all files.
+      'ember/no-runloop': 'off',
     },
   },
   {

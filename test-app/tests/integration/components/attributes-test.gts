@@ -3,25 +3,28 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render } from '@ember/test-helpers';
 import { generateColumns, generateRows } from '../../helpers/generate-table';
 import { EmberTable, EmberTbody, EmberTd, EmberTh, EmberThead, EmberTr } from 'ember-table';
+import type { TableTestContext } from '../../helpers/table-test-context';
 
 module('Integration | attributes', function (hooks) {
   setupRenderingTest(hooks);
 
-  hooks.beforeEach(function () {
+  hooks.beforeEach(function (this: TableTestContext) {
     this.set('columns', generateColumns(2));
     this.set('rows', generateRows(1));
   });
 
-  test('`class` and `@class` merge with the components own classes', async function (assert) {
+  test('`class` and `@class` merge with the components own classes', async function (this: TableTestContext, assert) {
     const ctx = this;
     await render(<template>
       <EmberTable class="attr-table" @class="arg-table" as |t|>
         <EmberThead @api={{t}} @columns={{ctx.columns}} as |h|>
           <EmberTr @api={{h}} class="attr-head-row" @class="arg-head-row" as |r|>
+            {{! @glint-expect-error: EmberTr's yielded cell is not typed as a header cell }}
             <EmberTh @api={{r}} class="attr-th" @class="arg-th" />
           </EmberTr>
         </EmberThead>
         <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
+          {{! @glint-expect-error: EmberTbody/EmberTfoot yield the public row meta; EmberTr's @api wants the internal one }}
           <EmberTr @api={{b}} class="attr-row" @class="arg-row" as |r|>
             <EmberTd @api={{r}} class="attr-td" @class="arg-td" />
           </EmberTr>

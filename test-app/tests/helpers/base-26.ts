@@ -8,12 +8,12 @@ const BASE = 26;
  *
  * @param {number} int - A positive integer above zero
  */
-export function toBase26(int) {
+export function toBase26(int: number): string {
   assert('base 26 conversion must receive an integer', Number.isInteger(int));
   assert('base 26 conversion must receive a positive value', int >= 0);
 
   if (int < BASE) {
-    return ALPHA[int];
+    return ALPHA[int]!;
   }
 
   let result = '';

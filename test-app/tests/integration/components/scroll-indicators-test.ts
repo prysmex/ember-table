@@ -7,12 +7,13 @@ import { findElement } from 'ember-table/test-support';
 import { scrollTo } from '@ember/test-helpers';
 
 import TablePage from 'ember-table/test-support/pages/ember-table';
+import type { TableTestContext } from '../../helpers/table-test-context';
 
 const SCROLL_MAX = 999999;
 
 let table = new TablePage();
 
-let isOffset = (side, distance) => {
+let isOffset = (side: 'left' | 'right' | 'top' | 'bottom', distance: number) => {
   if (side === 'right') {
     distance += table.verticalScrollbarWidth();
   }
@@ -27,7 +28,7 @@ let isOffset = (side, distance) => {
 
 module('Integration | scroll indicators', function() {
   componentModule('rendering', function() {
-    test('it renders horizontal indicators appropriately', async function(assert) {
+    test('it renders horizontal indicators appropriately', async function (this: TableTestContext, assert) {
       this.set('scrollIndicators', 'horizontal');
 
       await generateTable(this, {
@@ -68,7 +69,7 @@ module('Integration | scroll indicators', function() {
       );
     });
 
-    test('it renders vertical scroll indicators appropriately', async function(assert) {
+    test('it renders vertical scroll indicators appropriately', async function (this: TableTestContext, assert) {
       this.set('scrollIndicators', 'vertical');
 
       await generateTable(this, {
@@ -109,7 +110,7 @@ module('Integration | scroll indicators', function() {
       );
     });
 
-    test('horizontal scroll indicators respect fixed columns', async function(assert) {
+    test('horizontal scroll indicators respect fixed columns', async function (this: TableTestContext, assert) {
       this.set('scrollIndicators', 'horizontal');
 
       await generateTable(this, {
@@ -160,7 +161,7 @@ module('Integration | scroll indicators', function() {
       assert.true(isOffset('left', 100), 'left scroll indicator is offset');
     });
 
-    test('top scroll indicator positioned below header', async function(assert) {
+    test('top scroll indicator positioned below header', async function (this: TableTestContext, assert) {
       this.set('scrollIndicators', 'vertical');
 
       await generateTable(this, {
@@ -176,7 +177,7 @@ module('Integration | scroll indicators', function() {
       assert.true(isOffset('top', table.header.height), 'top indicator is below header');
     });
 
-    test('bottom scroll indicator positioned above non-scrollable footer', async function(assert) {
+    test('bottom scroll indicator positioned above non-scrollable footer', async function (this: TableTestContext, assert) {
       this.set('scrollIndicators', 'vertical');
 
       await generateTable(this, {
@@ -200,7 +201,7 @@ module('Integration | scroll indicators', function() {
       );
     });
 
-    test('bottom scroll indicator positioned above scrollable footer', async function(assert) {
+    test('bottom scroll indicator positioned above scrollable footer', async function (this: TableTestContext, assert) {
       this.set('scrollIndicators', 'vertical');
 
       await generateTable(this, {
@@ -228,7 +229,7 @@ module('Integration | scroll indicators', function() {
       );
     });
 
-    test('negative table margins do not break scroll indicators', async function(assert) {
+    test('negative table margins do not break scroll indicators', async function (this: TableTestContext, assert) {
       this.set('scrollIndicators', 'all');
 
       await generateTable(this, {
@@ -236,6 +237,8 @@ module('Integration | scroll indicators', function() {
         rowCount: 100,
       });
 
+      // Kept as written; `findElement` is synchronous.
+      // eslint-disable-next-line @typescript-eslint/await-thenable
       let tableElement = await findElement(table, 'table');
 
       // negative margins push the edges of table outside of overflow

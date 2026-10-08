@@ -7,43 +7,47 @@ import EmberTbody from 'ember-table/components/ember-tbody/component';
 import EmberTr from 'ember-table/components/ember-tr/component';
 import EmberTh from 'ember-table/components/ember-th/component';
 import EmberTd from 'ember-table/components/ember-td/component';
+import type { EmberTableRow, EmberTableSort } from 'ember-table';
 import { generateRows, generateColumns } from 'test-app/utils/generators';
 
-const eq = (a, b) => a === b;
+// Not `eq`: on Ember 7.1+ Glint reads that as the built-in keyword, but the
+// app still runs on Ember 6.4, which lacks it.
+const isEqual = (a: unknown, b: unknown) => a === b;
 
 function buildRows() {
   let rows = generateRows(10, 3, (row, key) => `${row.id}${key}`);
-  rows[0].children[0].children[0].children = generateRows(10, 1, (row, key) => `${row.id}${key}`);
+  rows[0]!.children![0]!.children![0]!.children = generateRows(10, 1, (row, key) => `${row.id}${key}`);
   return rows;
 }
 
 function buildColumns() {
   let columns = generateColumns(20);
 
-  columns[0].width = 300;
-  columns[0].isResizable = false;
-  columns[0].isReorderable = false;
+  columns[0]!.width = 300;
+  columns[0]!.isResizable = false;
+  columns[0]!.isReorderable = false;
 
-  columns[1].subcolumns = generateColumns(3);
-  columns[1].subcolumns[0].isReorderable = false;
-  columns[1].subcolumns[1].isResizable = false;
-  columns[1].subcolumns[2].isSortable = false;
+  columns[1]!.subcolumns = generateColumns(3);
+  columns[1]!.subcolumns[0]!.isReorderable = false;
+  columns[1]!.subcolumns[1]!.isResizable = false;
+  columns[1]!.subcolumns[2]!.isSortable = false;
 
   return columns;
 }
 
 class PerformanceScenario extends Component {
-  rows = buildRows();
+  // Cell values come from `unknownProperty`, not DummyRow's own fields.
+  rows: EmberTableRow[] = buildRows();
   columns = buildColumns();
 
-  @tracked selection;
-  @tracked sorts = [];
+  @tracked selection?: EmberTableRow | EmberTableRow[];
+  @tracked sorts: EmberTableSort[] = [];
 
-  @action onSelect(selection) {
+  @action onSelect(selection: EmberTableRow | EmberTableRow[]) {
     this.selection = selection;
   }
 
-  @action onUpdateSorts(sorts) {
+  @action onUpdateSorts(sorts: EmberTableSort[]) {
     this.sorts = sorts;
   }
 
@@ -58,6 +62,7 @@ class PerformanceScenario extends Component {
           as |h|
         >
           <EmberTr @api={{h}} as |r|>
+            {{! @glint-expect-error: EmberTr yields body cells, not header cells }}
             <EmberTh @api={{r}} />
           </EmberTr>
         </EmberThead>
@@ -69,11 +74,12 @@ class PerformanceScenario extends Component {
           @onSelect={{this.onSelect}}
           as |b|
         >
+          {{! @glint-expect-error: EmberTbody yields the public TableRowMeta, EmberTr wants RowMeta }}
           <EmberTr @api={{b}} as |r|>
-            <EmberTd @api={{r}} as |value column row cellMeta columnMeta|>
+            <EmberTd @api={{r}} as |value _column _row _cellMeta columnMeta|>
               {{value}}
 
-              {{#if (eq columnMeta.index 0)}}lorem ipsum dolor{{/if}}
+              {{#if (isEqual columnMeta.index 0)}}lorem ipsum dolor{{/if}}
             </EmberTd>
           </EmberTr>
         </EmberTbody>

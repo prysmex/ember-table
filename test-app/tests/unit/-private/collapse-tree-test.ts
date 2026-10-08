@@ -5,16 +5,30 @@ import { run } from '@ember/runloop';
 import { settled } from '@ember/test-helpers';
 
 import CollapseTree from 'ember-table/-private/collapse-tree';
+import type { NativeArray } from '@ember/array';
+import type { TableTestContext } from '../../helpers/table-test-context';
+
+// The tests index into nested rows freely; typing every level isn't worth it.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TreeRow = any;
+
+// CollapseTree is a classic EmberObject model, so `create()` only knows
+// EmberObject's own properties.
+function createTree(properties: object): TreeRow {
+  return CollapseTree.create(properties as never);
+}
 
 // Cache is required for the row metas
-let rowMetaCache, tree;
+let rowMetaCache: Map<unknown, TreeRow>, tree: TreeRow;
 
-function metaFor(value) {
+function metaFor(value: unknown) {
   return rowMetaCache.get(value);
 }
 
-function generateTree(seq) {
-  let children = emberA();
+type TreeSequence = (number | TreeSequence)[];
+
+function generateTree(seq: TreeSequence): NativeArray<TreeRow> {
+  let children = emberA<TreeRow>();
 
   seq.forEach(item => {
     if (Array.isArray(item)) {
@@ -30,11 +44,11 @@ function generateTree(seq) {
 }
 
 module('Unit | Private | CollapseTree', function(hooks) {
-  hooks.beforeEach(function() {
+  hooks.beforeEach(function () {
     rowMetaCache = new Map();
   });
 
-  hooks.afterEach(function() {
+  hooks.afterEach(function () {
     // Clean up so we can look for memory leaks more easily
     run(() => {
       for (let [key, value] of rowMetaCache.entries()) {
@@ -46,15 +60,15 @@ module('Unit | Private | CollapseTree', function(hooks) {
     });
   });
 
-  test('empty tree works', function(assert) {
-    tree = CollapseTree.create({ rows: [] });
+  test('empty tree works', function (assert) {
+    tree = createTree({ rows: [] });
     assert.strictEqual(tree.objectAt(-1), undefined);
     assert.strictEqual(tree.objectAt(0), undefined);
     assert.strictEqual(tree.objectAt(1), undefined);
   });
 
-  test('basic tree works', function(assert) {
-    tree = CollapseTree.create({
+  test('basic tree works', function (assert) {
+    tree = createTree({
       rows: generateTree([0, [1, [2, 3], 4, [5, 6]]]),
       enableTree: true,
       rowMetaCache,
@@ -74,8 +88,8 @@ module('Unit | Private | CollapseTree', function(hooks) {
     assert.strictEqual(tree.objectAt(-1), undefined);
   });
 
-  test('rowMeta next works', function(assert) {
-    tree = CollapseTree.create({
+  test('rowMeta next works', function (assert) {
+    tree = createTree({
       rows: generateTree([0, [1, [2, 3], 4, [5, 6]]]),
       enableTree: true,
       rowMetaCache,
@@ -104,8 +118,8 @@ module('Unit | Private | CollapseTree', function(hooks) {
     }
   });
 
-  test('rowMeta prev works', function(assert) {
-    tree = CollapseTree.create({
+  test('rowMeta prev works', function (assert) {
+    tree = createTree({
       rows: generateTree([0, [1, [2, 3], 4, [5, 6]]]),
       enableTree: true,
       rowMetaCache,
@@ -146,8 +160,8 @@ module('Unit | Private | CollapseTree', function(hooks) {
     }
   });
 
-  test('rowMeta first works with at least 1 row', function(assert) {
-    tree = CollapseTree.create({
+  test('rowMeta first works with at least 1 row', function (assert) {
+    tree = createTree({
       rows: generateTree([0, 1]),
       enableTree: true,
       rowMetaCache,
@@ -160,8 +174,8 @@ module('Unit | Private | CollapseTree', function(hooks) {
     }
   });
 
-  test('rowMeta last works with at least 1 row', function(assert) {
-    tree = CollapseTree.create({
+  test('rowMeta last works with at least 1 row', function (assert) {
+    tree = createTree({
       rows: generateTree([0, 1, [2, 3]]),
       enableTree: true,
       rowMetaCache,
@@ -174,8 +188,8 @@ module('Unit | Private | CollapseTree', function(hooks) {
     }
   });
 
-  test('can disable tree', function(assert) {
-    tree = CollapseTree.create({
+  test('can disable tree', function (assert) {
+    tree = createTree({
       rows: generateTree([0, [1, 2]]),
       enableTree: false,
       rowMetaCache,
@@ -202,8 +216,8 @@ module('Unit | Private | CollapseTree', function(hooks) {
     }
   });
 
-  test('works with multiroot tree', function(assert) {
-    tree = CollapseTree.create({
+  test('works with multiroot tree', function (assert) {
+    tree = createTree({
       rows: generateTree([0, [1, [2, 3], 4, [5, 6]], 7, [8, 9]]),
       enableTree: true,
       rowMetaCache,
@@ -219,8 +233,8 @@ module('Unit | Private | CollapseTree', function(hooks) {
     }
   });
 
-  test('intermediate leaf nodes work', function(assert) {
-    tree = CollapseTree.create({
+  test('intermediate leaf nodes work', function (assert) {
+    tree = createTree({
       rows: generateTree([0, [1, 2, [3, 4], 5, 6, [7, 8]]]),
       enableTree: true,
       rowMetaCache,
@@ -236,9 +250,9 @@ module('Unit | Private | CollapseTree', function(hooks) {
     }
   });
 
-  test('can collapse nodes', async function(assert) {
+  test('can collapse nodes', async function (assert) {
     let rows = generateTree([0, [1, [2, 3], 4, [5, 6]]]);
-    tree = CollapseTree.create({
+    tree = createTree({
       rows,
       rowMetaCache,
       enableTree: true,
@@ -292,9 +306,9 @@ module('Unit | Private | CollapseTree', function(hooks) {
     }
   });
 
-  test('can collapse nodes without modifying underlying data structure', async function(assert) {
+  test('can collapse nodes without modifying underlying data structure', async function (assert) {
     let rows = generateTree([0, [1, [2, 3], 4, [5, 6]]]);
-    tree = CollapseTree.create({
+    tree = createTree({
       rows,
       rowMetaCache,
       enableTree: true,
@@ -332,9 +346,9 @@ module('Unit | Private | CollapseTree', function(hooks) {
     }
   });
 
-  test('can disable collapse', async function(assert) {
+  test('can disable collapse', async function (assert) {
     let rows = generateTree([0, [1, [2, 3], 4, [5, 6]]]);
-    tree = CollapseTree.create({ rows, rowMetaCache, enableTree: true });
+    tree = createTree({ rows, rowMetaCache, enableTree: true });
 
     assert.false(metaFor(tree.objectAt(1)).get('canCollapse'), 'collapse is disabled');
 
@@ -366,9 +380,9 @@ module('Unit | Private | CollapseTree', function(hooks) {
     }
   });
 
-  test('can disable collapse at a row level', async function(assert) {
+  test('can disable collapse at a row level', async function (this: TableTestContext, assert) {
     let rows = generateTree([0, [1, [2, 3], 4, [5, 6]]]);
-    tree = CollapseTree.create({ rows, rowMetaCache, enableTree: true });
+    tree = createTree({ rows, rowMetaCache, enableTree: true });
     let row4Meta = metaFor(tree.objectAt(4));
     assert.notStrictEqual(
       row4Meta.get('_rowValue.disableCollapse'),
@@ -399,10 +413,10 @@ module('Unit | Private | CollapseTree', function(hooks) {
     }
   });
 
-  test('can update nodes', function(assert) {
+  test('can update nodes', function (assert) {
     let rows = generateTree([0, [1, [2, 3], 6, [7, 8]]]);
     let subrows = generateTree([4, 5]);
-    tree = CollapseTree.create({ rows, rowMetaCache, enableTree: true });
+    tree = createTree({ rows, rowMetaCache, enableTree: true });
 
     rows[0].children[0].children.pushObjects(subrows);
     rows[0].children[1].children.popObject();
@@ -417,10 +431,10 @@ module('Unit | Private | CollapseTree', function(hooks) {
     }
   });
 
-  test('can add and remove children', function(assert) {
+  test('can add and remove children', function (assert) {
     let rows = generateTree([0, [1, [2, 3], 6, [7, 8]]]);
     let subrows = generateTree([4, 5]);
-    tree = CollapseTree.create({ rows, rowMetaCache, enableTree: true });
+    tree = createTree({ rows, rowMetaCache, enableTree: true });
 
     set(rows[0].children[0].children[1], 'children', subrows);
     set(rows[0].children[1], 'children', null);
@@ -435,9 +449,9 @@ module('Unit | Private | CollapseTree', function(hooks) {
     }
   });
 
-  test('works with single level tree', function(assert) {
+  test('works with single level tree', function (assert) {
     let rows = [{ label: 'A', children: [] }, { label: 'B', children: [] }];
-    tree = CollapseTree.create({ rows, rowMetaCache });
+    tree = createTree({ rows, rowMetaCache });
 
     run(() => {
       tree.get('length');
@@ -446,9 +460,9 @@ module('Unit | Private | CollapseTree', function(hooks) {
     });
   });
 
-  test('can add child to leaf node', async function(assert) {
-    let rows = [{ label: 'A', children: emberA([]) }, { label: 'B', children: emberA([]) }];
-    tree = CollapseTree.create({ rows, rowMetaCache, enableTree: true });
+  test('can add child to leaf node', async function (assert) {
+    let rows: TreeRow[] = [{ label: 'A', children: emberA([]) }, { label: 'B', children: emberA([]) }];
+    tree = createTree({ rows, rowMetaCache, enableTree: true });
 
     assert.strictEqual(tree.get('length'), 2, 'tree starts out with length 2');
 

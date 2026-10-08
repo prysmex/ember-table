@@ -20,7 +20,8 @@
     "lint:js": "eslint . --cache",
     "lint:js:fix": "eslint . --fix",
     "start": "vite",
-    "test": "vite build --mode development && testem ci --port 0"
+    "test": "vite build --mode development && testem ci --port 0",
+    "lint:types": "ember-tsc --noEmit"
   },
   "dependencies": {
     "ember-table": "workspace:*"
@@ -36,6 +37,7 @@
     "@docfy/core": "^0.14.2",
     "@docfy/ember": "^0.14.2",
     "@docfy/ember-vite": "^0.14.2",
+    "@ember/app-tsconfig": "^2.1.0",
     "@ember/string": "^4.0.1",
     "@ember/test-helpers": "^5.7.0",
     "@ember/test-waiters": "^4.1.2",
@@ -44,7 +46,10 @@
     "@embroider/vite": "^1.7.13",
     "@eslint/js": "^9.39.5",
     "@glimmer/component": "^2.1.1",
+    "@glint/ember-tsc": "^1.11.6",
+    "@glint/template": "^1.9.0",
     "@rollup/plugin-babel": "^7.1.0",
+    "@types/qunit": "^2.19.14",
     "axe-core": "^4.11.0",
     "babel-plugin-ember-template-compilation": "^4.0.0",
     "concurrently": "^9.2.4",

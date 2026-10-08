@@ -1,8 +1,14 @@
+import type { TOC } from '@ember/component/template-only';
+import type { NestedPageMetadata } from '@docfy/core/lib/types';
 import { DocfyLink } from '@docfy/ember';
+
+interface DocsNavSignature {
+  Args: { node: NestedPageMetadata };
+}
 
 // Renders Docfy's nested page metadata: a section's own pages, then its
 // child sections, recursively.
-const DocsNavSection = <template>
+const DocsNavSection: TOC<DocsNavSignature> = <template>
   <ul class="docs-nav__list">
     {{#each @node.pages as |page|}}
       <li>

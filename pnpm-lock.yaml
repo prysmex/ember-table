@@ -172,6 +172,9 @@ importers:
       '@docfy/ember-vite':
         specifier: ^0.14.2
         version: 0.14.2(@embroider/vite@1.7.15(@babel/core@7.29.7(supports-color@8.1.1))(@embroider/core@4.6.9(@glint/template@1.9.0)(supports-color@8.1.1))(@glint/template@1.9.0)(supports-color@8.1.1)(vite@8.3.3(@types/node@26.6.4)(jiti@2.7.0)(sass@1.105.1)(terser@5.51.2)(yaml@2.9.1)))(rollup@4.64.0)(supports-color@8.1.1)(unified@11.0.5)(vite@8.3.3(@types/node@26.6.4)(jiti@2.7.0)(sass@1.105.1)(terser@5.51.2)(yaml@2.9.1))
+      '@ember/app-tsconfig':
+        specifier: ^2.1.0
+        version: 2.1.0
       '@ember/string':
         specifier: ^4.0.1
         version: 4.0.1
@@ -196,9 +199,18 @@ importers:
       '@glimmer/component':
         specifier: ^2.1.1
         version: 2.1.1(supports-color@8.1.1)
+      '@glint/ember-tsc':
+        specifier: ^1.11.6
+        version: 1.11.6(ember-source@7.3.0(@glimmer/component@2.1.1(supports-color@8.1.1))(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
+      '@glint/template':
+        specifier: ^1.9.0
+        version: 1.9.0
       '@rollup/plugin-babel':
         specifier: ^7.1.0
         version: 7.1.0(@babel/core@7.29.7(supports-color@8.1.1))(rollup@4.64.0)(supports-color@8.1.1)
+      '@types/qunit':
+        specifier: ^2.19.14
+        version: 2.19.14
       axe-core:
         specifier: ^4.11.0
         version: 4.14.0
@@ -874,6 +886,9 @@ packages:
 
   '@ember-data/rfc395-data@0.0.4':
     resolution: {integrity: sha512-tGRdvgC9/QMQSuSuJV45xoyhI0Pzjm7A9o/MVVA3HakXIImJbbzx/k/6dO9CUEQXIyS2y0fW6C1XaYOG7rY0FQ==}
+
+  '@ember/app-tsconfig@2.1.0':
+    resolution: {integrity: sha512-s44smHIQVM2Ews1+bIAwqibVF6OHsw3/G14xV0DA0/GchVolqTG/Kfzqn/jZnU4zlXPEndJdTpn+PFEsuFs7mg==}
 
   '@ember/library-tsconfig@3.0.0':
     resolution: {integrity: sha512-2o4D+YB0efPe8HJJlaC303qx8dWH2khcKe5ctp4fMCfqP9EibNnyWScNb2MkaFjEqrdRXqTVK+lGHXOoM70omw==}
@@ -1847,6 +1862,9 @@ packages:
 
   '@types/parse-path@7.0.3':
     resolution: {integrity: sha512-LriObC2+KYZD3FzCrgWGv/qufdUy4eXrxcLgQMfYXgPbLIecKIsVBaQgUPmxSSLcjmYbDTQbMgr6qr6l/eb7Bg==}
+
+  '@types/qunit@2.19.14':
+    resolution: {integrity: sha512-ou2RMtwyDnW1btrMnDMZeL6V5/yRRbuHKrRC6y8IuzDljjVzw6wPCVFb8p4qJD0NkUkf3BdZeJJIBzjK1BUUDQ==}
 
   '@types/sizzle@2.3.10':
     resolution: {integrity: sha512-TC0dmN0K8YcWEAEfiPi5gJP14eJe30TTGjkvek3iM/1NdHHsdCA/Td6GvNndMOo/iSnIsZ4HuuhrYPDAmbxzww==}
@@ -6581,6 +6599,8 @@ snapshots:
 
   '@ember-data/rfc395-data@0.0.4': {}
 
+  '@ember/app-tsconfig@2.1.0': {}
+
   '@ember/library-tsconfig@3.0.0': {}
 
   '@ember/render-modifiers@4.0.0(supports-color@8.1.1)':
@@ -7498,6 +7518,8 @@ snapshots:
       undici-types: 8.9.0
 
   '@types/parse-path@7.0.3': {}
+
+  '@types/qunit@2.19.14': {}
 
   '@types/sizzle@2.3.10': {}
 

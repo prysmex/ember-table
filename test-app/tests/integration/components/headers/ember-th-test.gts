@@ -5,6 +5,7 @@ import { render, settled } from '@ember/test-helpers';
 import { generateTableValues, generateColumns } from '../../../helpers/generate-table';
 import TablePage from 'ember-table/test-support/pages/ember-table';
 import { EmberTable, EmberTbody, EmberTh, EmberThead, EmberTr } from 'ember-table';
+import type { TableTestContext } from '../../../helpers/table-test-context';
 
 let table = new TablePage();
 
@@ -12,7 +13,7 @@ module('[Unit] ember-th', function(hooks) {
   setupRenderingTest(hooks);
 
   // eslint-disable-next-line qunit/require-expect
-  test('A header cell accepts a block', async function(assert) {
+  test('A header cell accepts a block', async function (this: TableTestContext, assert) {
     assert.expect(4);
 
     let columns = [
@@ -35,6 +36,7 @@ module('[Unit] ember-th', function(hooks) {
 
     const ctx = this;
     await render(<template>
+    {{! @glint-expect-error: passes `@data-test-ember-table`, which EmberTable does not declare }}
     <EmberTable @data-test-ember-table={{true}} as |t|>
       <EmberThead @api={{t}}
         @columns={{ctx.columns}}
@@ -42,6 +44,7 @@ module('[Unit] ember-th', function(hooks) {
         @onUpdateSorts={{ctx.onUpdateSorts}} as |h|
       >
         <EmberTr @api={{h}} as |r|>
+          {{! @glint-expect-error: EmberTr's yielded cell is not typed as a header cell }}
           <EmberTh @api={{r}} as |column|>
             <div data-test-block>
               {{column.name}}
@@ -65,7 +68,7 @@ module('[Unit] ember-th', function(hooks) {
     assert.false(firstHeader.resizeHandle.isPresent, 'No resize area is rendered');
   });
 
-  test('applies is-first-column, is-last-column classes', async function(assert) {
+  test('applies is-first-column, is-last-column classes', async function (this: TableTestContext, assert) {
     let columnCount = 3;
     let rows = [
       {
@@ -102,7 +105,7 @@ module('[Unit] ember-th', function(hooks) {
     assert.true(headers[2].isLastColumn, 'is-last-column applied to last header');
   });
 
-  test('applies positional classes correctly in slack mode', async function(assert) {
+  test('applies positional classes correctly in slack mode', async function (this: TableTestContext, assert) {
     let columnCount = 1;
     let rows = [
       {

@@ -1,11 +1,15 @@
 import { DocfyOutput, DocfyPreviousAndNextPage } from '@docfy/ember';
+import type { NestedPageMetadata } from '@docfy/core/lib/types';
 import DocsNav from '../components/docs-nav';
+
+// DocfyOutput yields nested output by default (no `@type`).
+const asNested = (output: unknown) => output as NestedPageMetadata;
 
 <template>
   <div class="docs-layout">
     <nav class="docs-nav" aria-label="Documentation">
       <DocfyOutput @scope="docs" as |node|>
-        <DocsNav @node={{node}} />
+        <DocsNav @node={{asNested node}} />
       </DocfyOutput>
     </nav>
 

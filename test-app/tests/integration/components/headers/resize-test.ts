@@ -1,4 +1,5 @@
 import { module, test } from 'qunit';
+import type { EmberTableColumn } from 'ember-table';
 import { waitUntil } from '@ember/test-helpers';
 
 import {
@@ -10,6 +11,7 @@ import {
 import { componentModule, parameterizedComponentModule } from '../../../helpers/module';
 
 import TablePage from 'ember-table/test-support/pages/ember-table';
+import type { TableTestContext } from '../../../helpers/table-test-context';
 
 const table = new TablePage();
 
@@ -17,7 +19,7 @@ const USE_EMBER_ARRAY_PARAMETERS = {
   useEmberArray: {
     values: [true, false],
     hooks: {
-      beforeEach(value) {
+      beforeEach(value: boolean) {
         configureTableGeneration({ useEmberArray: value });
       },
       afterEach() {
@@ -29,7 +31,7 @@ const USE_EMBER_ARRAY_PARAMETERS = {
 
 module('Integration | header | resize', function() {
   parameterizedComponentModule('basic', USE_EMBER_ARRAY_PARAMETERS, function() {
-    test('basic', async function(assert) {
+    test('basic', async function (this: TableTestContext, assert) {
       await generateTable(this);
 
       let originalWidth = table.headers.objectAt(1).logicalWidth;
@@ -49,21 +51,21 @@ module('Integration | header | resize', function() {
       );
     });
 
-    test('respects minWidth', async function(assert) {
+    test('respects minWidth', async function (this: TableTestContext, assert) {
       await generateTable(this, { columnOptions: { minWidth: 100, width: 100 } });
 
       await table.headers.objectAt(1).resize(30);
       assert.strictEqual(table.headers.objectAt(1).logicalWidth, 100, 'Column size is updated');
     });
 
-    test('respects maxWidth', async function(assert) {
+    test('respects maxWidth', async function (this: TableTestContext, assert) {
       await generateTable(this, { columnOptions: { maxWidth: 100, width: 100 } });
 
       await table.headers.objectAt(1).resize(200);
       assert.strictEqual(table.headers.objectAt(1).logicalWidth, 100, 'Column size is updated');
     });
 
-    test('fluid mode', async function(assert) {
+    test('fluid mode', async function (this: TableTestContext, assert) {
       await generateTable(this, { resizeMode: 'fluid' });
 
       let originalWidth = table.headers.objectAt(1).logicalWidth;
@@ -81,9 +83,9 @@ module('Integration | header | resize', function() {
       );
     });
 
-    test('column resize action is sent up to controller', async function(assert) {
-      let calls = [];
-      this.set('onResize', (...args) => {
+    test('column resize action is sent up to controller', async function (this: TableTestContext, assert) {
+      let calls: EmberTableColumn[][] = [];
+      this.set('onResize', (...args: EmberTableColumn[]) => {
         calls.push(args);
       });
 
@@ -92,13 +94,13 @@ module('Integration | header | resize', function() {
       let originalWidth = table.headers.objectAt(1).logicalWidth;
       await table.headers.objectAt(1).resize(originalWidth + 30);
       assert.strictEqual(calls.length, 1, 'resize called once');
-      assert.strictEqual(calls[0][0].name, 'B', 'The correct resized column ("B") is passed');
+      assert.strictEqual(calls[0]![0]!.name, 'B', 'The correct resized column ("B") is passed');
     });
 
-    test('can disable resize per column', async function(assert) {
+    test('can disable resize per column', async function (this: TableTestContext, assert) {
       let columns = generateColumns(2);
 
-      columns[0].isResizable = false;
+      columns[0]!.isResizable = false;
 
       await generateTable(this, { columns });
 
@@ -119,7 +121,7 @@ module('Integration | header | resize', function() {
       );
     });
 
-    test('resizing sets isResizing property on column meta', async function(assert) {
+    test('resizing sets isResizing property on column meta', async function (this: TableTestContext, assert) {
       await generateTable(this);
 
       let firstHeader = table.headers.toArray()[0];
@@ -155,7 +157,7 @@ module('Integration | header | resize', function() {
   });
 
   componentModule('fixed column', function() {
-    test('fixed left column', async function(assert) {
+    test('fixed left column', async function (this: TableTestContext, assert) {
       await generateTable(this, { columnOptions: { fixedLeftCount: 1 } });
 
       let firstHeader = table.headers.objectAt(0);
@@ -169,7 +171,7 @@ module('Integration | header | resize', function() {
       );
     });
 
-    test('fixed right column', async function(assert) {
+    test('fixed right column', async function (this: TableTestContext, assert) {
       let columnCount = 20;
       await generateTable(this, { columnCount, columnOptions: { fixedRightCount: 1 } });
 
@@ -186,7 +188,7 @@ module('Integration | header | resize', function() {
   });
 
   componentModule('subheaders', function() {
-    test('subheaders can be resized directly', async function(assert) {
+    test('subheaders can be resized directly', async function (this: TableTestContext, assert) {
       await generateTable(this, { columnOptions: { subcolumnCount: 2 } });
 
       let firstHeader = table.headers.findOne({ text: 'A' });
@@ -224,7 +226,7 @@ module('Integration | header | resize', function() {
       );
     });
 
-    test('headers with subheaders can be resized', async function(assert) {
+    test('headers with subheaders can be resized', async function (this: TableTestContext, assert) {
       await generateTable(this, { columnOptions: { subcolumnCount: 2 } });
 
       let firstHeader = table.headers.findOne({ text: 'A' });
@@ -262,7 +264,7 @@ module('Integration | header | resize', function() {
       );
     });
 
-    test('resizing header with subheaders respects minWidth', async function(assert) {
+    test('resizing header with subheaders respects minWidth', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         columnOptions: { subcolumnCount: 2, minWidth: 100, width: 100 },
       });
@@ -279,7 +281,7 @@ module('Integration | header | resize', function() {
       );
     });
 
-    test('resizing headers with subheaders respects maxWidth', async function(assert) {
+    test('resizing headers with subheaders respects maxWidth', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         columnOptions: { subcolumnCount: 2, maxWidth: 100, width: 100 },
       });

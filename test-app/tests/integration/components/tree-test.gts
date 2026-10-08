@@ -7,12 +7,13 @@ import { generateTable, generateColumns, generateRows } from '../../helpers/gene
 
 import { find, render, settled } from '@ember/test-helpers';
 import { EmberTable, EmberTbody, EmberTd, EmberThead, EmberTr } from 'ember-table';
+import type { TableTestContext } from '../../helpers/table-test-context';
 
 let table = new TablePage();
 
 module('Integration | Tree', () => {
   componentModule('basic', function() {
-    test('trees render correctly', async function(assert) {
+    test('trees render correctly', async function (this: TableTestContext, assert) {
       await generateTable(this, { rowCount: 2, rowDepth: 2 });
 
       assert.strictEqual(table.rows.length, 6, 'renders all rows');
@@ -25,7 +26,7 @@ module('Integration | Tree', () => {
       assert.strictEqual(table.rows.length, 12, 'renders new tree');
     });
 
-    test('trees can be disabled', async function(assert) {
+    test('trees can be disabled', async function (this: TableTestContext, assert) {
       await generateTable(this, { rowCount: 2, rowDepth: 2, enableTree: false });
 
       assert.strictEqual(table.getCell(0, 0).text, '0A', 'correct cell rendered');
@@ -45,37 +46,37 @@ module('Integration | Tree', () => {
       assert.true(table.rows.objectAt(0).collapse.isPresent, 'collapse toggle is back');
     });
 
-    test('trees autoresize when scrollbar appears', async function(assert) {
+    test('trees autoresize when scrollbar appears', async function (this: TableTestContext, assert) {
       this.set('widthConstraint', 'eq-container');
 
       await generateTable(this, { rowCount: 1, rowDepth: 1 });
 
       let table = find('[data-test-ember-table]');
 
-      let initialScrollWidth = table.scrollWidth;
-      assert.strictEqual(initialScrollWidth, table.clientWidth);
+      let initialScrollWidth = table!.scrollWidth;
+      assert.strictEqual(initialScrollWidth, table!.clientWidth);
 
       let newRows = generateRows(999, 1);
       this.set('rows', newRows);
 
       await settled();
 
-      assert.strictEqual(table.scrollWidth, table.clientWidth);
+      assert.strictEqual(table!.scrollWidth, table!.clientWidth);
 
       // Borders aren't present in tests
-      let scrollbarWidth = table.offsetWidth - table.clientWidth;
+      let scrollbarWidth = (table as HTMLElement).offsetWidth - table!.clientWidth;
 
-      assert.strictEqual(table.scrollWidth, initialScrollWidth - scrollbarWidth);
+      assert.strictEqual(table!.scrollWidth, initialScrollWidth - scrollbarWidth);
 
       newRows = generateRows(1, 1);
       this.set('rows', newRows);
 
       await settled();
 
-      assert.strictEqual(table.scrollWidth, table.clientWidth);
+      assert.strictEqual(table!.scrollWidth, table!.clientWidth);
     });
 
-    test('trees can be collapsed', async function(assert) {
+    test('trees can be collapsed', async function (this: TableTestContext, assert) {
       await generateTable(this, { rowCount: 2, rowDepth: 2 });
 
       assert.strictEqual(table.rows.length, 6, 'renders all rows');
@@ -98,7 +99,7 @@ module('Integration | Tree', () => {
       assert.strictEqual(table.getCell(1, 0).text, '00A', 'correct cell rendered');
     });
 
-    test('trees collapsing can be disabled', async function(assert) {
+    test('trees collapsing can be disabled', async function (this: TableTestContext, assert) {
       await generateTable(this, { rowCount: 2, rowDepth: 2, enableCollapse: false });
 
       assert.strictEqual(table.rows.length, 6, 'renders all rows');
@@ -116,7 +117,7 @@ module('Integration | Tree', () => {
   });
 
   componentModule('row counting', function() {
-    test('rowsCount excludes collapsed rows', async function(assert) {
+    test('rowsCount excludes collapsed rows', async function (this: TableTestContext, assert) {
       let columnCount = 1;
       let rowCount = 1;
       let rowDepth = 2;
@@ -129,8 +130,9 @@ module('Integration | Tree', () => {
         <EmberTable as |t|>
           <EmberThead @api={{t}} @columns={{ctx.columns}} />
           <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
+            {{! @glint-expect-error: EmberTbody/EmberTfoot yield the public row meta; EmberTr's @api wants the internal one }}
             <EmberTr @api={{b}} as |r|>
-              <EmberTd @api={{r}} as |c|>
+              <EmberTd @api={{r}} as |_c|>
                 {{b.rowsCount}}
               </EmberTd>
             </EmberTr>

@@ -9,15 +9,18 @@ import { fillIn, render, settled } from '@ember/test-helpers';
 import TablePage from 'ember-table/test-support/pages/ember-table';
 import { EmberTable, EmberTbody, EmberTd, EmberThead, EmberTr } from 'ember-table';
 import { Input } from '@ember/component';
+import type { TableTestContext } from '../../helpers/table-test-context';
+import type { EmberTableColumn, EmberTableRow } from 'ember-table';
+import type { EmberTdActionValues } from 'ember-table/components/ember-td/component';
 
 let table = new TablePage();
 
 module('Integration | cell', function() {
   componentModule('basic', function() {
-    test('sends onClick action', async function(assert) {
+    test('sends onClick action', async function (this: TableTestContext, assert) {
       this.set(
         'onCellClick',
-        ({ event, cellValue, cellMeta, columnValue, columnMeta, rowValue, rowMeta }) => {
+        ({ event, cellValue, cellMeta, columnValue, columnMeta, rowValue, rowMeta }: EmberTdActionValues<EmberTableRow, EmberTableColumn>) => {
           assert.ok(event, 'event sent');
 
           assert.strictEqual(cellValue, '0A', 'cellValue sent');
@@ -35,10 +38,10 @@ module('Integration | cell', function() {
       await table.getCell(0, 0).click();
     });
 
-    test('sends onDoubleClick action', async function(assert) {
+    test('sends onDoubleClick action', async function (this: TableTestContext, assert) {
       this.set(
         'onCellDoubleClick',
-        ({ event, cellValue, cellMeta, columnValue, columnMeta, rowValue, rowMeta }) => {
+        ({ event, cellValue, cellMeta, columnValue, columnMeta, rowValue, rowMeta }: EmberTdActionValues<EmberTableRow, EmberTableColumn>) => {
           assert.ok(event, 'event sent');
 
           assert.strictEqual(cellValue, '0A', 'cellValue sent');
@@ -58,7 +61,7 @@ module('Integration | cell', function() {
   });
 
   componentModule('mutation', function() {
-    test('it updates cell values when changed externally', async function(assert) {
+    test('it updates cell values when changed externally', async function (this: TableTestContext, assert) {
       let columnCount = 2;
       let rows = [
         {
@@ -72,8 +75,8 @@ module('Integration | cell', function() {
       assert.strictEqual(table.getCell(0, 0).text, 'A', 'renders correct initial value');
       assert.strictEqual(table.getCell(0, 1).text, 'B', 'renders correct initial value');
 
-      set(rows[0], 'A', 'Y');
-      set(rows[0], 'B', 'Z');
+      set(rows[0]!, 'A', 'Y');
+      set(rows[0]!, 'B', 'Z');
 
       await settled();
 
@@ -81,7 +84,7 @@ module('Integration | cell', function() {
       assert.strictEqual(table.getCell(0, 1).text, 'Z', 'renders correct updated value');
     });
 
-    test('Can update cell values directly', async function(assert) {
+    test('Can update cell values directly', async function (this: TableTestContext, assert) {
       let columnCount = 1;
       let rows = [
         {
@@ -98,6 +101,7 @@ module('Integration | cell', function() {
           <EmberTable as |t|>
             <EmberThead @api={{t}} @columns={{ctx.columns}} />
             <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
+              {{! @glint-expect-error: EmberTbody/EmberTfoot yield the public row meta; EmberTr's @api wants the internal one }}
               <EmberTr @api={{b}} as |r|>
                 <EmberTd @api={{r}} as |cellValue|>
                   <Input @value={{cellValue}} />
@@ -113,12 +117,12 @@ module('Integration | cell', function() {
 
       await fillIn('input', 'Z');
 
-      assert.strictEqual(rows[0].A, 'Z', 'value updated successfully');
+      assert.strictEqual(rows[0]!.A, 'Z', 'value updated successfully');
     });
   });
 
   componentModule('positional css classes', function() {
-    test('applies is-first-column, is-last-column classes', async function(assert) {
+    test('applies is-first-column, is-last-column classes', async function (this: TableTestContext, assert) {
       let columnCount = 3;
       let rows = [
         {
@@ -156,7 +160,7 @@ module('Integration | cell', function() {
       assert.true(cells[2].isLastColumn, 'is-last-column applied to last column cell');
     });
 
-    test('applies positional classes correctly in slack mode', async function(assert) {
+    test('applies positional classes correctly in slack mode', async function (this: TableTestContext, assert) {
       let columnCount = 1;
       let rows = [
         {

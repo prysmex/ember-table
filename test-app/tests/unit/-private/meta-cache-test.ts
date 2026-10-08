@@ -1,14 +1,14 @@
 import MetaCache from 'ember-table/-private/meta-cache';
 import { module, test } from 'qunit';
 
-let metaCache;
+let metaCache: MetaCache;
 
 module('Unit | Private | MetaCache', function(hooks) {
-  hooks.beforeEach(function() {
+  hooks.beforeEach(function () {
     metaCache = new MetaCache();
   });
 
-  test('it behaves like Map with no keyPath set', function(assert) {
+  test('it behaves like Map with no keyPath set', function (assert) {
     let a = { id: 1 };
     let b = { id: 1 };
 
@@ -23,7 +23,7 @@ module('Unit | Private | MetaCache', function(hooks) {
     assert.false(metaCache.has(a), 'does not contain removed object key');
   });
 
-  test('it uses keyPath for cache lookup', function(assert) {
+  test('it uses keyPath for cache lookup', function (assert) {
     let a = { id: 1 };
     let b = { id: 1 };
 

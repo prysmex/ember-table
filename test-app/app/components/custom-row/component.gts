@@ -1,6 +1,8 @@
-import EmberTr from 'ember-table/components/ember-tr/component';
+import type { TOC } from '@ember/component/template-only';
+import EmberTr, { type EmberTrSignature } from 'ember-table/components/ember-tr/component';
 
-<template>
+// A row component with its own class, for tests of custom row components.
+const CustomRow: TOC<EmberTrSignature> = <template>
   {{#if (has-block)}}
     <EmberTr
       @api={{@api}}
@@ -21,4 +23,6 @@ import EmberTr from 'ember-table/components/ember-tr/component';
       ...attributes
     />
   {{/if}}
-</template>
+</template>;
+
+export default CustomRow;

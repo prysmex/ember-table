@@ -14,6 +14,8 @@ import { mouseDown, mouseMove, mouseUp } from 'ember-table/test-support/helpers/
 
 import TablePage from 'ember-table/test-support/pages/ember-table';
 import { toBase26 } from 'test-app/utils/base-26';
+import type { TableTestContext } from '../../../helpers/table-test-context';
+import type { EmberTableColumn } from 'ember-table';
 
 const table = new TablePage();
 
@@ -23,14 +25,18 @@ const table = new TablePage();
  * pixels to stay from the edge.
  *
  */
-async function scrollToEdge(targetElement, edgeOffset, direction) {
+async function scrollToEdge(
+  targetElement: Element,
+  edgeOffset: number,
+  direction: 'left' | 'right'
+) {
   let targetElementRight = targetElement.getBoundingClientRect().right;
   let container = find('.ember-table');
 
   let initialTargetX, finalTargetX;
   if (direction === 'right') {
     initialTargetX = targetElementRight - 5;
-    finalTargetX = container.getBoundingClientRect().right - edgeOffset;
+    finalTargetX = container!.getBoundingClientRect().right - edgeOffset;
     if (initialTargetX >= finalTargetX) {
       throw new Error(
         'When dragging right, the starting position X must be smaller than the ending position'
@@ -38,7 +44,7 @@ async function scrollToEdge(targetElement, edgeOffset, direction) {
     }
   } else {
     initialTargetX = targetElementRight - 5;
-    finalTargetX = container.getBoundingClientRect().left + edgeOffset;
+    finalTargetX = container!.getBoundingClientRect().left + edgeOffset;
     if (initialTargetX <= finalTargetX) {
       throw new Error(
         'When dragging left, the starting position X must be greater than the ending position'
@@ -61,14 +67,14 @@ async function scrollToEdge(targetElement, edgeOffset, direction) {
     current = current + (finalTargetX - current) / steps;
   }
   await mouseMove(targetElement, finalTargetX, 0);
-  await mouseUp(targetElement);
+  await mouseUp(targetElement, undefined, undefined);
 }
 
 const USE_EMBER_ARRAY_PARAMETERS = {
   useEmberArray: {
     values: [true, false],
     hooks: {
-      beforeEach(value) {
+      beforeEach(value: boolean) {
         configureTableGeneration({ useEmberArray: value });
       },
       afterEach() {
@@ -78,17 +84,17 @@ const USE_EMBER_ARRAY_PARAMETERS = {
   },
 };
 
-async function reorderToLeftEdge(column, edgeOffset = 0) {
+async function reorderToLeftEdge(column: Element, edgeOffset = 0) {
   await scrollToEdge(column, edgeOffset, 'left');
 }
 
-async function reorderToRightEdge(column, edgeOffset = 0) {
+async function reorderToRightEdge(column: Element, edgeOffset = 0) {
   await scrollToEdge(column, edgeOffset, 'right');
 }
 
 module('Integration | headers | reorder', function() {
   parameterizedComponentModule('reordering', USE_EMBER_ARRAY_PARAMETERS, function() {
-    test('standard columns', async function(assert) {
+    test('standard columns', async function (this: TableTestContext, assert) {
       await generateTable(this);
 
       await table.headers.objectAt(0).reorderBy(1);
@@ -136,8 +142,8 @@ module('Integration | headers | reorder', function() {
       );
     });
 
-    test('column reorder action is sent up to controller', async function(assert) {
-      this.set('onReorder', function(insertedColumn, insertedAfter) {
+    test('column reorder action is sent up to controller', async function (this: TableTestContext, assert) {
+      this.set('onReorder', function(insertedColumn: EmberTableColumn, insertedAfter: EmberTableColumn) {
         assert.strictEqual(insertedColumn.name, 'A', 'old column index is correct');
         assert.strictEqual(insertedAfter.name, 'B', 'new column index is correct');
       });
@@ -146,12 +152,12 @@ module('Integration | headers | reorder', function() {
       await table.headers.objectAt(0).reorderBy(1);
     });
 
-    test('scroll container scrolls reordering at right edge', async function(assert) {
+    test('scroll container scrolls reordering at right edge', async function (this: TableTestContext, assert) {
       let columnCount = 20;
       await generateTable(this, { columnCount });
 
-      let tableOverflowContainer = find('[data-test-ember-table-overflow]');
-      let header = findAll('th')[0];
+      let tableOverflowContainer = find('[data-test-ember-table-overflow]') as HTMLElement;
+      let header = findAll('th')[0]!;
 
       await reorderToRightEdge(header);
 
@@ -163,12 +169,12 @@ module('Integration | headers | reorder', function() {
       );
     });
 
-    test('scroll container scrolls reordering at left edge', async function(assert) {
+    test('scroll container scrolls reordering at left edge', async function (this: TableTestContext, assert) {
       let columnCount = 20;
       await generateTable(this, { columnCount });
 
-      let tableOverflowContainer = find('[data-test-ember-table-overflow]');
-      let header = findAll('th')[columnCount - 1];
+      let tableOverflowContainer = find('[data-test-ember-table-overflow]') as HTMLElement;
+      let header = findAll('th')[columnCount - 1]!;
 
       await scrollTo(tableOverflowContainer, 10000, 0);
       await reorderToLeftEdge(header);
@@ -181,7 +187,7 @@ module('Integration | headers | reorder', function() {
       );
     });
 
-    test('reordering does not reset widths', async function(assert) {
+    test('reordering does not reset widths', async function (this: TableTestContext, assert) {
       await generateTable(this, { columnCount: 2 });
 
       let firstHeader = table.headers.objectAt(0);
@@ -216,11 +222,11 @@ module('Integration | headers | reorder', function() {
       );
     });
 
-    test('reordering can be disabled per column', async function(assert) {
+    test('reordering can be disabled per column', async function (this: TableTestContext, assert) {
       let columns = generateColumns(4);
 
-      columns[0].isReorderable = false;
-      columns[3].isReorderable = false;
+      columns[0]!.isReorderable = false;
+      columns[3]!.isReorderable = false;
 
       await generateTable(this, { columns });
 
@@ -243,13 +249,13 @@ module('Integration | headers | reorder', function() {
       assert.strictEqual(table.headers.objectAt(2).text.trim(), 'B', 'Third column swapped');
     });
 
-    test('multiple columns can be disabled on either edge', async function(assert) {
+    test('multiple columns can be disabled on either edge', async function (this: TableTestContext, assert) {
       let columns = generateColumns(6);
 
-      columns[0].isReorderable = false;
-      columns[1].isReorderable = false;
-      columns[4].isReorderable = false;
-      columns[5].isReorderable = false;
+      columns[0]!.isReorderable = false;
+      columns[1]!.isReorderable = false;
+      columns[4]!.isReorderable = false;
+      columns[5]!.isReorderable = false;
 
       await generateTable(this, { columns });
 
@@ -270,13 +276,15 @@ module('Integration | headers | reorder', function() {
       assert.strictEqual(table.headers.objectAt(5).text.trim(), 'F', 'Sixth column not swapped');
     });
 
-    skip('disabling reordering in columns that are not edge columns throws an error', async function(assert) {
+    skip('disabling reordering in columns that are not edge columns throws an error', async function (this: TableTestContext, assert) {
       let columns = generateColumns(6);
 
-      columns[3].isReorderable = false;
+      columns[3]!.isReorderable = false;
 
       await generateTable(this, { columns });
 
+      // Kept as written: `assert.throws` neither awaits the callback nor returns a promise.
+      // eslint-disable-next-line @typescript-eslint/await-thenable, @typescript-eslint/no-misused-promises
       await assert.throws(async () => {
         await table.headers.objectAt(0).reorderBy(1);
       });
@@ -284,7 +292,7 @@ module('Integration | headers | reorder', function() {
   });
 
   parameterizedComponentModule('fixed columns', USE_EMBER_ARRAY_PARAMETERS, function() {
-    test('left fixed column can be reordered with other left fixed columns', async function(assert) {
+    test('left fixed column can be reordered with other left fixed columns', async function (this: TableTestContext, assert) {
       await generateTable(this, { columnOptions: { fixedLeftCount: 2 } });
 
       await table.headers.objectAt(0).reorderBy(1);
@@ -300,7 +308,7 @@ module('Integration | headers | reorder', function() {
       );
     });
 
-    test('left fixed column cannot be reordered with normal columns', async function(assert) {
+    test('left fixed column cannot be reordered with normal columns', async function (this: TableTestContext, assert) {
       await generateTable(this, { columnOptions: { fixedLeftCount: 1 } });
 
       await table.headers.objectAt(0).reorderBy(1);
@@ -312,7 +320,7 @@ module('Integration | headers | reorder', function() {
       );
     });
 
-    test('right fixed column can be reordered with other right fixed columns', async function(assert) {
+    test('right fixed column can be reordered with other right fixed columns', async function (this: TableTestContext, assert) {
       let columnCount = 10;
       await generateTable(this, { columnCount: 10, columnOptions: { fixedRightCount: 2 } });
 
@@ -329,7 +337,7 @@ module('Integration | headers | reorder', function() {
       );
     });
 
-    test('right fixed column cannot be reordered with normal columns', async function(assert) {
+    test('right fixed column cannot be reordered with normal columns', async function (this: TableTestContext, assert) {
       let columnCount = 10;
       await generateTable(this, { columnCount: 10, columnOptions: { fixedRightCount: 1 } });
 
@@ -346,7 +354,7 @@ module('Integration | headers | reorder', function() {
       );
     });
 
-    test('left fixed column cannot be reordered with right fixed column', async function(assert) {
+    test('left fixed column cannot be reordered with right fixed column', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         columnOptions: { columnCount: 2, fixedLeftCount: 1, fixedRightCount: 1 },
       });
@@ -369,7 +377,7 @@ module('Integration | headers | reorder', function() {
     });
 
     // eslint-disable-next-line qunit/no-identical-names
-    test('scroll container scrolls reordering at right edge', async function(assert) {
+    test('scroll container scrolls reordering at right edge', async function (this: TableTestContext, assert) {
       let columnCount = 20;
       let columnWidth = 100;
 
@@ -381,8 +389,8 @@ module('Integration | headers | reorder', function() {
         },
       });
 
-      let tableOverflowContainer = find('[data-test-ember-table-overflow]');
-      let header = findAll('th')[0];
+      let tableOverflowContainer = find('[data-test-ember-table-overflow]') as HTMLElement;
+      let header = findAll('th')[0]!;
 
       let headerBoundingRect = header.getBoundingClientRect();
       let headerWidth = headerBoundingRect.right - headerBoundingRect.left;
@@ -397,7 +405,7 @@ module('Integration | headers | reorder', function() {
     });
 
     // eslint-disable-next-line qunit/no-identical-names
-    test('scroll container scrolls reordering at left edge', async function(assert) {
+    test('scroll container scrolls reordering at left edge', async function (this: TableTestContext, assert) {
       let columnCount = 20;
       let columnWidth = 100;
 
@@ -409,8 +417,8 @@ module('Integration | headers | reorder', function() {
         },
       });
 
-      let tableOverflowContainer = find('[data-test-ember-table-overflow]');
-      let header = findAll('th')[columnCount - 1];
+      let tableOverflowContainer = find('[data-test-ember-table-overflow]') as HTMLElement;
+      let header = findAll('th')[columnCount - 1]!;
 
       await scrollTo(tableOverflowContainer, 10000, 0);
       let headerBoundingRect = header.getBoundingClientRect();
@@ -427,7 +435,7 @@ module('Integration | headers | reorder', function() {
   });
 
   parameterizedComponentModule('subheaders', USE_EMBER_ARRAY_PARAMETERS, function() {
-    test('subheaders can be reordered', async function(assert) {
+    test('subheaders can be reordered', async function (this: TableTestContext, assert) {
       await generateTable(this, { columnCount: 1, columnOptions: { subcolumnCount: 2 } });
 
       let firstSubheader = table.headers.findOne({ text: 'A A' });
@@ -439,7 +447,7 @@ module('Integration | headers | reorder', function() {
       assert.strictEqual(secondSubheader.text, 'A A', 'subheader swapped correctly');
     });
 
-    test('headers with subheaders can be reordered', async function(assert) {
+    test('headers with subheaders can be reordered', async function (this: TableTestContext, assert) {
       await generateTable(this, { columnCount: 2, columnOptions: { subcolumnCount: 2 } });
 
       let firstHeader = table.headers.findOne({ text: 'A' });
@@ -451,7 +459,7 @@ module('Integration | headers | reorder', function() {
       assert.strictEqual(secondHeader.text, 'A', 'header swapped correctly');
     });
 
-    test('Can only reorder subheaders within header group', async function(assert) {
+    test('Can only reorder subheaders within header group', async function (this: TableTestContext, assert) {
       await generateTable(this, { columnCount: 2, columnOptions: { subcolumnCount: 1 } });
 
       let firstSubheader = table.headers.findOne({ text: 'A A' });

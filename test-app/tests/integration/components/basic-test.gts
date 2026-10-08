@@ -11,6 +11,7 @@ import TablePage from 'ember-table/test-support/pages/ember-table';
 import { collection, hasClass } from 'ember-table/test-support';
 import { find, findAll, render, settled } from '@ember/test-helpers';
 import { EmberTable, EmberTbody, EmberTfoot, EmberThead } from 'ember-table';
+import type { TableTestContext } from '../../helpers/table-test-context';
 
 let table = new TablePage({
   body: {
@@ -22,7 +23,7 @@ let table = new TablePage({
 
 module('Integration | basic', function() {
   componentModule('rendering', function() {
-    test('it renders', async function(assert) {
+    test('it renders', async function (this: TableTestContext, assert) {
       let rowCount = 10;
       let columnCount = 10;
 
@@ -52,7 +53,7 @@ module('Integration | basic', function() {
       );
     });
 
-    test('it renders without any valuePaths', async function(assert) {
+    test('it renders without any valuePaths', async function (this: TableTestContext, assert) {
       let columns = [{}];
       let rows = [{}, {}, {}];
 
@@ -66,7 +67,7 @@ module('Integration | basic', function() {
       assert.strictEqual(table.rows.length, rows.length, 'renders the correct number of rows');
     });
 
-    test('occlusion works', async function(assert) {
+    test('occlusion works', async function (this: TableTestContext, assert) {
       let rowCount = 100;
       let columnCount = 10;
 
@@ -100,7 +101,7 @@ module('Integration | basic', function() {
       );
     });
 
-    test('idForFirstItem works, so scroll position can be restored', async function(assert) {
+    test('idForFirstItem works, so scroll position can be restored', async function (this: TableTestContext, assert) {
       let rowCount = 100;
       let columnCount = 10;
 
@@ -121,8 +122,12 @@ module('Integration | basic', function() {
       );
     });
 
-    test('fixed cells work', async function(assert) {
-      function validateElements(container, elements, measurement) {
+    test('fixed cells work', async function (this: TableTestContext, assert) {
+      function validateElements(
+        container: DOMRect,
+        elements: Element[],
+        measurement: 'left' | 'right' | 'top' | 'bottom'
+      ) {
         for (let element of elements) {
           let rect = element.getBoundingClientRect();
           let diff = Math.abs(container[measurement] - rect[measurement]);
@@ -141,7 +146,7 @@ module('Integration | basic', function() {
         },
       });
 
-      let tableContainerRect = find('.ember-table').getBoundingClientRect();
+      let tableContainerRect = find('.ember-table')!.getBoundingClientRect();
 
       /**
        * No scroll.
@@ -206,7 +211,7 @@ module('Integration | basic', function() {
       validateElements(tableContainerRect, findAll('tfoot td'), 'bottom');
     });
 
-    test('mutating fixed cells work', async function(assert) {
+    test('mutating fixed cells work', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         rowCount: 100,
         columnCount: 30,
@@ -217,7 +222,7 @@ module('Integration | basic', function() {
         },
       });
 
-      let tableContainerRect = find('.ember-table').getBoundingClientRect();
+      let tableContainerRect = find('.ember-table')!.getBoundingClientRect();
 
       /**
        * Just scroll around. See the prior test for assertions that the
@@ -242,7 +247,7 @@ module('Integration | basic', function() {
        *   - Horizontally, the last column is no longer stuck at the edge of
        *     the container.
        */
-      let lastColumnRight = this.element.querySelector('tr > *:last-child').getBoundingClientRect()
+      let lastColumnRight = this.element.querySelector('tr > *:last-child')!.getBoundingClientRect()
         .right;
       let tableContainerRight = tableContainerRect.right;
       assert.true(
@@ -260,7 +265,7 @@ module('Integration | basic', function() {
        *   - Horizontally, the first column is no longer stuck at the edge of
        *     the container.
        */
-      let firstColumnLeft = this.element.querySelector('tr > *:first-child').getBoundingClientRect()
+      let firstColumnLeft = this.element.querySelector('tr > *:first-child')!.getBoundingClientRect()
         .left;
       let tableContainerLeft = tableContainerRect.left;
       assert.true(
@@ -269,14 +274,14 @@ module('Integration | basic', function() {
       );
     });
 
-    test('Accessibility test', async function(assert) {
+    test('Accessibility test', async function (this: TableTestContext, assert) {
       await generateTable(this, { hasFixedColumn: true });
 
       await a11yAudit();
       assert.true(true, 'No accessibility error found');
     });
 
-    test('custom container selector', async function(assert) {
+    test('custom container selector', async function (this: TableTestContext, assert) {
       let rowCount = 100;
       let columnCount = 15;
       let rowHeight = 20;
@@ -302,7 +307,9 @@ module('Integration | basic', function() {
               @containerSelector="#container"
               @rows={{ctx.rows}}
               @estimateRowHeight={{ctx.estimateRowHeight}}
+              {{! @glint-expect-error: deliberately passes the string "false" }}
               @renderAll=false
+              {{! @glint-expect-error: deliberately passes the string "0" }}
               @bufferSize=0
             />
           </EmberTable>
@@ -314,7 +321,7 @@ module('Integration | basic', function() {
       assert.strictEqual(table.rows.length, itemsCount, 'renders the correct number of rows');
     });
 
-    test('it yields to inverse when tbody rows are empty', async function(assert) {
+    test('it yields to inverse when tbody rows are empty', async function (this: TableTestContext, assert) {
       this.set('columns', generateColumns(4));
       this.set('rows', []);
       const ctx = this;
@@ -340,18 +347,18 @@ module('Integration | basic', function() {
         .exists('expected the inverse yield content to be displayed');
     });
 
-    test('Text can be aligned left, center or right', async function(assert) {
+    test('Text can be aligned left, center or right', async function (this: TableTestContext, assert) {
       let classList;
       let rowCount = 1;
       let columns = generateColumns(4);
-      columns[1].textAlign = 'right';
-      columns[2].textAlign = 'center';
-      columns[3].textAlign = 'left';
+      columns[1]!.textAlign = 'right';
+      columns[2]!.textAlign = 'center';
+      columns[3]!.textAlign = 'left';
 
       await generateTable(this, { columns, columnCount: columns.length, rowCount });
 
       for (let tagName of ['th', 'td']) {
-        classList = find(`${tagName}:nth-of-type(1)`).classList;
+        classList = find(`${tagName}:nth-of-type(1)`)!.classList;
         assert.false(
           // eslint-disable-next-line qunit/no-assert-logical-expression
           classList.contains('ember-table__text-align-left') ||
@@ -360,19 +367,19 @@ module('Integration | basic', function() {
           `No class is applied by default on ${tagName} cells for text alignment`
         );
 
-        classList = find(`${tagName}:nth-of-type(2)`).classList;
+        classList = find(`${tagName}:nth-of-type(2)`)!.classList;
         assert.true(
           classList.contains('ember-table__text-align-right'),
           `${tagName} cells can be right aligned`
         );
 
-        classList = find(`${tagName}:nth-of-type(3)`).classList;
+        classList = find(`${tagName}:nth-of-type(3)`)!.classList;
         assert.true(
           classList.contains('ember-table__text-align-center'),
           `${tagName} cells can be centered`
         );
 
-        classList = find(`${tagName}:nth-of-type(4)`).classList;
+        classList = find(`${tagName}:nth-of-type(4)`)!.classList;
         assert.true(
           classList.contains('ember-table__text-align-left'),
           `${tagName} cells can be left aligned`
@@ -380,14 +387,14 @@ module('Integration | basic', function() {
       }
     });
 
-    test('it can be rendered with no columns', async function(assert) {
+    test('it can be rendered with no columns', async function (this: TableTestContext, assert) {
       await generateTable(this, { rows: [], columns: [] });
       assert.true(true, 'The empty table rendered without incident');
     });
   });
 
   componentModule('lifecycle', function() {
-    test('Destroying table ignores resize event and does not trigger error', async function(assert) {
+    test('Destroying table ignores resize event and does not trigger error', async function (this: TableTestContext, assert) {
       assert.expect(0);
 
       let rowCount = 20;
@@ -402,17 +409,18 @@ module('Integration | basic', function() {
           <div id="container" style="height: 500px;">
             <EmberTable as |t|>
               <EmberThead @api={{t}} @columns={{ctx.columns}} />
+              {{! @glint-expect-error: `@estimateHeigh` is not an argument (kept as written) }}
               <EmberTbody @api={{t}} @rows={{ctx.rows}} @estimateHeigh={{13}} />
             </EmberTable>
           </div>
         {{/if}}
       </template>);
 
-      document.querySelector('#ember-testing-container').style.height = '600px';
+      document.querySelector<HTMLElement>('#ember-testing-container')!.style.height = '600px';
       this.set('showComponent', false);
     });
 
-    test('Destroying table with footerRows after initial render does not trigger error', async function(assert) {
+    test('Destroying table with footerRows after initial render does not trigger error', async function (this: TableTestContext, assert) {
       assert.expect(0);
 
       this.set('columns', generateColumns(4));
@@ -426,6 +434,7 @@ module('Integration | basic', function() {
           <div id="container" style="height: 500px;">
             <EmberTable as |t|>
               <EmberThead @api={{t}} @columns={{ctx.columns}} />
+              {{! @glint-expect-error: `@estimateHeigh` is not an argument (kept as written) }}
               <EmberTbody @api={{t}} @rows={{ctx.rows}} @estimateHeigh={{13}} />
               {{#if ctx.footerRows}}
                 <EmberTfoot @api={{t}} @rows={{ctx.footerRows}} />

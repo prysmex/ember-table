@@ -22,7 +22,7 @@ docsModule('Acceptance | docs', function (hooks) {
   test('every page in the docs navigation renders', async function (assert) {
     await visit('/docs');
 
-    let hrefs = findAll('.docs-nav a').map((link) => link.getAttribute('href'));
+    let hrefs = findAll('.docs-nav a').map((link) => link.getAttribute('href')!);
     assert.true(hrefs.length > 10, `${hrefs.length} pages linked from the navigation`);
 
     for (let href of hrefs) {

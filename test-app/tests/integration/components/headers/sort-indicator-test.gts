@@ -5,12 +5,13 @@ import { SortPage } from 'ember-table/test-support/pages/-private/ember-table-he
 
 import { componentModule } from '../../../helpers/module';
 import { EmberThSortIndicator } from 'ember-table';
+import type { TableTestContext } from '../../../helpers/table-test-context';
 
 let sort = new SortPage();
 
 module('Integration | Component | ember-th/sort-indicator', function() {
   componentModule('basic', function() {
-    test('it renders', async function(assert) {
+    test('it renders', async function (this: TableTestContext, assert) {
       this.set('columnMeta', {
         isSorted: true,
       });
@@ -30,7 +31,7 @@ module('Integration | Component | ember-th/sort-indicator', function() {
       assert.strictEqual(sort.indicator.text, 'template block text');
     });
 
-    test('it is hidden when not sorted', async function(assert) {
+    test('it is hidden when not sorted', async function (this: TableTestContext, assert) {
       this.set('columnMeta', {
         isSorted: false,
       });
@@ -50,7 +51,7 @@ module('Integration | Component | ember-th/sort-indicator', function() {
       assert.false(sort.indicator.isPresent);
     });
 
-    test('it displays the sort order', async function(assert) {
+    test('it displays the sort order', async function (this: TableTestContext, assert) {
       this.set('columnMeta', {
         isSorted: true,
         isSortedAsc: true,
@@ -68,7 +69,7 @@ module('Integration | Component | ember-th/sort-indicator', function() {
       assert.true(sort.indicator.isDescending);
     });
 
-    test('it displays the sort index when using multiple sorts', async function(assert) {
+    test('it displays the sort index when using multiple sorts', async function (this: TableTestContext, assert) {
       this.set('columnMeta', {
         isSorted: true,
         isMultiSorted: true,
@@ -85,7 +86,7 @@ module('Integration | Component | ember-th/sort-indicator', function() {
       assert.strictEqual(sort.indicator.text, '');
     });
 
-    test('the sort option supports accessibility', async function(assert) {
+    test('the sort option supports accessibility', async function (this: TableTestContext, assert) {
       this.set('columnMeta', {
         isSortable: true,
       });

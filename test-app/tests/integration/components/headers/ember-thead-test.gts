@@ -6,6 +6,8 @@ import { A } from '@ember/array';
 import RSVP from 'rsvp';
 import { EmberTable, EmberTbody, EmberTd, EmberTh, EmberThead, EmberTr } from 'ember-table';
 import { on } from '@ember/modifier';
+import type { PageObject, TableTestContext } from '../../../helpers/table-test-context';
+import type { EmberTableColumn } from 'ember-table';
 
 // This is a "waiter"-style helper to use to ensure that
 // the interior of the ember-table has finished all of its
@@ -18,31 +20,40 @@ async function rafFinished() {
   });
 }
 
+interface TestColumn extends EmberTableColumn {
+  key?: string;
+}
+
 function tableData() {
+  let columns: TestColumn[] = [
+    { name: 'A', valuePath: 'A', width: 180 },
+    { name: 'B', valuePath: 'B', width: 180 },
+    { name: 'C', valuePath: 'C', width: 180 },
+    { name: 'D', valuePath: 'D', width: 180 },
+  ];
+
   return {
     rows: [
       { A: 'A', B: 'B', C: 'C', D: 'D', E: 'E' },
       { A: 'A', B: 'B', C: 'C', D: 'D', E: 'E' },
       { A: 'A', B: 'B', C: 'C', D: 'D', E: 'E' },
     ],
-    columns: [
-      { name: 'A', valuePath: 'A', width: 180 },
-      { name: 'B', valuePath: 'B', width: 180 },
-      { name: 'C', valuePath: 'C', width: 180 },
-      { name: 'D', valuePath: 'D', width: 180 },
-    ],
+    columns,
     newColumn: { name: 'E', valuePath: 'E', width: 180 },
   };
 }
 
-function sumHeaderWidths(table) {
-  return table.headers.map(h => h.logicalWidth).reduce((sum, w) => sum + w, 0);
+function sumHeaderWidths(table: PageObject): number {
+  return table.headers
+    .map((h: PageObject) => h.logicalWidth)
+    .reduce((sum: number, w: number) => sum + w, 0);
 }
 
-async function renderTable(ctx) {
+async function renderTable(ctx: TableTestContext) {
   await render(<template>
     <button id="add-column" {{on "click" ctx.addColumn}}>Add Column</button>
     <button id="remove-column" {{on "click" ctx.removeColumn}}>Remove Column</button>
+    {{! @glint-expect-error: passes `@data-test-ember-table`, which EmberTable does not declare }}
     <EmberTable @data-test-ember-table={{true}} as |t|>
       <EmberThead
         @api={{t}}
@@ -51,11 +62,13 @@ async function renderTable(ctx) {
         @columnKeyPath={{ctx.columnKeyPath}} as |h|
       >
         <EmberTr @api={{h}} as |r|>
+          {{! @glint-expect-error: EmberTr's yielded cell is not typed as a header cell }}
           <EmberTh @api={{r}} />
         </EmberTr>
       </EmberThead>
 
       <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
+        {{! @glint-expect-error: EmberTbody/EmberTfoot yield the public row meta; EmberTr's @api wants the internal one }}
         <EmberTr @api={{b}} as |r|>
           <EmberTd @api={{r}} as |cellValue|>
             {{cellValue}}
@@ -68,7 +81,7 @@ async function renderTable(ctx) {
   await rafFinished();
 }
 
-async function testColumnRemovals(assert, table) {
+async function testColumnRemovals(assert: Assert, table: PageObject) {
   let originalWidth = table.logicalWidth;
   let originalContainerWidth = table.logicalContainerWidth;
 
@@ -113,7 +126,7 @@ async function testColumnRemovals(assert, table) {
   }
 }
 
-async function testColumnAddition(assert, table) {
+async function testColumnAddition(assert: Assert, table: PageObject) {
   let originalWidth = table.logicalWidth;
   let originalContainerWidth = table.logicalContainerWidth;
 
@@ -144,12 +157,12 @@ async function testColumnAddition(assert, table) {
 module('[Unit] ember-thead', function(hooks) {
   setupRenderingTest(hooks);
 
-  hooks.beforeEach(function() {
+  hooks.beforeEach(function (this: TableTestContext) {
     this.set('addColumn', () => {});
     this.set('removeColumn', () => {});
   });
 
-  test('table resizes when columns are removed', async function(assert) {
+  test('table resizes when columns are removed', async function (this: TableTestContext, assert) {
     let data = tableData();
     this.set('rows', data.rows);
     this.set('columns', data.columns);
@@ -161,7 +174,7 @@ module('[Unit] ember-thead', function(hooks) {
     await testColumnRemovals(assert, new TablePage());
   });
 
-  test('table resizes when columns are removed via mutation', async function(assert) {
+  test('table resizes when columns are removed via mutation', async function (this: TableTestContext, assert) {
     let data = tableData();
     this.set('rows', data.rows);
     this.set('columns', A(data.columns));
@@ -173,7 +186,7 @@ module('[Unit] ember-thead', function(hooks) {
     await testColumnRemovals(assert, new TablePage());
   });
 
-  test('table resizes when columns are added', async function(assert) {
+  test('table resizes when columns are added', async function (this: TableTestContext, assert) {
     let data = tableData();
     this.set('rows', data.rows);
     this.set('columns', data.columns);
@@ -185,7 +198,7 @@ module('[Unit] ember-thead', function(hooks) {
     await testColumnAddition(assert, new TablePage());
   });
 
-  test('table resizes when columns are added via mutation', async function(assert) {
+  test('table resizes when columns are added via mutation', async function (this: TableTestContext, assert) {
     let data = tableData();
     this.set('rows', data.rows);
     this.set('columns', A(data.columns));
@@ -197,7 +210,7 @@ module('[Unit] ember-thead', function(hooks) {
     await testColumnAddition(assert, new TablePage());
   });
 
-  test('if columnKeyPath is set, meta data is preserved when columns are replaced', async function(assert) {
+  test('if columnKeyPath is set, meta data is preserved when columns are replaced', async function (this: TableTestContext, assert) {
     let data = tableData();
 
     data.columns.forEach((column, i) => {

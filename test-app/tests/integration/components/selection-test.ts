@@ -11,13 +11,15 @@ import { scrollTo } from '@ember/test-helpers';
 import { registerTestWarnHandler } from '../../helpers/warn-handlers';
 
 import { runInDebug } from '@ember/debug';
+import type { PageObject, TableTestContext } from '../../helpers/table-test-context';
+import type { EmberTableRow } from 'ember-table';
 
 let table = new TablePage({
-  validateSelected(...selectedIndexes) {
+  validateSelected(this: PageObject, ...selectedIndexes: number[]) {
     let valid = true;
 
-    let indexesSeen = [];
-    this.rows.forEach((row, index) => {
+    let indexesSeen: number[] = [];
+    this.rows.forEach((row: PageObject, index: number) => {
       indexesSeen.push(index);
       if (selectedIndexes.includes(index)) {
         valid = valid && row.isSelected;
@@ -40,16 +42,16 @@ let table = new TablePage({
 });
 
 // Return an array filled with the indices for all the rendered rows of the table
-function allRenderedRowIndexes(table) {
+function allRenderedRowIndexes(table: PageObject) {
   return Array(table.rows.length)
-    .fill()
+    .fill(undefined)
     .map((_, index) => index);
 }
 
 module('Integration | selection', () => {
   module('rowSelectionMode', function() {
     componentModule('multiple', function() {
-      test('Can select a row by clicking on it', async function(assert) {
+      test('Can select a row by clicking on it', async function (this: TableTestContext, assert) {
         await generateTable(this);
 
         assert.true(
@@ -62,7 +64,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(0), 'the row is selected after being clicked');
       });
 
-      test('Can toggle a row with meta and control', async function(assert) {
+      test('Can toggle a row with meta and control', async function (this: TableTestContext, assert) {
         await generateTable(this);
 
         let row = table.body.rows.objectAt(0);
@@ -80,7 +82,7 @@ module('Integration | selection', () => {
         }
       });
 
-      test('Can toggle multiple rows with meta and control', async function(assert) {
+      test('Can toggle multiple rows with meta and control', async function (this: TableTestContext, assert) {
         await generateTable(this);
 
         let rowOne = table.rows.objectAt(0);
@@ -101,7 +103,7 @@ module('Integration | selection', () => {
         }
       });
 
-      test('Can toggle multiple rows with checkbox and keys', async function(assert) {
+      test('Can toggle multiple rows with checkbox and keys', async function (this: TableTestContext, assert) {
         await generateTable(this);
 
         let rowOne = table.rows.objectAt(0);
@@ -120,7 +122,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(), 'the rows are toggled back off');
       });
 
-      test('Can select a range with shift from click', async function(assert) {
+      test('Can select a range with shift from click', async function (this: TableTestContext, assert) {
         await generateTable(this);
 
         assert.true(table.validateSelected(), 'rows are not selected');
@@ -130,7 +132,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(0, 1, 2), 'rows are selected');
       });
 
-      test('Can select a range with shift from shift-click', async function(assert) {
+      test('Can select a range with shift from shift-click', async function (this: TableTestContext, assert) {
         await generateTable(this);
 
         assert.true(table.validateSelected(), 'rows are not selected');
@@ -140,7 +142,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(0, 1, 2), 'rows are selected');
       });
 
-      test('Selecting a range selects based on last selection', async function(assert) {
+      test('Selecting a range selects based on last selection', async function (this: TableTestContext, assert) {
         await generateTable(this);
 
         assert.true(table.validateSelected(), 'rows are not selected');
@@ -150,7 +152,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(3, 4, 5), 'rows are selected');
       });
 
-      test('Selecting a range does not deselect previously selected rows', async function(assert) {
+      test('Selecting a range does not deselect previously selected rows', async function (this: TableTestContext, assert) {
         await generateTable(this);
 
         assert.true(table.validateSelected(), 'rows are not selected');
@@ -164,7 +166,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(3, 4, 5), 'all rows are selected');
       });
 
-      test('selecting a parent selects its children', async function(assert) {
+      test('selecting a parent selects its children', async function (this: TableTestContext, assert) {
         await generateTable(this, { rowCount: 3, rowDepth: 2 });
 
         assert.true(table.validateSelected(), 'rows are not selected');
@@ -174,7 +176,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(0, 1, 2, 3), 'row and its children are selected');
       });
 
-      test('deselecting a child deselects its parents', async function(assert) {
+      test('deselecting a child deselects its parents', async function (this: TableTestContext, assert) {
         await generateTable(this, { rowCount: 3, rowDepth: 2 });
 
         assert.true(table.validateSelected(), 'rows are not selected');
@@ -188,8 +190,8 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(2, 3), 'parent and child deselected');
       });
 
-      test('selecting a child and then a parent dedupes selected rows correctly', async function(assert) {
-        this.set('onSelect', selection => {
+      test('selecting a child and then a parent dedupes selected rows correctly', async function (this: TableTestContext, assert) {
+        this.set('onSelect', (selection: EmberTableRow[]) => {
           assert.strictEqual(selection.length, 1, 'correct number of rows selected');
 
           this.set('selection', selection);
@@ -208,7 +210,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(0, 1, 2, 3), 'row and its children are selected');
       });
 
-      test('selection continues to work after rows are updated', async function(assert) {
+      test('selection continues to work after rows are updated', async function (this: TableTestContext, assert) {
         let columns = [
           {
             name: 'Name',
@@ -241,7 +243,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(1), 'Liz is selected after being clicked');
       });
 
-      test('Rows are selected when selection is changed externally', async function(assert) {
+      test('Rows are selected when selection is changed externally', async function (this: TableTestContext, assert) {
         let selection = emberA();
         let rows = [{ name: 'Zoe', age: 34 }, { name: 'Alex', age: 43 }, { name: 'Liz', age: 25 }];
 
@@ -254,9 +256,9 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(0), 'Zoe is selected after external change');
       });
 
-      test('Rows are selected when selection is changed externally with selectionMatchFunction', async function(assert) {
+      test('Rows are selected when selection is changed externally with selectionMatchFunction', async function (this: TableTestContext, assert) {
         let selection = emberA();
-        let selectionMatchFunction = function(a, b) {
+        let selectionMatchFunction = function(a?: { id: unknown }, b?: { id: unknown }) {
           if (!a || !b) {
             return false;
           }
@@ -272,17 +274,18 @@ module('Integration | selection', () => {
 
         assert.true(table.validateSelected(), 'rows are not selected');
 
-        run(() => selection.pushObject({ id: rows[0].id }));
+        run(() => selection.pushObject({ id: rows[0]!.id }));
 
         assert.true(table.validateSelected(0), 'Zoe is selected after external change');
       });
 
-      test('Can abort multi-select so that next multi-select starts from the same row', async function(assert) {
-        let successHandler = selection => this.set('selection', selection);
-        let abortHandler = (selection, { abort }) => abort();
-        let selectHandler;
+      test('Can abort multi-select so that next multi-select starts from the same row', async function (this: TableTestContext, assert) {
+        type SelectHandler = (selection: unknown, hash: { abort: () => void }) => void;
+        let successHandler: SelectHandler = selection => this.set('selection', selection);
+        let abortHandler: SelectHandler = (selection, { abort }) => abort();
+        let selectHandler: SelectHandler;
 
-        this.set('onSelect', (selection, hash) => {
+        this.set('onSelect', (selection: unknown, hash: { abort: () => void }) => {
           selectHandler(selection, hash);
         });
 
@@ -306,7 +309,7 @@ module('Integration | selection', () => {
 
     componentModule('single', function() {
       // eslint-disable-next-line qunit/no-identical-names
-      test('Can select a row by clicking on it', async function(assert) {
+      test('Can select a row by clicking on it', async function (this: TableTestContext, assert) {
         await generateTable(this, { rowSelectionMode: 'single' });
 
         assert.true(
@@ -319,7 +322,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(0), 'the row is selected after being clicked');
       });
 
-      test('Cannot toggle a row with meta and control', async function(assert) {
+      test('Cannot toggle a row with meta and control', async function (this: TableTestContext, assert) {
         await generateTable(this, { rowSelectionMode: 'single' });
 
         await table.selectRow(0);
@@ -335,7 +338,7 @@ module('Integration | selection', () => {
         }
       });
 
-      test('Cannot toggle multiple rows with meta and control', async function(assert) {
+      test('Cannot toggle multiple rows with meta and control', async function (this: TableTestContext, assert) {
         await generateTable(this, { rowSelectionMode: 'single' });
 
         assert.true(table.validateSelected(), 'no rows are selected');
@@ -354,7 +357,7 @@ module('Integration | selection', () => {
         }
       });
 
-      test('Cannot select a range with shift', async function(assert) {
+      test('Cannot select a range with shift', async function (this: TableTestContext, assert) {
         await generateTable(this, { rowSelectionMode: 'single' });
 
         assert.true(table.validateSelected(), 'no rows are not selected');
@@ -365,10 +368,10 @@ module('Integration | selection', () => {
       });
 
       // eslint-disable-next-line qunit/require-expect
-      test('selection is a single row', async function(assert) {
+      test('selection is a single row', async function (this: TableTestContext, assert) {
         assert.expect(1);
 
-        this.set('onSelect', selection => {
+        this.set('onSelect', (selection: EmberTableRow[]) => {
           assert.false(Array.isArray(selection), 'selection is not an array');
         });
 
@@ -377,7 +380,7 @@ module('Integration | selection', () => {
         await table.selectRow(0);
       });
 
-      test('Row is selected when selection is changed externally', async function(assert) {
+      test('Row is selected when selection is changed externally', async function (this: TableTestContext, assert) {
         this.set('selection', null);
         let rows = [{ name: 'Zoe', age: 34 }, { name: 'Alex', age: 43 }, { name: 'Liz', age: 25 }];
 
@@ -390,9 +393,9 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(0), 'Zoe is selected after external change');
       });
 
-      test('Row is selected when selection is changed externally with selectionMatchFunction', async function(assert) {
+      test('Row is selected when selection is changed externally with selectionMatchFunction', async function (this: TableTestContext, assert) {
         this.set('selection', null);
-        let selectionMatchFunction = function(a, b) {
+        let selectionMatchFunction = function(a?: { id: unknown }, b?: { id: unknown }) {
           if (!a || !b) {
             return false;
           }
@@ -412,14 +415,14 @@ module('Integration | selection', () => {
 
         assert.true(table.validateSelected(), 'rows are not selected');
 
-        run(() => this.set('selection', { id: rows[0].id }));
+        run(() => this.set('selection', { id: rows[0]!.id }));
 
         assert.true(table.validateSelected(0), 'Zoe is selected after external change');
       });
     });
 
     componentModule('none', function() {
-      test('Can disable row selection', async function(assert) {
+      test('Can disable row selection', async function (this: TableTestContext, assert) {
         await generateTable(this, { rowSelectionMode: 'none' });
 
         assert.true(table.validateSelected(), 'rows are not selected');
@@ -437,7 +440,7 @@ module('Integration | selection', () => {
 
   module('checkboxSelectionMode', function() {
     componentModule('multiple', function() {
-      test('Can toggle multiple rows with checkbox', async function(assert) {
+      test('Can toggle multiple rows with checkbox', async function (this: TableTestContext, assert) {
         await generateTable(this);
 
         let rowOne = table.rows.objectAt(0);
@@ -456,7 +459,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(), 'the rows are toggled back off');
       });
 
-      test('Can select range by clicking on checkboxes', async function(assert) {
+      test('Can select range by clicking on checkboxes', async function (this: TableTestContext, assert) {
         await generateTable(this);
 
         assert.true(table.validateSelected(), 'rows are not selected');
@@ -467,7 +470,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(3, 4, 5), 'rows are selected');
       });
 
-      test('Checkbox state matches selection state (rowSelectionMode multiple)', async function(assert) {
+      test('Checkbox state matches selection state (rowSelectionMode multiple)', async function (this: TableTestContext, assert) {
         await generateTable(this);
 
         let row = table.body.rows.objectAt(0);
@@ -481,7 +484,7 @@ module('Integration | selection', () => {
         assert.true(row.checkbox.isChecked, 'the row checkbox is checked');
       });
 
-      test('Checkbox state does not match selection state (rowSelectionMode single)', async function(assert) {
+      test('Checkbox state does not match selection state (rowSelectionMode single)', async function (this: TableTestContext, assert) {
         await generateTable(this, { rowSelectionMode: 'single' });
 
         let row = table.body.rows.objectAt(0);
@@ -497,7 +500,7 @@ module('Integration | selection', () => {
     });
 
     componentModule('single', function() {
-      test('Can select a row by clicking on checkbox', async function(assert) {
+      test('Can select a row by clicking on checkbox', async function (this: TableTestContext, assert) {
         await generateTable(this, { checkboxSelectionMode: 'single' });
 
         assert.true(
@@ -510,7 +513,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(0), 'the row is selected after being clicked');
       });
 
-      test('Cannot toggle multiple rows with meta and control', async function(assert) {
+      test('Cannot toggle multiple rows with meta and control', async function (this: TableTestContext, assert) {
         await generateTable(this, { checkboxSelectionMode: 'single' });
 
         assert.true(table.validateSelected(), 'no rows are selected');
@@ -524,7 +527,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(1), 'the second row is selected');
       });
 
-      test('Cannot select a range with shift', async function(assert) {
+      test('Cannot select a range with shift', async function (this: TableTestContext, assert) {
         await generateTable(this, { checkboxSelectionMode: 'single' });
 
         assert.true(table.validateSelected(), 'no rows are not selected');
@@ -536,10 +539,10 @@ module('Integration | selection', () => {
       });
 
       // eslint-disable-next-line qunit/require-expect
-      test('selection is an array', async function(assert) {
+      test('selection is an array', async function (this: TableTestContext, assert) {
         assert.expect(1);
 
-        this.set('onSelect', selection => {
+        this.set('onSelect', (selection: EmberTableRow[]) => {
           assert.true(Array.isArray(selection), 'selection is an array');
         });
 
@@ -550,7 +553,7 @@ module('Integration | selection', () => {
     });
 
     componentModule('none', function() {
-      test('Can disable checkbox selection', async function(assert) {
+      test('Can disable checkbox selection', async function (this: TableTestContext, assert) {
         await generateTable(this, { checkboxSelectionMode: 'none' });
 
         assert.true(table.validateSelected(), 'rows are not selected');
@@ -565,7 +568,7 @@ module('Integration | selection', () => {
 
   module('rowToggleMode', function() {
     componentModule('true', function() {
-      test('Can select a row by clicking on it', async function(assert) {
+      test('Can select a row by clicking on it', async function (this: TableTestContext, assert) {
         await generateTable(this, { rowToggleMode: true });
 
         assert.true(
@@ -578,7 +581,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(0), 'the row is selected after being clicked');
       });
 
-      test('Can toggle a row', async function(assert) {
+      test('Can toggle a row', async function (this: TableTestContext, assert) {
         await generateTable(this, { rowToggleMode: true });
 
         let row = table.body.rows.objectAt(0);
@@ -594,7 +597,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(), 'the row is toggled back off');
       });
 
-      test('Can toggle multiple rows', async function(assert) {
+      test('Can toggle multiple rows', async function (this: TableTestContext, assert) {
         await generateTable(this, { rowToggleMode: true });
 
         let rowOne = table.rows.objectAt(0);
@@ -615,7 +618,7 @@ module('Integration | selection', () => {
     });
 
     componentModule('false', function() {
-      test('Cannot toggle a row', async function(assert) {
+      test('Cannot toggle a row', async function (this: TableTestContext, assert) {
         await generateTable(this, { rowToggleMode: false });
 
         await table.selectRow(0);
@@ -629,7 +632,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(0), 'the row is still on');
       });
 
-      test('Cannot toggle multiple rows', async function(assert) {
+      test('Cannot toggle multiple rows', async function (this: TableTestContext, assert) {
         await generateTable(this, { rowToggleMode: false });
 
         assert.true(table.validateSelected(), 'no rows are selected');
@@ -646,7 +649,7 @@ module('Integration | selection', () => {
         assert.true(table.validateSelected(1), 'the second row is selected');
       });
 
-      test('Can toggle a row with meta and control', async function(assert) {
+      test('Can toggle a row with meta and control', async function (this: TableTestContext, assert) {
         await generateTable(this, { rowToggleMode: false });
 
         let row = table.body.rows.objectAt(0);
@@ -664,7 +667,7 @@ module('Integration | selection', () => {
         }
       });
 
-      test('Can toggle multiple rows with meta and control', async function(assert) {
+      test('Can toggle multiple rows with meta and control', async function (this: TableTestContext, assert) {
         await generateTable(this, { rowToggleMode: false });
 
         let rowOne = table.rows.objectAt(0);
@@ -689,7 +692,7 @@ module('Integration | selection', () => {
 
   componentModule('misc', function() {
     // eslint-disable-next-line qunit/require-expect
-    test('Can disable selection by not using an action', async function(assert) {
+    test('Can disable selection by not using an action', async function (this: TableTestContext, assert) {
       assert.expect(3);
 
       this.set('onSelect', () => {
@@ -705,7 +708,7 @@ module('Integration | selection', () => {
       assert.true(table.validateSelected(), 'rows are not selected');
     });
 
-    test('selecting all children selects the parent when enabled', async function(assert) {
+    test('selecting all children selects the parent when enabled', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         selectingChildrenSelectsParent: true,
         rowCount: 3,
@@ -719,7 +722,7 @@ module('Integration | selection', () => {
       assert.true(table.validateSelected(0, 1, 2, 3), 'row and its children are selected');
     });
 
-    test('selecting all children does not select the parent', async function(assert) {
+    test('selecting all children does not select the parent', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         selectingChildrenSelectsParent: false,
         rowCount: 3,
@@ -733,14 +736,14 @@ module('Integration | selection', () => {
       assert.true(table.validateSelected(1, 2, 3), 'only children are selected');
     });
 
-    test('rows can be selected using selectionMatchFunction', async function(assert) {
+    test('rows can be selected using selectionMatchFunction', async function (this: TableTestContext, assert) {
       let selection = emberA();
       let rows = [
         { id: '1', name: 'Zoe', age: 34 },
         { id: '2', name: 'Alex', age: 43 },
         { id: '3', name: 'Liz', age: 25 },
       ];
-      let selectionMatchFunction = function(a, b) {
+      let selectionMatchFunction = function(a?: { id: unknown }, b?: { id: unknown }) {
         if (!a || !b) {
           return false;
         }
@@ -751,7 +754,7 @@ module('Integration | selection', () => {
 
       assert.true(table.validateSelected(), 'rows are not selected');
 
-      run(() => selection.pushObject({ id: rows[1].id }));
+      run(() => selection.pushObject({ id: rows[1]!.id }));
 
       assert.true(table.validateSelected(1), 'Alex is selected after selection change');
     });
@@ -759,11 +762,11 @@ module('Integration | selection', () => {
 
   module('occluded selection', function() {
     componentModule('basic', function() {
-      test('Issue 726: changing selection state of unrendered rows', async function(assert) {
+      test('Issue 726: changing selection state of unrendered rows', async function (this: TableTestContext, assert) {
         // Generate a table with 1 parent row that has 500 child rows
         let rows = generateRows(1, 1, (row, key) => `${row.id}${key}`);
         let childRows = generateRows(500, 1, (row, key) => `child${row.id}${key}`);
-        rows[0].children = childRows;
+        rows[0]!.children = childRows;
         await generateTable(this, { rows });
 
         let renderedRowCount = table.rows.length;
@@ -802,7 +805,7 @@ module('Integration | selection', () => {
         );
       });
 
-      test('Issue 747: Programmatically select an un-rendered row', async function(assert) {
+      test('Issue 747: Programmatically select an un-rendered row', async function (this: TableTestContext, assert) {
         let rows = generateRows(200, 1);
         await generateTable(this, { rows, bufferSize: 1 });
 
@@ -819,11 +822,11 @@ module('Integration | selection', () => {
         assert.true(true, 'no error');
       });
 
-      test('Issue 747: Programmatic selection of unrendered children plus manual selection -> selects parent', async function(assert) {
+      test('Issue 747: Programmatic selection of unrendered children plus manual selection -> selects parent', async function (this: TableTestContext, assert) {
         // 1 Parent row with 200 children
         let children = generateRows(200, 1);
         let rows = generateRows(1, 1);
-        rows[0].children = children;
+        rows[0]!.children = children;
 
         await generateTable(this, { rows, selectingChildrenSelectsParent: true, bufferSize: 1 });
 
@@ -847,8 +850,8 @@ module('Integration | selection', () => {
       });
 
       runInDebug(() => {
-        test('Issue 747: Programmatic selection that includes a row not part of `rows`', async function(assert) {
-          let capturedWarningIds = [];
+        test('Issue 747: Programmatic selection that includes a row not part of `rows`', async function (this: TableTestContext, assert) {
+          let capturedWarningIds: string[] = [];
           registerTestWarnHandler((_message, { id }) => capturedWarningIds.push(id));
 
           let rows = generateRows(1, 1);

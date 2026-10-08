@@ -4,12 +4,13 @@ import { generateTable } from '../../helpers/generate-table';
 import { componentModule } from '../../helpers/module';
 
 import TablePage from 'ember-table/test-support/pages/ember-table';
+import type { TableTestContext } from '../../helpers/table-test-context';
 
 const table = new TablePage();
 
 module('Integration | footer', function() {
   componentModule('basic', function() {
-    test('renders if footerRows are set', async function(assert) {
+    test('renders if footerRows are set', async function (this: TableTestContext, assert) {
       await generateTable(this, { footerRowCount: 3 });
 
       assert.true(table.footer.isPresent, 'Footer is present in the table');

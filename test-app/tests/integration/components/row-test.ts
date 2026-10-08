@@ -10,6 +10,9 @@ import { parameterizedComponentModule } from '../../helpers/module';
 import TablePage from 'ember-table/test-support/pages/ember-table';
 import { collection, hasClass } from 'ember-table/test-support';
 import CustomRow from 'test-app/components/custom-row/component';
+import type { TableTestContext } from '../../helpers/table-test-context';
+import type { EmberTableRow } from 'ember-table';
+import type { EmberTrEvent } from 'ember-table/components/ember-tr/component';
 
 let table = new TablePage({
   body: {
@@ -25,7 +28,7 @@ const USE_EMBER_ARRAY_PARAMETERS = {
   useEmberArray: {
     values: [true, false],
     hooks: {
-      beforeEach(value) {
+      beforeEach(value: boolean) {
         configureTableGeneration({ useEmberArray: value });
       },
       afterEach() {
@@ -37,7 +40,7 @@ const USE_EMBER_ARRAY_PARAMETERS = {
 
 module('Integration | row', function() {
   parameterizedComponentModule('basic', USE_EMBER_ARRAY_PARAMETERS, function() {
-    test('marks rows as even or odd', async function(assert) {
+    test('marks rows as even or odd', async function (this: TableTestContext, assert) {
       await generateTable(this);
 
       assert.true(table.rows.objectAt(0).isEven, 'First row is even');
@@ -48,7 +51,7 @@ module('Integration | row', function() {
       assert.true(table.rows.objectAt(5).isOdd, 'Sixth row is odd');
     });
 
-    test('can use a custom row component', async function(assert) {
+    test('can use a custom row component', async function (this: TableTestContext, assert) {
       await generateTable(this, {
         rowComponent: CustomRow,
       });
@@ -56,8 +59,8 @@ module('Integration | row', function() {
       assert.true(table.rows.objectAt(0).isCustomRow, 'Table has custom row');
     });
 
-    test('sends onClick action', async function(assert) {
-      this.set('onRowClick', ({ event, rowValue, rowMeta }) => {
+    test('sends onClick action', async function (this: TableTestContext, assert) {
+      this.set('onRowClick', ({ event, rowValue, rowMeta }: EmberTrEvent<EmberTableRow>) => {
         assert.ok(event, 'event sent');
         assert.ok(rowValue, 'rowValue sent');
         assert.ok(rowMeta, 'rowMeta sent');
@@ -67,8 +70,8 @@ module('Integration | row', function() {
       await table.rows.objectAt(0).click();
     });
 
-    test('sends onDoubleClick action', async function(assert) {
-      this.set('onRowDoubleClick', ({ event, rowValue, rowMeta }) => {
+    test('sends onDoubleClick action', async function (this: TableTestContext, assert) {
+      this.set('onRowDoubleClick', ({ event, rowValue, rowMeta }: EmberTrEvent<EmberTableRow>) => {
         assert.ok(event, 'event sent');
         assert.ok(rowValue, 'rowValue sent');
         assert.ok(rowMeta, 'rowMeta sent');

@@ -1,6 +1,8 @@
 import { registerWarnHandler } from '@ember/debug';
 
-let _registeredHandler = null;
+type WarnHandler = (message: string, options: { id: string }) => void;
+
+let _registeredHandler: WarnHandler | null = null;
 let _didRegisterWarnHandler = false;
 
 export function setup() {
@@ -12,14 +14,14 @@ export function setup() {
   _didRegisterWarnHandler = true;
   registerWarnHandler((message, options, next) => {
     if (_registeredHandler) {
-      _registeredHandler(message, options);
+      _registeredHandler(message, options!);
     } else {
       next(message, options);
     }
   });
 }
 
-export function registerTestWarnHandler(callback) {
+export function registerTestWarnHandler(callback: WarnHandler) {
   _registeredHandler = callback;
 }
 

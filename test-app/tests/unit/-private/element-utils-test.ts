@@ -1,8 +1,9 @@
 import { module, test } from 'qunit';
 import { getScale } from 'ember-table/-private/utils/element';
+import type { TableTestContext } from '../../helpers/table-test-context';
 
 module('Unit | Private | element', function(hooks) {
-  hooks.beforeEach(function() {
+  hooks.beforeEach(function (this: TableTestContext) {
     /*
      * Use an element outside the normal test harness as that harness
      * uses scale() on the test container.
@@ -11,11 +12,11 @@ module('Unit | Private | element', function(hooks) {
     document.body.append(this.element);
   });
 
-  hooks.afterEach(function() {
-    this.element.remove();
+  hooks.afterEach(function (this: TableTestContext) {
+    (this.element as HTMLElement).remove();
   });
 
-  test('can get the scale of a transformed element', function(assert) {
+  test('can get the scale of a transformed element', function (this: TableTestContext, assert) {
     let div = document.createElement('div');
     div.style.height = '4px';
     this.element.append(div);
@@ -31,7 +32,7 @@ module('Unit | Private | element', function(hooks) {
     assert.strictEqual(getScale(div), 2, 'scale on a scaled element is correct');
   });
 
-  test('gets an integer when a scale is very close to its rounded integer value', function(assert) {
+  test('gets an integer when a scale is very close to its rounded integer value', function (this: TableTestContext, assert) {
     let div = document.createElement('div');
     div.style.height = '4px';
     this.element.append(div);
@@ -47,7 +48,7 @@ module('Unit | Private | element', function(hooks) {
     assert.strictEqual(getScale(div), 1, 'scale on a scaled element is correct');
   });
 
-  test('throws if the height from getComputedStyle is diverged from offsetHeight', function(assert) {
+  test('throws if the height from getComputedStyle is diverged from offsetHeight', function (this: TableTestContext, assert) {
     let div = document.createElement('div');
     div.textContent = 'aBc';
     div.style.padding = '10px';
@@ -58,7 +59,7 @@ module('Unit | Private | element', function(hooks) {
     });
   });
 
-  test('can get the scale of element with table header', function(assert) {
+  test('can get the scale of element with table header', function (this: TableTestContext, assert) {
     let table = document.createElement('table');
     table.style.borderSpacing = '0';
 
@@ -104,7 +105,7 @@ module('Unit | Private | element', function(hooks) {
    * yield internally inconsistent values between computed height and
    * offset height. Assert that we've covered that case.
    */
-  test('can get the scale of element with table header and extraordinary item count and height', function(assert) {
+  test('can get the scale of element with table header and extraordinary item count and height', function (this: TableTestContext, assert) {
     let table = document.createElement('table');
     table.style.borderSpacing = '0';
 
