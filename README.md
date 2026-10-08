@@ -9,7 +9,7 @@ Ember Table versions each support a range of browsers and framework versions:
 
 | Ember Table Version | Ember Versions Supported     | Browser Support |
 | ------------------- | ---------------------------- | --------------- |
-| 6.x (prerelease)    | 5.12 - 7.x                   | Last two versions of Chrome, Safari, Edge, Firefox on desktop and mobile. |
+| 6.x (prerelease)    | 6.4 - 7.x                    | Last two versions of Chrome, Safari, Edge, Firefox on desktop and mobile. |
 | 5.x                 | 3.12 - 4.x (possibly 5.x?)   | Last two versions of Chrome, Safari, Edge, Firefox on desktop and mobile. |
 | 4.x                 | 2.18 - 4.x                   | Last two versions of Chrome, Safari, Edge, Firefox on desktop and mobile. |
 | 3.x                 | 2.8 - 3.28 (last 3.x version | Last two versions of Chrome, Safari, Edge, Firefox on desktop and mobile. |
@@ -265,7 +265,7 @@ Compatibility scenarios use [`@embroider/try`](https://github.com/embroider-buil
 Apply a scenario to both packages (see `.github/workflows/ci.yml`), reinstall, and test:
 
 ```bash
-(cd test-app && pnpm dlx @embroider/try apply ember-lts-5.12)
-(cd ember-table && pnpm dlx @embroider/try apply ember-lts-5.12)
+(cd test-app && pnpm dlx @embroider/try apply ember-lts-6.4)
+(cd ember-table && pnpm dlx @embroider/try apply ember-lts-6.4)
 pnpm install --no-frozen-lockfile && pnpm test
 ```
