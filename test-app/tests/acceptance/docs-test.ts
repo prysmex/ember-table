@@ -1,5 +1,5 @@
 import { module, test } from 'qunit';
-import { currentURL, findAll, visit } from '@ember/test-helpers';
+import { currentURL, find, findAll, visit, waitUntil } from '@ember/test-helpers';
 import { setupApplicationTest } from 'ember-qunit';
 import { dependencySatisfies, macroCondition } from '@embroider/macros';
 import TablePage from 'ember-table/test-support/pages/ember-table';
@@ -78,5 +78,22 @@ docsModule('Acceptance | docs', function (hooks) {
 
     await header.click();
     assert.true(header.sortIndicator.isDescending, 'sort cycles back to descending');
+  });
+
+  test('occlusion: the demo renders only the visible rows', async function (assert) {
+    await visit('/docs/guides/body/occlusion');
+
+    let overflow = find('.docfy-demo .ember-table-overflow')!;
+    let renderedRows = () => findAll('.docfy-demo tbody tr').length;
+    let readout = () => find('.docfy-demo .demo-options')!.textContent.replace(/\s+/g, ' ');
+
+    assert.true(renderedRows() < 50, `${renderedRows()} of 10000 rows are in the DOM`);
+    assert.true(readout().includes('Rows 1–'), 'the readout starts at the first row');
+
+    overflow.scrollTop = overflow.scrollHeight;
+    await waitUntil(() => readout().includes('of 10000') && readout().includes('–10000'));
+
+    assert.true(renderedRows() < 50, 'scrolling keeps the DOM small');
+    assert.dom(findAll('.docfy-demo tbody tr').at(-1)!.querySelector('td')).hasText('10000');
   });
 });

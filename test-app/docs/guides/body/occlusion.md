@@ -45,30 +45,64 @@ settings. The current options are:
   the element from which to calculate the viewable height. It defaults to the
   table id `"#{tableId}"`.
 
+The table below has 10,000 rows. Scroll it: only the rows in view (plus a small
+buffer) exist in the DOM at any time. `@firstVisibleChanged` and
+`@lastVisibleChanged` report which rows are on screen.
+
 ```gjs preview
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { action } from '@ember/object';
 import { EmberTable } from 'ember-table';
 
 const columns = [
-  { name: 'A', valuePath: 'A', width: 180 },
-  { name: 'B', valuePath: 'B', width: 180 },
-  { name: 'C', valuePath: 'C', width: 180 },
-  { name: 'D', valuePath: 'D', width: 180 },
+  { name: 'ID', valuePath: 'id', width: 120 },
+  { name: 'A', valuePath: 'a', width: 180 },
+  { name: 'B', valuePath: 'b', width: 180 },
+  { name: 'C', valuePath: 'c', width: 180 },
 ];
 
-const rows = Array.from({ length: 11 }, () => ({ A: 'A', B: 'B', C: 'C', D: 'D' }));
+const rows = Array.from({ length: 10000 }, (_, i) => ({
+  id: i + 1,
+  a: `A${i + 1}`,
+  b: `B${i + 1}`,
+  c: `C${i + 1}`,
+}));
 
-<template>
-  <div class="demo-container">
-    <EmberTable as |t|>
-      <t.head @columns={{columns}} />
+export default class OcclusionExample extends Component {
+  @tracked firstVisible = 1;
+  @tracked lastVisible = 1;
 
-      <t.body
-        @rows={{rows}}
-        @staticHeight={{true}}
-        @estimateRowHeight={{41}}
-        @key="A"
-      />
-    </EmberTable>
-  </div>
-</template>
+  // Vertical-collection reports visibility while the table renders, so wait
+  // for that render to finish before changing tracked state.
+  @action async firstVisibleChanged(row, index) {
+    await Promise.resolve();
+    this.firstVisible = index + 1;
+  }
+
+  @action async lastVisibleChanged(row, index) {
+    await Promise.resolve();
+    this.lastVisible = index + 1;
+  }
+
+  <template>
+    <p class="demo-options">
+      Rows {{this.firstVisible}}–{{this.lastVisible}} of {{rows.length}} are visible.
+    </p>
+
+    <div class="demo-container">
+      <EmberTable as |t|>
+        <t.head @columns={{columns}} />
+
+        <t.body
+          @rows={{rows}}
+          @key="id"
+          @estimateRowHeight={{30}}
+          @firstVisibleChanged={{this.firstVisibleChanged}}
+          @lastVisibleChanged={{this.lastVisibleChanged}}
+        />
+      </EmberTable>
+    </div>
+  </template>
+}
 ```
