@@ -9,7 +9,7 @@ import { componentModule } from '../../helpers/module';
 import { scrollTo } from '@ember/test-helpers';
 
 import TablePage from 'ember-table/test-support/pages/ember-table';
-import { collection, hasClass } from 'ember-classy-page-object';
+import { collection, hasClass } from 'ember-table/test-support';
 import { find, findAll, render, settled } from '@ember/test-helpers';
 
 let table = new TablePage({

@@ -1,11 +1,9 @@
-import PageObject, {
-  alias,
-  triggerable,
-  collection,
-  hasClass,
-  property,
-} from 'ember-classy-page-object';
-import { findElement } from 'ember-classy-page-object/extend';
+import { hasClass, property, triggerable } from 'ember-cli-page-object';
+import { alias } from 'ember-cli-page-object/macros';
+
+import PageObject from '../../-private/page-object.ts';
+import { collection } from '../../-private/collection.ts';
+import { findElement } from '../../-private/find-element.ts';
 
 import { click } from '@ember/test-helpers';
 

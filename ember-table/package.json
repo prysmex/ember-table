@@ -68,7 +68,7 @@
     "@html-next/vertical-collection": "^5.0.5",
     "css-element-queries": "^0.4.0",
     "decorator-transforms": "^2.4.0",
-    "ember-classy-page-object": "^0.8.0",
+    "ember-cli-page-object": "^2.3.2",
     "ember-raf-scheduler": "^0.5.2",
     "hammerjs": "^2.0.8"
   },

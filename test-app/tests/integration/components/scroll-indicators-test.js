@@ -3,7 +3,7 @@ import { module, test } from 'qunit';
 import { generateTable } from '../../helpers/generate-table';
 import { componentModule } from '../../helpers/module';
 
-import { findElement } from 'ember-classy-page-object/extend';
+import { findElement } from 'ember-table/test-support';
 import { scrollTo } from '@ember/test-helpers';
 
 import TablePage from 'ember-table/test-support/pages/ember-table';

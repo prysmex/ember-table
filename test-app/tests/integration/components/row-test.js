@@ -8,7 +8,7 @@ import {
 import { parameterizedComponentModule } from '../../helpers/module';
 
 import TablePage from 'ember-table/test-support/pages/ember-table';
-import { collection, hasClass } from 'ember-classy-page-object';
+import { collection, hasClass } from 'ember-table/test-support';
 import CustomRow from 'test-app/components/custom-row/component';
 
 let table = new TablePage({

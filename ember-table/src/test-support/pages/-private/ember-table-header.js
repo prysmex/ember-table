@@ -1,5 +1,9 @@
-import PageObject, { alias, collection, hasClass, triggerable } from 'ember-classy-page-object';
-import { findElement } from 'ember-classy-page-object/extend';
+import { hasClass, triggerable } from 'ember-cli-page-object';
+import { alias } from 'ember-cli-page-object/macros';
+
+import PageObject from '../../-private/page-object.ts';
+import { collection } from '../../-private/collection.ts';
+import { findElement } from '../../-private/find-element.ts';
 import { click, triggerKeyEvent } from '@ember/test-helpers';
 
 import { mouseDown, mouseMove, mouseUp } from '../../helpers/mouse';

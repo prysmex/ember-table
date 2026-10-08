@@ -1,4 +1,4 @@
-import { collection } from 'ember-classy-page-object';
+import { collection } from '../../-private/collection.ts';
 import EmberTableBody, { BodyCell } from './ember-table-body';
 
 export default EmberTableBody.extend({

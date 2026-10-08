@@ -1,5 +1,5 @@
-import PageObject from 'ember-classy-page-object';
-import { findElement } from 'ember-classy-page-object/extend';
+import PageObject from '../../-private/page-object.ts';
+import { findElement } from '../../-private/find-element.ts';
 
 /**
  * Page object for "Loading More" component that renders beneath the body.

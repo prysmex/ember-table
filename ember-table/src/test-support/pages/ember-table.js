@@ -1,5 +1,7 @@
-import PageObject, { alias } from 'ember-classy-page-object';
-import { findElement } from 'ember-classy-page-object/extend';
+import { alias } from 'ember-cli-page-object/macros';
+
+import PageObject from '../-private/page-object.ts';
+import { findElement } from '../-private/find-element.ts';
 
 import EmberTableBodyPage from './-private/ember-table-body';
 import EmberTableFooterPage from './-private/ember-table-footer';
