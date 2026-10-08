@@ -21,3 +21,4 @@ testem.log
 
 # pnpm content store (created next to the repo when the global store is on another filesystem)
 .pnpm-store/
+.vercel
