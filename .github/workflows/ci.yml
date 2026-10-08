@@ -3,86 +3,90 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
+concurrency:
+  group: ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 7
-
-    steps:
-      - name: "Install StepSecurity Action"
-        id: step_security
-        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
-        with:
-          egress-policy: audit
-
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Install mise and tools
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
-        with:
-          install: true
-          cache: true
-      - name: Install Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install Dependencies
-        run: npm ci --legacy-peer-deps
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Run Tests
-        run: npm run test:ember
-        env:
-          CI: true
-
-  test-ember-try:
-    name: Run Tests
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
-    strategy:
-      fail-fast: false
-      matrix:
-        ember-version:
-          [
-            embroider-safe,
-            # embroider-optimized,
-            ember-lts-5.12,
-            ember-lts-6.4,
-            ember-release,
-            # ember-production,
-            ember-default-docs
-          ]
-
     steps:
       - name: "Install StepSecurity Action"
-        id: step_security
         uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
         with:
           egress-policy: audit
-
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Install mise and tools
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      - uses: actions/checkout@v6
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
         with:
           install: true
           cache: true
-      - name: Install Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: npm
-
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
       - name: Install Dependencies
-        run: npm ci --legacy-peer-deps
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
 
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+    steps:
+      - name: "Install StepSecurity Action"
+        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@v6
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          install: true
+          cache: true
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
       - name: Run Tests
-        run: npx ember try:one ${{ matrix.ember-version }} --skip-cleanup
+        run: pnpm test
+        env:
+          CI: true
+      - id: set-matrix
+        working-directory: test-app
+        run: echo "matrix=$(pnpm -s dlx @embroider/try list)" >> $GITHUB_OUTPUT
+
+  try-scenarios:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    needs: test
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.test.outputs.matrix) }}
+
+    steps:
+      - name: "Install StepSecurity Action"
+        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@v6
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          install: true
+          cache: true
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      # Applied to both packages so the addon's dev copy of ember-source matches
+      # the app under test; otherwise the addon's modules resolve a second Ember.
+      - name: Apply Scenario
+        run: |
+          (cd test-app && pnpm dlx @embroider/try apply ${{ matrix.name }})
+          (cd ember-table && pnpm dlx @embroider/try apply ${{ matrix.name }})
+      - name: Install Dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Run Tests
+        working-directory: test-app
+        run: pnpm test
+        env:
+          CI: true

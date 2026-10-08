@@ -1,5 +1,6 @@
 dist/
 node_modules/
 coverage/
-yarn.lock
+tmp/
+pnpm-lock.yaml
 CHANGELOG.md
