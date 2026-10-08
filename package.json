@@ -17,5 +17,8 @@
     "concurrently": "^9.2.4",
     "prettier": "^3.9.6",
     "prettier-plugin-ember-template-tag": "^2.1.8"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }

@@ -45,7 +45,9 @@ Classic apps can also invoke them by name (`<EmberTable>`) from loose-mode templ
 
 Documentation is available at: https://opensource.addepar.com/ember-table/docs
 
-The documentation site is built with [Docfy](https://docfy.dev) from the Markdown in
+The documentation site deploys to [Vercel](https://vercel.com) from the repository root
+(`vercel.json`): it installs the workspace, builds the addon, and serves the test app's
+production build. It is built with [Docfy](https://docfy.dev) from the Markdown in
 [`test-app/docs`](./test-app/docs). Every example is a live `gjs` component whose source is shown
 alongside it. To run the docs locally, clone the repo, run `pnpm install && pnpm start`, and open
 the URL Vite prints (`/docs`).

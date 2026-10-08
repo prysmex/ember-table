@@ -61,4 +61,4 @@ written in TypeScript, tested and documented in a Vite app.
 - Replace `@ember/render-modifiers` with `ember-modifier` (or local modifiers).
 - Move the classic models from computed properties and observers to
   autotracking.
-- Docs deployment needs a workflow for the Docfy site (Vercel is planned).
+- Link the repository to a Vercel project (config is in `vercel.json`).
