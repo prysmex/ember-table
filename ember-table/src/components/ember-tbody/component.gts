@@ -5,6 +5,7 @@ import RowWrapper from '../-private/row-wrapper.gts';
 import TableSection, { type SelectionDetails } from '../-private/table-section.ts';
 import EmberTr from '../ember-tr/component.gts';
 import type { TableApiArg } from '../../-private/unwrap-api.ts';
+import { defaultTo } from '../../-private/utils/default-to.ts';
 import type { CellApi, RowApi, SelectionMode } from '../../-private/types.ts';
 import type { EmberTableColumn, EmberTableRow, TableRowMeta } from '../../index.ts';
 
@@ -187,27 +188,27 @@ export default class EmberTbody<
   ColumnType extends EmberTableColumn = EmberTableColumn,
 > extends TableSection<RowType, ColumnType, EmberTbodySignature<RowType, ColumnType>> {
   get rowToggleMode() {
-    return this.args.rowToggleMode ?? false;
+    return defaultTo(this.args.rowToggleMode, false);
   }
 
   get estimateRowHeight() {
-    return this.args.estimateRowHeight ?? 30;
+    return defaultTo(this.args.estimateRowHeight, 30);
   }
 
   get staticHeight() {
-    return this.args.staticHeight ?? false;
+    return defaultTo(this.args.staticHeight, false);
   }
 
   get bufferSize() {
-    return this.args.bufferSize ?? 1;
+    return defaultTo(this.args.bufferSize, 1);
   }
 
   get renderAll() {
-    return this.args.renderAll ?? false;
+    return defaultTo(this.args.renderAll, false);
   }
 
   get key() {
-    return this.args.key ?? '@identity';
+    return defaultTo(this.args.key, '@identity');
   }
 
   get containerSelector() {

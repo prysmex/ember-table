@@ -243,3 +243,31 @@ module('[Unit] ember-thead', function(hooks) {
     assert.strictEqual(header.logicalWidth, expectedHeaderWidth, 'meta data is preserved');
   });
 });
+
+module('Integration | Component | ember-thead yield', function (hooks) {
+  setupRenderingTest(hooks);
+
+  test('yields the row api for custom row components', async function (this: TableTestContext, assert) {
+    let { rows, columns } = tableData();
+
+    await render(<template>
+      <EmberTable as |t|>
+        <EmberThead @api={{t}} @columns={{columns}} as |h|>
+          <EmberTr @api={{h.api}} as |r|>
+            <EmberTh @api={{r}} />
+          </EmberTr>
+        </EmberThead>
+
+        <EmberTbody @api={{t}} @rows={{rows}} as |b|>
+          <EmberTr @api={{b}} as |r|>
+            <EmberTd @api={{r}} />
+          </EmberTr>
+        </EmberTbody>
+      </EmberTable>
+    </template>);
+
+    let table = new TablePage();
+    assert.strictEqual(table.headers.length, 4, 'header cells render from the yielded api');
+    assert.strictEqual(table.headers.objectAt(0).text, 'A');
+  });
+});

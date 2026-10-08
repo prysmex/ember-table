@@ -6,6 +6,7 @@ import { registerDestructor } from '@ember/destroyable';
 import type Owner from '@ember/owner';
 import CollapseTree from '../../-private/collapse-tree.ts';
 import { unwrapApi, type TableApiArg } from '../../-private/unwrap-api.ts';
+import { defaultTo } from '../../-private/utils/default-to.ts';
 import type {
   CollapseTree as CollapseTreeShape,
   RowMeta,
@@ -124,7 +125,7 @@ export default abstract class TableSection<
   }
 
   @dependentKeyCompat get rows(): readonly RowType[] {
-    return this.args.rows ?? EMPTY;
+    return defaultTo(this.args.rows, EMPTY);
   }
 
   @dependentKeyCompat get sorts(): readonly EmberTableSort[] {
@@ -144,11 +145,11 @@ export default abstract class TableSection<
   }
 
   @dependentKeyCompat get enableCollapse(): boolean {
-    return this.args.enableCollapse ?? true;
+    return defaultTo(this.args.enableCollapse, true);
   }
 
   @dependentKeyCompat get enableTree(): boolean {
-    return this.args.enableTree ?? true;
+    return defaultTo(this.args.enableTree, true);
   }
 
   @dependentKeyCompat get selection(): RowType[] | RowType | null | undefined {
@@ -160,7 +161,7 @@ export default abstract class TableSection<
   }
 
   @dependentKeyCompat get selectingChildrenSelectsParent(): boolean {
-    return this.args.selectingChildrenSelectsParent ?? true;
+    return defaultTo(this.args.selectingChildrenSelectsParent, true);
   }
 
   get columns() {
@@ -172,11 +173,11 @@ export default abstract class TableSection<
   }
 
   get checkboxSelectionMode(): SelectionMode {
-    return this.args.checkboxSelectionMode ?? 'multiple';
+    return defaultTo(this.args.checkboxSelectionMode, 'multiple');
   }
 
   get rowSelectionMode(): SelectionMode {
-    return this.args.rowSelectionMode ?? 'multiple';
+    return defaultTo(this.args.rowSelectionMode, 'multiple');
   }
 
   get canSelect() {

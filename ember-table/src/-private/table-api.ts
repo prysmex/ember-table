@@ -6,7 +6,7 @@ import type { ColumnTree, CompareFunction, SortFunction } from './types.ts';
 export interface TableHead {
   columnTree: ColumnTree;
   sorts: readonly EmberTableSort[];
-  sortFunction: SortFunction;
+  sortFunction: SortFunction | null;
   compareFunction: CompareFunction;
   sortEmptyLast: boolean;
   scrollIndicators: boolean | string;
