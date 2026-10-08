@@ -1,5 +1,6 @@
 // Scenarios for `pnpm dlx @embroider/try`, run from this directory.
-// ember-source 6.4 is the addon's peer dependency floor.
+// ember-source 6.4 is the oldest version the Vite test app can run; the
+// peer floor (5.12) is lower and verified in a consuming ember-cli app.
 export default {
   scenarios: [
     {

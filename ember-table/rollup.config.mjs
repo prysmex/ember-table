@@ -55,6 +55,9 @@ export default {
         { src: '../README.md', dest: '.' },
         { src: '../LICENSE.md', dest: '.' },
       ],
+      // `addon.clean()` deletes files the bundle did not emit, so copy after
+      // the bundle is written.
+      hook: 'writeBundle',
     }),
   ],
 };

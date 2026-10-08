@@ -8,6 +8,7 @@ import { didInsert, didUpdate } from '@ember/render-modifiers';
 import ResizeSensor from 'css-element-queries/src/ResizeSensor';
 import type { TableApiArg } from '../../-private/unwrap-api.ts';
 import { unwrapApi } from '../../-private/unwrap-api.ts';
+import { defaultTo } from '../../-private/utils/default-to.ts';
 
 export interface EmberTableLoadingMoreSignature {
   Element: HTMLDivElement;
@@ -58,15 +59,15 @@ export default class EmberTableLoadingMore extends Component<EmberTableLoadingMo
   }
 
   get canLoadMore() {
-    return this.args.canLoadMore ?? true;
+    return defaultTo(this.args.canLoadMore, true);
   }
 
   get isLoading() {
-    return this.args.isLoading ?? false;
+    return defaultTo(this.args.isLoading, false);
   }
 
   get center() {
-    return this.args.center ?? true;
+    return defaultTo(this.args.center, true);
   }
 
   get style() {

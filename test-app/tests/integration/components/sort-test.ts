@@ -132,6 +132,27 @@ module('Integration | sort', function() {
       assert.true(checkRowOrder(table, ['Zoe', '', 'Alex']), '3rd state / initial state works');
     });
 
+    test('a null sortFunction turns off client-side sorting', async function (this: TableTestContext, assert) {
+      let columns = [
+        {
+          name: 'Name',
+          valuePath: 'name',
+        },
+      ];
+
+      let rows = [{ name: 'Zoe' }, { name: 'Alex' }, { name: 'Liz' }];
+
+      await generateTable(this, { columns, rows, sortFunction: null });
+
+      let firstHeader = table.headers.objectAt(0);
+
+      assert.true(firstHeader.isSortable, 'header is still sortable');
+
+      await firstHeader.click();
+      assert.true(firstHeader.sortIndicator.isDescending, 'sort is applied');
+      assert.true(checkRowOrder(table, ['Zoe', 'Alex', 'Liz']), 'rows keep their order');
+    });
+
     test('sends the onUpdateSorts action', async function (this: TableTestContext, assert) {
       this.set('onUpdateSorts', (sorts: EmberTableSort[]) => {
         assert.strictEqual(sorts.length, 1);

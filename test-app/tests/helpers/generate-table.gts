@@ -37,6 +37,7 @@ function fullTable(ctx: TableTestContext) {
         @resizeMode={{ctx.resizeMode}}
         @sorts={{ctx.sorts}}
         @sortEmptyLast={{ctx.sortEmptyLast}}
+        @sortFunction={{ctx.sortFunction}}
         @widthConstraint={{ctx.widthConstraint}}
         @onUpdateSorts={{ctx.onUpdateSorts}}
         @onReorder={{ctx.onReorder}}

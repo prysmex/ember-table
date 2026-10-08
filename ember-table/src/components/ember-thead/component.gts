@@ -15,7 +15,11 @@ import type { WithBoundArgs } from '@glint/template';
 import { closest } from '../../-private/utils/element.ts';
 import MetaCache from '../../-private/meta-cache.ts';
 import { sortMultiple, compareValues } from '../../-private/utils/sort.ts';
-import ColumnTree, { type TableColumnMeta, type TreeColumn } from '../../-private/column-tree.ts';
+import { defaultTo } from '../../-private/utils/default-to.ts';
+import ColumnTree, {
+  type TableColumnMeta,
+  type TreeColumn,
+} from '../../-private/column-tree.ts';
 import EmberTr from '../ember-tr/component.gts';
 import { unwrapApi, type TableApiArg } from '../../-private/unwrap-api.ts';
 import type { TableHead } from '../../-private/table-api.ts';
@@ -27,7 +31,11 @@ import type {
   HeaderRowMeta,
   SortFunction,
 } from '../../-private/types.ts';
-import type { EmberTableColumn, EmberTableRow, EmberTableSort } from '../../index.ts';
+import type {
+  EmberTableColumn,
+  EmberTableRow,
+  EmberTableSort,
+} from '../../index.ts';
 
 let isTestingThead = false;
 export function setupTHeadForTest(value: boolean) {
@@ -55,7 +63,6 @@ export interface EmberTheadArgs<
    */
   columnKeyPath?: string;
 
-
   /**
    * The column definitions for the table.
    */
@@ -65,7 +72,11 @@ export interface EmberTheadArgs<
    * Compares two cell values when sorting. The default orders empty values (`null`, `undefined`, `NaN` and `''`) first, or last with `@sortEmptyLast`.
    * @default compareValues
    */
-  compareFunction?: <T = RowType[keyof RowType]>(valueA: T, valueB: T, sortEmptyLast: boolean) => number;
+  compareFunction?: <T = RowType[keyof RowType]>(
+    valueA: T,
+    valueB: T,
+    sortEmptyLast: boolean,
+  ) => number;
 
   /**
    * A numeric adjustment to be applied to the constraint on the table's size.
@@ -148,16 +159,19 @@ export interface EmberTheadArgs<
   /**
    * An optional sort.
    * If not specified, defaults to `<sortMultiple>`, which sorts by each `sort` in `sorts`, in order.
+   * Pass `null` to turn off client-side sorting (e.g. when rows are sorted by the server).
    * @default sortMultiple
    */
-  sortFunction?: <T = RowType[keyof RowType]>(
-    itemA: T,
-    itemB: T,
-    /** @default [] */
-  sorts: EmberTableSort[],
-    compare: (valueA: T, valueB: T, sortEmptyLast: boolean) => number,
-    sortEmptyLast: boolean
-  ) => number;
+  sortFunction?:
+    | (<T = RowType[keyof RowType]>(
+        itemA: T,
+        itemB: T,
+        /** @default [] */
+        sorts: EmberTableSort[],
+        compare: (valueA: T, valueB: T, sortEmptyLast: boolean) => number,
+        sortEmptyLast: boolean,
+      ) => number)
+    | null;
 
   /**
    * An ordered array of the sorts applied to the table.
@@ -168,7 +182,13 @@ export interface EmberTheadArgs<
    * Sets a constraint on the table's size, such that it must be greater than, less than, or equal to the size of the containing element.
    * @default 'none'
    */
-  widthConstraint?: 'none' | 'eq-container' | 'eq-container-slack' | 'gte-container' | 'gte-container-slack' | 'lte-container';
+  widthConstraint?:
+    | 'none'
+    | 'eq-container'
+    | 'eq-container-slack'
+    | 'gte-container'
+    | 'gte-container-slack'
+    | 'lte-container';
 }
 
 export interface EmberTheadSignature<
@@ -186,6 +206,8 @@ export interface EmberTheadSignature<
         isHeader: true;
         /** The number of header rows (more than one with subcolumns). */
         rowsCount: number;
+        /** The row API, to pass as `@api` to a custom row component. */
+        api: HeaderRowApi<ColumnType>;
         /** `<EmberTr>` for this header row, with `@api` set. */
         row: WithBoundArgs<typeof EmberTr<HeaderRowApi<ColumnType>>, 'api'>;
       },
@@ -202,15 +224,20 @@ class HeadColumnTree extends ColumnTree {
   @readOnly('_head.columns') declare columns: ColumnTree['columns'];
   @readOnly('_head.sorts') declare sorts: ColumnTree['sorts'];
   @readOnly('_head.fillMode') declare fillMode: ColumnTree['fillMode'];
-  @readOnly('_head.initialFillMode') declare initialFillMode: ColumnTree['initialFillMode'];
-  @readOnly('_head.fillColumnIndex') declare fillColumnIndex: ColumnTree['fillColumnIndex'];
+  @readOnly('_head.initialFillMode')
+  declare initialFillMode: ColumnTree['initialFillMode'];
+  @readOnly('_head.fillColumnIndex')
+  declare fillColumnIndex: ColumnTree['fillColumnIndex'];
   @readOnly('_head.resizeMode') declare resizeMode: ColumnTree['resizeMode'];
-  @readOnly('_head.widthConstraint') declare widthConstraint: ColumnTree['widthConstraint'];
+  @readOnly('_head.widthConstraint')
+  declare widthConstraint: ColumnTree['widthConstraint'];
   @readOnly('_head.containerWidthAdjustment')
   declare containerWidthAdjustment: ColumnTree['containerWidthAdjustment'];
   @readOnly('_head.enableSort') declare enableSort: ColumnTree['enableSort'];
-  @readOnly('_head.enableResize') declare enableResize: ColumnTree['enableResize'];
-  @readOnly('_head.enableReorder') declare enableReorder: ColumnTree['enableReorder'];
+  @readOnly('_head.enableResize')
+  declare enableResize: ColumnTree['enableResize'];
+  @readOnly('_head.enableReorder')
+  declare enableReorder: ColumnTree['enableReorder'];
 }
 
 /**
@@ -219,9 +246,9 @@ class HeadColumnTree extends ColumnTree {
  * than one with subcolumns); without a block it renders default header cells.
  */
 export default class EmberThead<
-    RowType extends EmberTableRow = EmberTableRow,
-    ColumnType extends EmberTableColumn = EmberTableColumn,
-  >
+  RowType extends EmberTableRow = EmberTableRow,
+  ColumnType extends EmberTableColumn = EmberTableColumn,
+>
   extends Component<EmberTheadSignature<RowType, ColumnType>>
   implements TableHead
 {
@@ -241,7 +268,10 @@ export default class EmberThead<
       _head: this,
       columnMetaCache,
       onReorder: (column, closestColumn) =>
-        this.args.onReorder?.(column as ColumnType, closestColumn as ColumnType),
+        this.args.onReorder?.(
+          column as ColumnType,
+          closestColumn as ColumnType,
+        ),
       onResize: (column) => this.args.onResize?.(column as ColumnType),
     });
     // The components see the models through the interfaces in `types.ts`.
@@ -255,24 +285,26 @@ export default class EmberThead<
   }
   // The yielded row is typed as a header row (`EmberTr<HeaderRowApi>`), so it
   // yields header cells; this is the one place that is asserted.
-  // this is the one place that is asserted.
   asHeaderRow = (row: object) =>
-    row as EmberTheadSignature<RowType, ColumnType>['Blocks']['default'][0]['row'];
+    row as EmberTheadSignature<
+      RowType,
+      ColumnType
+    >['Blocks']['default'][0]['row'];
 
   get unwrappedApi() {
     return unwrapApi(this.args.api)!;
   }
 
   @dependentKeyCompat get columns(): readonly ColumnType[] {
-    return this.args.columns ?? EMPTY;
+    return defaultTo(this.args.columns, EMPTY);
   }
 
   @dependentKeyCompat get sorts(): readonly EmberTableSort[] {
-    return this.args.sorts ?? EMPTY;
+    return defaultTo(this.args.sorts, EMPTY);
   }
 
   @dependentKeyCompat get fillMode(): FillMode {
-    return this.args.fillMode ?? 'equal-column';
+    return defaultTo(this.args.fillMode, 'equal-column');
   }
 
   @dependentKeyCompat get initialFillMode(): FillMode | undefined {
@@ -284,11 +316,11 @@ export default class EmberThead<
   }
 
   @dependentKeyCompat get resizeMode() {
-    return this.args.resizeMode ?? 'standard';
+    return defaultTo(this.args.resizeMode, 'standard');
   }
 
   @dependentKeyCompat get widthConstraint() {
-    return this.args.widthConstraint ?? 'none';
+    return defaultTo(this.args.widthConstraint, 'none');
   }
 
   @dependentKeyCompat get containerWidthAdjustment() {
@@ -300,27 +332,27 @@ export default class EmberThead<
   }
 
   @dependentKeyCompat get enableResize() {
-    return this.args.enableResize ?? true;
+    return defaultTo(this.args.enableResize, true);
   }
 
   @dependentKeyCompat get enableReorder() {
-    return this.args.enableReorder ?? true;
+    return defaultTo(this.args.enableReorder, true);
   }
 
   get sortFunction() {
-    return (this.args.sortFunction ?? sortMultiple) as SortFunction;
+    return defaultTo(this.args.sortFunction, sortMultiple) as SortFunction | null;
   }
 
   get compareFunction() {
-    return this.args.compareFunction ?? compareValues;
+    return defaultTo(this.args.compareFunction, compareValues);
   }
 
   get sortEmptyLast() {
-    return this.args.sortEmptyLast ?? false;
+    return defaultTo(this.args.sortEmptyLast, false);
   }
 
   get scrollIndicators() {
-    return this.args.scrollIndicators ?? false;
+    return defaultTo(this.args.scrollIndicators, false);
   }
 
   get wrappedRowsCount() {
@@ -351,11 +383,16 @@ export default class EmberThead<
               return getSorts();
             },
             sendUpdateSort: this.sendUpdateSort,
-          }))
+          })),
         );
 
-        return { cells, rowMeta, rowsCount: rows.length, isHeader: true as const };
-      })
+        return {
+          cells,
+          rowMeta,
+          rowsCount: rows.length,
+          isHeader: true as const,
+        };
+      }),
     );
   }
 
@@ -372,10 +409,13 @@ export default class EmberThead<
     }
 
     let present = emberA(keys.filter(isPresent));
-    assert('if columnKeyPath is specified, every column must have a key', present.length === keys.length);
+    assert(
+      'if columnKeyPath is specified, every column must have a key',
+      present.length === keys.length,
+    );
     assert(
       'if columnKeyPath is specified, no two columns can share the same key',
-      present.uniq().length === present.length
+      present.uniq().length === present.length,
     );
   }
 
@@ -437,6 +477,7 @@ export default class EmberThead<
               cells=api.cells
               isHeader=api.isHeader
               rowsCount=api.rowsCount
+              api=api
               row=(this.asHeaderRow (component EmberTr api=api))
             )
           }}
