@@ -1,5 +1,4 @@
 import { test } from 'qunit';
-import hbs from 'htmlbars-inline-precompile';
 import { A as emberA } from '@ember/array';
 
 import { componentModule } from '../../helpers/module';
@@ -16,13 +15,15 @@ function isNearTo(value, expected, epsilon = 0.01) {
   return Math.abs(value - expected) <= epsilon;
 }
 
-const standardTemplate = hbs`
+// Reads the rows from the test context, so `this.set(...)` re-renders.
+function standardTemplate(ctx) {
+  return <template>
   <div style="height: 500px;">
     <div class="ember-table">
       <div class="ember-table-overflow">
         <table>
           <thead>
-            {{#each this.headerRows as |row|}}
+            {{#each ctx.headerRows as |row|}}
               <tr>
                 {{#each row as |item|}}
                   <th style="width: 100px; min-width: 100px; height: 50px;">{{item}}</th>
@@ -31,7 +32,7 @@ const standardTemplate = hbs`
             {{/each}}
           </thead>
           <tbody>
-            {{#each this.bodyRows as |row|}}
+            {{#each ctx.bodyRows as |row|}}
               <tr>
                 {{#each row as |item|}}
                   <td style="width: 100px; min-width: 100px; height: 50px;">{{item}}</td>
@@ -40,7 +41,7 @@ const standardTemplate = hbs`
             {{/each}}
           </tbody>
           <tfoot>
-            {{#each this.footerRows as |row|}}
+            {{#each ctx.footerRows as |row|}}
               <tr>
                 {{#each row as |item|}}
                   <td style="width: 100px; min-width: 100px; height: 50px;">{{item}}</td>
@@ -52,7 +53,8 @@ const standardTemplate = hbs`
       </div>
     </div>
   </div>
-`;
+</template>;
+}
 
 /**
  * Constructs a matrix m by n
@@ -177,7 +179,7 @@ componentModule('Unit | Private | TableStickyPolyfill', function() {
     this.set('bodyRows', constructMatrix(20, 3, 'tbody'));
     this.set('footerRows', constructMatrix(3, 3, 'tfoot'));
 
-    await render(standardTemplate);
+    await render(standardTemplate(this));
 
     setupTableStickyPolyfill(find('thead'));
     setupTableStickyPolyfill(find('tfoot'));
@@ -201,7 +203,7 @@ componentModule('Unit | Private | TableStickyPolyfill', function() {
     this.set('bodyRows', constructMatrix(20, 3));
     this.set('footerRows', constructMatrix(3, 3));
 
-    await render(standardTemplate);
+    await render(standardTemplate(this));
 
     setupTableStickyPolyfill(find('thead'));
     setupTableStickyPolyfill(find('tfoot'));
@@ -222,7 +224,7 @@ componentModule('Unit | Private | TableStickyPolyfill', function() {
     this.set('bodyRows', constructMatrix(20, 3));
     this.set('footerRows', constructMatrix(3, 3));
 
-    await render(standardTemplate);
+    await render(standardTemplate(this));
 
     setupTableStickyPolyfill(find('thead'));
     setupTableStickyPolyfill(find('tfoot'));
@@ -243,7 +245,7 @@ componentModule('Unit | Private | TableStickyPolyfill', function() {
     this.set('bodyRows', constructMatrix(20, 3));
     this.set('footerRows', constructMatrix(3, 3));
 
-    await render(standardTemplate);
+    await render(standardTemplate(this));
 
     setupTableStickyPolyfill(find('thead'));
     setupTableStickyPolyfill(find('tfoot'));
@@ -270,7 +272,7 @@ componentModule('Unit | Private | TableStickyPolyfill', function() {
     this.set('bodyRows', constructMatrix(30, 3, 'body'));
     this.set('footerRows', constructMatrix(30, 3, 'footer'));
 
-    await render(standardTemplate);
+    await render(standardTemplate(this));
 
     setupTableStickyPolyfill(find('thead'));
     setupTableStickyPolyfill(find('tfoot'));
@@ -324,7 +326,7 @@ componentModule('Unit | Private | TableStickyPolyfill', function() {
     this.set('bodyRows', constructMatrix(30, 3, 'body'));
     this.set('footerRows', constructMatrix(3, 3, 'footer'));
 
-    await render(standardTemplate);
+    await render(standardTemplate(this));
 
     setupTableStickyPolyfill(find('thead'));
     setupTableStickyPolyfill(find('tfoot'));
@@ -381,7 +383,7 @@ componentModule('Unit | Private | TableStickyPolyfill', function() {
     this.set('bodyRows', constructMatrix(20, 3, 'body'));
     this.set('footerRows', constructMatrix(1, 3, 'footer'));
 
-    await render(standardTemplate);
+    await render(standardTemplate(this));
 
     setupTableStickyPolyfill(find('thead'));
     setupTableStickyPolyfill(find('tfoot'));
@@ -402,7 +404,7 @@ componentModule('Unit | Private | TableStickyPolyfill', function() {
       constructMatrix(2, 3, 'table footer has multiple lines of content', [1])
     );
 
-    await render(standardTemplate);
+    await render(standardTemplate(this));
 
     setupTableStickyPolyfill(find('thead'));
     setupTableStickyPolyfill(find('tfoot'));

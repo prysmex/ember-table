@@ -1,10 +1,10 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import hbs from 'htmlbars-inline-precompile';
 import { render, settled } from '@ember/test-helpers';
 
 import { generateTableValues, generateColumns } from '../../../helpers/generate-table';
 import TablePage from 'ember-table/test-support/pages/ember-table';
+import { EmberTable, EmberTbody, EmberTh, EmberThead, EmberTr } from 'ember-table';
 
 let table = new TablePage();
 
@@ -33,12 +33,13 @@ module('[Unit] ember-th', function(hooks) {
 
     let firstHeader = table.headers.objectAt(0);
 
-    await render(hbs`
+    const ctx = this;
+    await render(<template>
     <EmberTable @data-test-ember-table={{true}} as |t|>
       <EmberThead @api={{t}}
-        @columns={{this.columns}}
-        @sorts={{this.sorts}}
-        @onUpdateSorts={{this.onUpdateSorts}} as |h|
+        @columns={{ctx.columns}}
+        @sorts={{ctx.sorts}}
+        @onUpdateSorts={{ctx.onUpdateSorts}} as |h|
       >
         <EmberTr @api={{h}} as |r|>
           <EmberTh @api={{r}} as |column|>
@@ -49,9 +50,9 @@ module('[Unit] ember-th', function(hooks) {
         </EmberTr>
       </EmberThead>
 
-      <EmberTbody @api={{t}} @rows={{this.rows}} />
+      <EmberTbody @api={{t}} @rows={{ctx.rows}} />
     </EmberTable>
-    `);
+    </template>);
     await firstHeader.click();
 
     assert.strictEqual(
@@ -77,12 +78,13 @@ module('[Unit] ember-th', function(hooks) {
     this.set('columns', generateColumns(columnCount));
     this.set('rows', rows);
 
-    await render(hbs`
+    const ctx = this;
+    await render(<template>
       <EmberTable as |t|>
-        <EmberThead @api={{t}} @columns={{this.columns}} />
-        <EmberTbody @api={{t}} @rows={{this.rows}} />
+        <EmberThead @api={{t}} @columns={{ctx.columns}} />
+        <EmberTbody @api={{t}} @rows={{ctx.rows}} />
       </EmberTable>
-    `);
+    </template>);
 
     // eslint-disable-next-line ember/no-settled-after-test-helper
     await settled();
@@ -111,13 +113,14 @@ module('[Unit] ember-th', function(hooks) {
     this.set('columns', generateColumns(columnCount));
     this.set('rows', rows);
 
-    await render(hbs`
+    const ctx = this;
+    await render(<template>
       <EmberTable as |t|>
-        <EmberThead @api={{t}} @columns={{this.columns}} @widthConstraint="eq-container-slack" @initialFillMode="equal-column" />
+        <EmberThead @api={{t}} @columns={{ctx.columns}} @widthConstraint="eq-container-slack" @initialFillMode="equal-column" />
 
-        <EmberTbody @api={{t}} @rows={{this.rows}} />
+        <EmberTbody @api={{t}} @rows={{ctx.rows}} />
       </EmberTable>
-    `);
+    </template>);
 
     // eslint-disable-next-line ember/no-settled-after-test-helper
     await settled();

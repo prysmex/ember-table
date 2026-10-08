@@ -1,5 +1,4 @@
 import { module, test } from 'qunit';
-import hbs from 'htmlbars-inline-precompile';
 import a11yAudit from 'ember-a11y-testing/test-support/audit';
 import { set } from '@ember/object';
 
@@ -11,6 +10,7 @@ import { scrollTo } from '@ember/test-helpers';
 import TablePage from 'ember-table/test-support/pages/ember-table';
 import { collection, hasClass } from 'ember-table/test-support';
 import { find, findAll, render, settled } from '@ember/test-helpers';
+import { EmberTable, EmberTbody, EmberTfoot, EmberThead } from 'ember-table';
 
 let table = new TablePage({
   body: {
@@ -287,26 +287,27 @@ module('Integration | basic', function() {
       this.set('estimateRowHeight', rowHeight);
       this.set('containerHeight', containerHeight);
 
-      await render(hbs`
+      const ctx = this;
+      await render(<template>
         <style>
           .ember-table {
             max-height: initial;
           }
         </style>
-        <div id="container" style="height: {{this.containerHeight}}px; overflow: auto;">
+        <div id="container" style="height: {{ctx.containerHeight}}px; overflow: auto;">
           <EmberTable as |t|>
-            <EmberThead @api={{t}} @columns={{this.columns}} />
+            <EmberThead @api={{t}} @columns={{ctx.columns}} />
             <EmberTbody
               @api={{t}}
               @containerSelector="#container"
-              @rows={{this.rows}}
-              @estimateRowHeight={{this.estimateRowHeight}}
+              @rows={{ctx.rows}}
+              @estimateRowHeight={{ctx.estimateRowHeight}}
               @renderAll=false
               @bufferSize=0
             />
           </EmberTable>
         </div>
-      `);
+      </template>);
 
       // eslint-disable-next-line ember/no-settled-after-test-helper
       await settled();
@@ -316,21 +317,21 @@ module('Integration | basic', function() {
     test('it yields to inverse when tbody rows are empty', async function(assert) {
       this.set('columns', generateColumns(4));
       this.set('rows', []);
-      // Cannot change to angle-bracket since `{{else}}` is not supported
-      // Can rewrite this using named blocks (via polyfill):
-      // https://github.com/ember-polyfills/ember-named-blocks-polyfill
-      await render(hbs`
+      const ctx = this;
+      await render(<template>
         <div style="height: 500px;">
-          {{#ember-table as |t|}}
-            {{ember-thead api=t columns=this.columns}}
+          <EmberTable as |t|>
+            <EmberThead @api={{t}} @columns={{ctx.columns}} />
 
-            {{#ember-tbody api=t rows=this.rows as |b|}}
-            {{else}}
-              <div data-test-inverse-yield>inverse yield</div>
-            {{/ember-tbody}}
-          {{/ember-table}}
+            <EmberTbody @api={{t}} @rows={{ctx.rows}}>
+              <:default></:default>
+              <:else>
+                <div data-test-inverse-yield>inverse yield</div>
+              </:else>
+            </EmberTbody>
+          </EmberTable>
         </div>
-      `);
+      </template>);
 
       // eslint-disable-next-line ember/no-settled-after-test-helper
       await settled();
@@ -395,16 +396,17 @@ module('Integration | basic', function() {
       this.set('rows', generateRows(rowCount));
       this.set('showComponent', true);
 
-      await render(hbs`
-        {{#if this.showComponent}}
+      const ctx = this;
+      await render(<template>
+        {{#if ctx.showComponent}}
           <div id="container" style="height: 500px;">
             <EmberTable as |t|>
-              <EmberThead @api={{t}} @columns={{this.columns}} />
-              <EmberTbody @api={{t}} @rows={{this.rows}} @estimateHeigh={{13}} />
+              <EmberThead @api={{t}} @columns={{ctx.columns}} />
+              <EmberTbody @api={{t}} @rows={{ctx.rows}} @estimateHeigh={{13}} />
             </EmberTable>
           </div>
         {{/if}}
-      `);
+      </template>);
 
       document.querySelector('#ember-testing-container').style.height = '600px';
       this.set('showComponent', false);
@@ -418,19 +420,20 @@ module('Integration | basic', function() {
 
       this.set('showComponent', true);
 
-      await render(hbs`
-        {{#if this.showComponent}}
+      const ctx = this;
+      await render(<template>
+        {{#if ctx.showComponent}}
           <div id="container" style="height: 500px;">
             <EmberTable as |t|>
-              <EmberThead @api={{t}} @columns={{this.columns}} />
-              <EmberTbody @api={{t}} @rows={{this.rows}} @estimateHeigh={{13}} />
-              {{#if this.footerRows}}
-                <EmberTfoot @api={{t}} @rows={{this.footerRows}} />
+              <EmberThead @api={{t}} @columns={{ctx.columns}} />
+              <EmberTbody @api={{t}} @rows={{ctx.rows}} @estimateHeigh={{13}} />
+              {{#if ctx.footerRows}}
+                <EmberTfoot @api={{t}} @rows={{ctx.footerRows}} />
               {{/if}}
             </EmberTable>
           </div>
         {{/if}}
-      `);
+      </template>);
 
       this.set('footerRows', generateRows(1));
 

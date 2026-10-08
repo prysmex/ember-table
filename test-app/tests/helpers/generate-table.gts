@@ -1,6 +1,6 @@
-import hbs from 'htmlbars-inline-precompile';
+import { fn } from '@ember/helper';
 import { render, settled } from '@ember/test-helpers';
-import EmberTr from 'ember-table/components/ember-tr/component';
+import { EmberTable, EmberTbody, EmberTd, EmberTfoot, EmberTh, EmberThead, EmberTr } from 'ember-table';
 import {
   configureTableGeneration,
   generateColumns,
@@ -11,34 +11,38 @@ import {
 // reexport for use in tests
 export { configureTableGeneration, resetTableGenerationConfig, generateColumns, generateRows };
 
-const fullTable = hbs`
+// Renders a full table whose arguments are the test context's properties. The
+// template reads them from the context object, so `this.set(...)` in a test
+// re-renders as before.
+function fullTable(ctx) {
+  return <template>
   <div style="height: 500px;">
     <EmberTable data-test-main-table as |t|>
       <EmberThead
         @api={{t}}
-        @columns={{this.columns}}
-        @columnKeyPath={{this.columnKeyPath}}
-        @containerWidthAdjustment={{this.containerWidthAdjustment}}
-        @enableReorder={{this.enableReorder}}
-        @enableResize={{this.enableResize}}
-        @scrollIndicators={{this.scrollIndicators}}
-        @fillColumnIndex={{this.fillColumnIndex}}
-        @fillMode={{this.fillMode}}
-        @initialFillMode={{this.initialFillMode}}
-        @resizeMode={{this.resizeMode}}
-        @sorts={{this.sorts}}
-        @sortEmptyLast={{this.sortEmptyLast}}
-        @widthConstraint={{this.widthConstraint}}
-        @onUpdateSorts={{this.onUpdateSorts}}
-        @onReorder={{this.onReorder}}
-        @onResize={{this.onResize}}
+        @columns={{ctx.columns}}
+        @columnKeyPath={{ctx.columnKeyPath}}
+        @containerWidthAdjustment={{ctx.containerWidthAdjustment}}
+        @enableReorder={{ctx.enableReorder}}
+        @enableResize={{ctx.enableResize}}
+        @scrollIndicators={{ctx.scrollIndicators}}
+        @fillColumnIndex={{ctx.fillColumnIndex}}
+        @fillMode={{ctx.fillMode}}
+        @initialFillMode={{ctx.initialFillMode}}
+        @resizeMode={{ctx.resizeMode}}
+        @sorts={{ctx.sorts}}
+        @sortEmptyLast={{ctx.sortEmptyLast}}
+        @widthConstraint={{ctx.widthConstraint}}
+        @onUpdateSorts={{ctx.onUpdateSorts}}
+        @onReorder={{ctx.onReorder}}
+        @onResize={{ctx.onResize}}
 
         as |h|
       >
         <EmberTr @api={{h}} as |r|>
           <EmberTh
             @api={{r}}
-            @onContextMenu={{this.onHeaderCellContextMenu}}
+            @onContextMenu={{ctx.onHeaderCellContextMenu}}
             @class={{if r.columnMeta.isResizing "is-resizing"}}
           />
         </EmberTr>
@@ -46,44 +50,44 @@ const fullTable = hbs`
 
       <EmberTbody
         @api={{t}}
-        @rows={{this.rows}}
-        @estimateRowHeight={{this.estimateRowHeight}}
-        @staticHeight={{this.staticHeight}}
-        @enableCollapse={{this.enableCollapse}}
-        @enableTree={{this.enableTree}}
-        @key={{this.key}}
-        @bufferSize={{this.bufferSize}}
-        @idForFirstItem={{this.idForFirstItem}}
-        @onSelect={{this.onSelect}}
-        @selectingChildrenSelectsParent={{this.selectingChildrenSelectsParent}}
-        @checkboxSelectionMode={{this.checkboxSelectionMode}}
-        @rowSelectionMode={{this.rowSelectionMode}}
-        @rowToggleMode={{this.rowToggleMode}}
-        @selection={{this.selection}}
-        @selectionMatchFunction={{this.selectionMatchFunction}}
+        @rows={{ctx.rows}}
+        @estimateRowHeight={{ctx.estimateRowHeight}}
+        @staticHeight={{ctx.staticHeight}}
+        @enableCollapse={{ctx.enableCollapse}}
+        @enableTree={{ctx.enableTree}}
+        @key={{ctx.key}}
+        @bufferSize={{ctx.bufferSize}}
+        @idForFirstItem={{ctx.idForFirstItem}}
+        @onSelect={{ctx.onSelect}}
+        @selectingChildrenSelectsParent={{ctx.selectingChildrenSelectsParent}}
+        @checkboxSelectionMode={{ctx.checkboxSelectionMode}}
+        @rowSelectionMode={{ctx.rowSelectionMode}}
+        @rowToggleMode={{ctx.rowToggleMode}}
+        @selection={{ctx.selection}}
+        @selectionMatchFunction={{ctx.selectionMatchFunction}}
         as |b|
       >
-        <this.rowComponent
+        <ctx.rowComponent
           @api={{b}}
-          @onClick={{fn this.onRowClick}}
-          @onDoubleClick={{fn this.onRowDoubleClick}}
+          @onClick={{fn ctx.onRowClick}}
+          @onDoubleClick={{fn ctx.onRowDoubleClick}}
           as |r|
         >
           <EmberTd
             @api={{r}}
-            @onClick={{this.onCellClick}}
-            @onDoubleClick={{this.onCellDoubleClick}}
+            @onClick={{ctx.onCellClick}}
+            @onDoubleClick={{ctx.onCellDoubleClick}}
             @class={{if r.columnMeta.isResizing "is-resizing"}}
             as |value|
           >
             {{value}}
           </EmberTd>
-        </this.rowComponent>
+        </ctx.rowComponent>
       </EmberTbody>
 
       <EmberTfoot
         @api={{t}}
-        @rows={{this.footerRows}}
+        @rows={{ctx.footerRows}}
         as |f|
       >
         <EmberTr @api={{f}} as |r|>
@@ -94,7 +98,8 @@ const fullTable = hbs`
       </EmberTfoot>
     </EmberTable>
   </div>
-`;
+</template>;
+}
 
 const defaultActions = {
   onSelect(newRows) {
@@ -159,7 +164,7 @@ export function generateTableValues(
 export async function generateTable(testContext, ...args) {
   generateTableValues(testContext, ...args);
 
-  await render(fullTable);
+  await render(fullTable(testContext));
 
   // eslint-disable-next-line ember/no-settled-after-test-helper
   await settled();

@@ -1,5 +1,4 @@
 import { module, test } from 'qunit';
-import hbs from 'htmlbars-inline-precompile';
 
 import { generateTable, generateColumns } from '../../helpers/generate-table';
 import { componentModule } from '../../helpers/module';
@@ -9,6 +8,8 @@ import { fillIn, render, settled } from '@ember/test-helpers';
 
 import TablePage from 'ember-table/test-support/pages/ember-table';
 import { run } from '@ember/runloop';
+import { EmberTable, EmberTbody, EmberTd, EmberThead, EmberTr } from 'ember-table';
+import { Input } from '@ember/component';
 
 let table = new TablePage();
 
@@ -94,11 +95,12 @@ module('Integration | cell', function() {
       this.set('columns', generateColumns(columnCount));
       this.set('rows', rows);
 
-      await render(hbs`
+      const ctx = this;
+      await render(<template>
         <div id="container" style="height: 500px;">
           <EmberTable as |t|>
-            <EmberThead @api={{t}} @columns={{this.columns}} />
-            <EmberTbody @api={{t}} @rows={{this.rows}} as |b|>
+            <EmberThead @api={{t}} @columns={{ctx.columns}} />
+            <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
               <EmberTr @api={{b}} as |r|>
                 <EmberTd @api={{r}} as |cellValue|>
                   <Input @value={{cellValue}} />
@@ -107,7 +109,7 @@ module('Integration | cell', function() {
             </EmberTbody>
           </EmberTable>
         </div>
-      `);
+      </template>);
 
       // eslint-disable-next-line ember/no-settled-after-test-helper
       await settled();
@@ -132,12 +134,13 @@ module('Integration | cell', function() {
       this.set('columns', generateColumns(columnCount));
       this.set('rows', rows);
 
-      await render(hbs`
+      const ctx = this;
+      await render(<template>
         <EmberTable as |t|>
-          <EmberThead @api={{t}} @columns={{this.columns}} />
-          <EmberTbody @api={{t}} @rows={{this.rows}} />
+          <EmberThead @api={{t}} @columns={{ctx.columns}} />
+          <EmberTbody @api={{t}} @rows={{ctx.rows}} />
         </EmberTable>
-      `);
+      </template>);
 
       // eslint-disable-next-line ember/no-settled-after-test-helper
       await settled();
@@ -167,17 +170,18 @@ module('Integration | cell', function() {
       this.set('columns', generateColumns(columnCount));
       this.set('rows', rows);
 
-      await render(hbs`
+      const ctx = this;
+      await render(<template>
         <EmberTable as |t|>
           <EmberThead
             @api={{t}}
-            @columns={{this.columns}}
+            @columns={{ctx.columns}}
             @widthConstraint="eq-container-slack"
             @initialFillMode="equal-column"
           />
-          <EmberTbody @api={{t}} @rows={{this.rows}} />
+          <EmberTbody @api={{t}} @rows={{ctx.rows}} />
         </EmberTable>
-      `);
+      </template>);
 
       // eslint-disable-next-line ember/no-settled-after-test-helper
       await settled();

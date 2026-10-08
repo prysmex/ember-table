@@ -1,12 +1,12 @@
 import { module, test } from 'qunit';
 import { componentModule } from '../../helpers/module';
-import hbs from 'htmlbars-inline-precompile';
 
 import TablePage from 'ember-table/test-support/pages/ember-table';
 
 import { generateTable, generateColumns, generateRows } from '../../helpers/generate-table';
 
 import { find, render, settled } from '@ember/test-helpers';
+import { EmberTable, EmberTbody, EmberTd, EmberThead, EmberTr } from 'ember-table';
 
 let table = new TablePage();
 
@@ -124,10 +124,11 @@ module('Integration | Tree', () => {
       this.set('columns', generateColumns(columnCount));
       this.set('rows', generateRows(rowCount, rowDepth));
 
-      await render(hbs`
+      const ctx = this;
+      await render(<template>
         <EmberTable as |t|>
-          <EmberThead @api={{t}} @columns={{this.columns}} />
-          <EmberTbody @api={{t}} @rows={{this.rows}} as |b|>
+          <EmberThead @api={{t}} @columns={{ctx.columns}} />
+          <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
             <EmberTr @api={{b}} as |r|>
               <EmberTd @api={{r}} as |c|>
                 {{b.rowsCount}}
@@ -135,7 +136,7 @@ module('Integration | Tree', () => {
             </EmberTr>
           </EmberTbody>
         </EmberTable>
-      `);
+      </template>);
 
       // eslint-disable-next-line ember/no-settled-after-test-helper
       await settled();

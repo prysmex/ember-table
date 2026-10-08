@@ -1,8 +1,8 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { render } from '@ember/test-helpers';
-import hbs from 'htmlbars-inline-precompile';
 import { generateColumns, generateRows } from '../../helpers/generate-table';
+import { EmberTable, EmberTbody, EmberTd, EmberTh, EmberThead, EmberTr } from 'ember-table';
 
 module('Integration | attributes', function (hooks) {
   setupRenderingTest(hooks);
@@ -13,20 +13,21 @@ module('Integration | attributes', function (hooks) {
   });
 
   test('`class` and `@class` merge with the components own classes', async function (assert) {
-    await render(hbs`
+    const ctx = this;
+    await render(<template>
       <EmberTable class="attr-table" @class="arg-table" as |t|>
-        <EmberThead @api={{t}} @columns={{this.columns}} as |h|>
+        <EmberThead @api={{t}} @columns={{ctx.columns}} as |h|>
           <EmberTr @api={{h}} class="attr-head-row" @class="arg-head-row" as |r|>
             <EmberTh @api={{r}} class="attr-th" @class="arg-th" />
           </EmberTr>
         </EmberThead>
-        <EmberTbody @api={{t}} @rows={{this.rows}} as |b|>
+        <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
           <EmberTr @api={{b}} class="attr-row" @class="arg-row" as |r|>
             <EmberTd @api={{r}} class="attr-td" @class="arg-td" />
           </EmberTr>
         </EmberTbody>
       </EmberTable>
-    `);
+    </template>);
 
     assert.dom('.ember-table').hasClass('attr-table').hasClass('arg-table');
     assert.dom('thead tr').hasClass('et-tr').hasClass('attr-head-row').hasClass('arg-head-row');

@@ -1,4 +1,3 @@
-import hbs from 'htmlbars-inline-precompile';
 import { render, settled } from '@ember/test-helpers';
 import { module, test } from 'qunit';
 import { set } from '@ember/object';
@@ -8,6 +7,7 @@ import { generateTableValues } from '../../helpers/generate-table';
 import { componentModule } from '../../helpers/module';
 
 import TablePage from 'ember-table/test-support/pages/ember-table';
+import { EmberTable, EmberTbody, EmberTd, EmberTfoot, EmberTh, EmberThead, EmberTr } from 'ember-table';
 
 let table = new TablePage('[data-test-main-table]');
 let otherTable = new TablePage('[data-test-other-table]');
@@ -23,10 +23,11 @@ module('Integration | meta', function() {
 
       generateTableValues(this, { rowCount: 100, footerRowCount: 1 });
 
-      await render(hbs`
+      const ctx = this;
+      await render(<template>
         <div style="height: 500px;">
           <EmberTable data-test-main-table as |t| >
-            <EmberThead @api={{t}} @columns={{this.columns}} as |h|>
+            <EmberThead @api={{t}} @columns={{ctx.columns}} as |h|>
               <EmberTr @api={{h}} as |r|>
                 <EmberTh @api={{r}} as |column columnMeta|>
                   {{#if columnMeta.wasClicked}}column{{/if}}
@@ -34,9 +35,9 @@ module('Integration | meta', function() {
                 </EmberTh>
               </EmberTr>
             </EmberThead>
-            <EmberTbody @api={{t}} @rows={{this.rows}} as |b|>
+            <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
               <EmberTr @api={{b}} as |r|>
-                <EmberTd @api={{r}} @onClick={{this.onClick}} as |value column row cellMeta columnMeta rowMeta|>
+                <EmberTd @api={{r}} @onClick={{ctx.onClick}} as |value column row cellMeta columnMeta rowMeta|>
                   {{#if cellMeta.wasClicked}}cell{{/if}}
                   {{#if columnMeta.wasClicked}}column{{/if}}
                   {{#if rowMeta.wasClicked}}row{{/if}}
@@ -45,7 +46,7 @@ module('Integration | meta', function() {
               </EmberTr>
             </EmberTbody>
 
-            <EmberTfoot @api={{t}} @rows={{this.footerRows}} as |f|>
+            <EmberTfoot @api={{t}} @rows={{ctx.footerRows}} as |f|>
               <EmberTr @api={{f}} as |r|>
                 <EmberTd @api={{r}} as |value column row cellMeta columnMeta rowMeta|>
                   {{#if columnMeta.wasClicked}}column{{/if}}
@@ -55,7 +56,7 @@ module('Integration | meta', function() {
             </EmberTfoot>
           </EmberTable>
         </div>
-      `);
+      </template>);
 
       // eslint-disable-next-line ember/no-settled-after-test-helper
       await settled();
@@ -114,10 +115,11 @@ module('Integration | meta', function() {
 
       generateTableValues(this, { rowCount: 100, footerRowCount: 1 });
 
-      await render(hbs`
+      const ctx = this;
+      await render(<template>
         <div style="height: 500px;">
           <EmberTable data-test-main-table as |t| >
-            <EmberThead @api={{t}} @columns={{this.columns}} as |h|>
+            <EmberThead @api={{t}} @columns={{ctx.columns}} as |h|>
               <EmberTr @api={{h}} as |r|>
                 <EmberTh @api={{r}} as |column columnMeta|>
                   {{#if columnMeta.wasClicked}}column{{/if}}
@@ -126,9 +128,9 @@ module('Integration | meta', function() {
               </EmberTr>
             </EmberThead>
 
-            <EmberTbody @api={{t}} @rows={{this.rows}} as |b|>
+            <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
               <EmberTr @api={{b}} as |r|>
-                <EmberTd @api={{r}} @onClick={{this.onClick}} as |value column row cellMeta columnMeta rowMeta|>
+                <EmberTd @api={{r}} @onClick={{ctx.onClick}} as |value column row cellMeta columnMeta rowMeta|>
                   {{#if cellMeta.wasClicked}}cell{{/if}}
                   {{#if columnMeta.wasClicked}}column{{/if}}
                   {{#if rowMeta.wasClicked}}row{{/if}}
@@ -137,7 +139,7 @@ module('Integration | meta', function() {
               </EmberTr>
             </EmberTbody>
 
-            <EmberTfoot @api={{t}} @rows={{this.footerRows}} as |f|>
+            <EmberTfoot @api={{t}} @rows={{ctx.footerRows}} as |f|>
               <EmberTr @api={{f}} as |r|>
                 <EmberTd @api={{r}} as |value column row cellMeta columnMeta rowMeta|>
                   {{#if columnMeta.wasClicked}}column{{/if}}
@@ -149,7 +151,7 @@ module('Integration | meta', function() {
         </div>
         <div style="height: 500px;">
           <EmberTable data-test-other-table as |t| >
-            <EmberThead @api={{t}} @columns={{this.columns}} as |h|>
+            <EmberThead @api={{t}} @columns={{ctx.columns}} as |h|>
               <EmberTr @api={{h}} as |r|>
                 <EmberTh @api={{r}} as |column columnMeta|>
                   {{#if columnMeta.wasClicked}}column{{/if}}
@@ -158,9 +160,9 @@ module('Integration | meta', function() {
               </EmberTr>
             </EmberThead>
 
-            <EmberTbody @api={{t}} @rows={{this.rows}} as |b|>
+            <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
               <EmberTr @api={{b}} as |r|>
-                <EmberTd @api={{r}} @onClick={{this.onClick}} as |value column row cellMeta columnMeta rowMeta|>
+                <EmberTd @api={{r}} @onClick={{ctx.onClick}} as |value column row cellMeta columnMeta rowMeta|>
                   {{#if cellMeta.wasClicked}}cell{{/if}}
                   {{#if columnMeta.wasClicked}}column{{/if}}
                   {{#if rowMeta.wasClicked}}row{{/if}}
@@ -169,7 +171,7 @@ module('Integration | meta', function() {
               </EmberTr>
             </EmberTbody>
 
-            <EmberTfoot @api={{t}} @rows={{this.footerRows}} as |f|>
+            <EmberTfoot @api={{t}} @rows={{ctx.footerRows}} as |f|>
               <EmberTr @api={{f}} as |r|>
                 <EmberTd @api={{r}} as |value column row cellMeta columnMeta rowMeta|>
                   {{#if columnMeta.wasClicked}}column{{/if}}
@@ -179,7 +181,7 @@ module('Integration | meta', function() {
             </EmberTfoot>
           </EmberTable>
         </div>
-      `);
+      </template>);
 
       // eslint-disable-next-line ember/no-settled-after-test-helper
       await settled();
@@ -227,18 +229,19 @@ module('Integration | meta', function() {
 
       generateTableValues(this, { columnCount, columnOptions: { subcolumnCount } });
 
-      await render(hbs`
+      const ctx = this;
+      await render(<template>
         <EmberTable data-test-main-table as |t| >
-          <EmberThead @api={{t}} @columns={{this.columns}} as |h|>
+          <EmberThead @api={{t}} @columns={{ctx.columns}} as |h|>
             <EmberTr @api={{h}} as |r|>
               <EmberTh @api={{r}} as |column columnMeta rowMeta|>
                 {{rowMeta.index}}
               </EmberTh>
             </EmberTr>
           </EmberThead>
-          <EmberTbody @api={{t}} @rows={{this.rows}} />
+          <EmberTbody @api={{t}} @rows={{ctx.rows}} />
         </EmberTable>
-      `);
+      </template>);
 
       // eslint-disable-next-line ember/no-settled-after-test-helper
       await settled();

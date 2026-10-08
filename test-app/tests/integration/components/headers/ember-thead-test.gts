@@ -1,10 +1,11 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import hbs from 'htmlbars-inline-precompile';
 import { click, render } from '@ember/test-helpers';
 import TablePage from 'ember-table/test-support/pages/ember-table';
 import { A } from '@ember/array';
 import RSVP from 'rsvp';
+import { EmberTable, EmberTbody, EmberTd, EmberTh, EmberThead, EmberTr } from 'ember-table';
+import { on } from '@ember/modifier';
 
 // This is a "waiter"-style helper to use to ensure that
 // the interior of the ember-table has finished all of its
@@ -38,23 +39,23 @@ function sumHeaderWidths(table) {
   return table.headers.map(h => h.logicalWidth).reduce((sum, w) => sum + w, 0);
 }
 
-async function renderTable() {
-  await render(hbs`
-    <button id="add-column" {{on "click" this.addColumn}}>Add Column</button>
-    <button id="remove-column" {{on "click" this.removeColumn}}>Remove Column</button>
+async function renderTable(ctx) {
+  await render(<template>
+    <button id="add-column" {{on "click" ctx.addColumn}}>Add Column</button>
+    <button id="remove-column" {{on "click" ctx.removeColumn}}>Remove Column</button>
     <EmberTable @data-test-ember-table={{true}} as |t|>
       <EmberThead
         @api={{t}}
         @widthConstraint="eq-container"
-        @columns={{this.columns}}
-        @columnKeyPath={{this.columnKeyPath}} as |h|
+        @columns={{ctx.columns}}
+        @columnKeyPath={{ctx.columnKeyPath}} as |h|
       >
         <EmberTr @api={{h}} as |r|>
           <EmberTh @api={{r}} />
         </EmberTr>
       </EmberThead>
 
-      <EmberTbody @api={{t}} @rows={{this.rows}} as |b|>
+      <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
         <EmberTr @api={{b}} as |r|>
           <EmberTd @api={{r}} as |cellValue|>
             {{cellValue}}
@@ -62,7 +63,7 @@ async function renderTable() {
         </EmberTr>
       </EmberTbody>
     </EmberTable>
-    `);
+    </template>);
 
   await rafFinished();
 }

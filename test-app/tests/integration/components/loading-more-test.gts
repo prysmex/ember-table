@@ -1,25 +1,26 @@
 import { module, test } from 'qunit';
 import { componentModule } from '../../helpers/module';
 import TablePage from 'ember-table/test-support/pages/ember-table';
-import hbs from 'htmlbars-inline-precompile';
 import { render, settled } from '@ember/test-helpers';
 import { generateColumns } from '../../helpers/generate-table';
 import { scrollTo } from '@ember/test-helpers';
+import { EmberTable, EmberTableLoadingMore, EmberTbody, EmberThead } from 'ember-table';
 
 let table = new TablePage();
 
 module('Integration | loading more', function() {
   componentModule('basic', function() {
     test('it renders a custom spinner', async function(assert) {
-      await render(hbs`
+      const ctx = this;
+      await render(<template>
         <EmberTable as |t|>
-          <EmberThead @columns={{this.columns}} @api={{t}} />
+          <EmberThead @columns={{ctx.columns}} @api={{t}} />
           <EmberTbody @api={{t}} />
           <EmberTableLoadingMore @isLoading={{true}} @api={{t}}>
             <span data-test-custom-spinner></span>
           </EmberTableLoadingMore>
         </EmberTable>
-      `);
+      </template>);
 
       // eslint-disable-next-line ember/no-settled-after-test-helper
       await settled();
@@ -28,13 +29,14 @@ module('Integration | loading more', function() {
     });
 
     test('it is shown when isLoading is true', async function(assert) {
-      await render(hbs`
+      const ctx = this;
+      await render(<template>
         <EmberTable as |t|>
-          <EmberThead @columns={{this.columns}} @api={{t}} />
+          <EmberThead @columns={{ctx.columns}} @api={{t}} />
           <EmberTbody @api={{t}} />
           <EmberTableLoadingMore @isLoading={{true}} @api={{t}} />
         </EmberTable>
-      `);
+      </template>);
 
       // eslint-disable-next-line ember/no-settled-after-test-helper
       await settled();
@@ -43,13 +45,14 @@ module('Integration | loading more', function() {
     });
 
     test('it is not shown when isLoading is false', async function(assert) {
-      await render(hbs`
+      const ctx = this;
+      await render(<template>
         <EmberTable as |t|>
-          <EmberThead @columns={{this.columns}} @api={{t}} />
+          <EmberThead @columns={{ctx.columns}} @api={{t}} />
           <EmberTbody @api={{t}} />
           <EmberTableLoadingMore @isLoading={{false}} @api={{t}} />
         </EmberTable>
-      `);
+      </template>);
 
       // eslint-disable-next-line ember/no-settled-after-test-helper
       await settled();
@@ -58,13 +61,14 @@ module('Integration | loading more', function() {
     });
 
     test('it is included in layout when canLoadMore is true', async function(assert) {
-      await render(hbs`
+      const ctx = this;
+      await render(<template>
         <EmberTable as |t|>
-          <EmberThead @columns={{this.columns}} @api={{t}} />
+          <EmberThead @columns={{ctx.columns}} @api={{t}} />
           <EmberTbody @api={{t}} />
           <EmberTableLoadingMore @canLoadMore={{true}} @api={{t}} />
         </EmberTable>
-      `);
+      </template>);
 
       // eslint-disable-next-line ember/no-settled-after-test-helper
       await settled();
@@ -76,13 +80,14 @@ module('Integration | loading more', function() {
     });
 
     test('it is not included in layout when canLoadMore is false', async function(assert) {
-      await render(hbs`
+      const ctx = this;
+      await render(<template>
         <EmberTable as |t|>
-          <EmberThead @columns={{this.columns}} @api={{t}} />
+          <EmberThead @columns={{ctx.columns}} @api={{t}} />
           <EmberTbody @api={{t}} />
           <EmberTableLoadingMore @canLoadMore={{false}} @api={{t}} />
         </EmberTable>
-      `);
+      </template>);
 
       // eslint-disable-next-line ember/no-settled-after-test-helper
       await settled();
@@ -98,15 +103,16 @@ module('Integration | loading more', function() {
       let indicatorWidth = 10;
 
       this.set('columns', generateColumns(4, { width: 1000 }));
-      await render(hbs`
+      const ctx = this;
+      await render(<template>
         <EmberTable as |t|>
-          <EmberThead @columns={{this.columns}} @api={{t}} />
+          <EmberThead @columns={{ctx.columns}} @api={{t}} />
           <EmberTbody @api={{t}} />
           <EmberTableLoadingMore @isLoading={{true}} @center={{true}} @api={{t}}>
             <div style="display: inline-block; width: 10px; height: 10px; background: red"></div>
           </EmberTableLoadingMore>
         </EmberTable>
-      `);
+      </template>);
 
       // eslint-disable-next-line ember/no-settled-after-test-helper
       await settled();

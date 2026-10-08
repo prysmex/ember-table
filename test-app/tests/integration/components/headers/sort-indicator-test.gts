@@ -1,10 +1,10 @@
 import { module, test } from 'qunit';
 import { render } from '@ember/test-helpers';
-import hbs from 'htmlbars-inline-precompile';
 
 import { SortPage } from 'ember-table/test-support/pages/-private/ember-table-header';
 
 import { componentModule } from '../../../helpers/module';
+import { EmberThSortIndicator } from 'ember-table';
 
 let sort = new SortPage();
 
@@ -15,16 +15,17 @@ module('Integration | Component | ember-th/sort-indicator', function() {
         isSorted: true,
       });
 
-      await render(hbs`<EmberTh::SortIndicator @columnMeta={{this.columnMeta}} />`);
+      const ctx = this;
+      await render(<template><EmberThSortIndicator @columnMeta={{ctx.columnMeta}} /></template>);
 
       assert.true(sort.indicator.isPresent);
 
       // Template block usage:
-      await render(hbs`
-        <EmberTh::SortIndicator @columnMeta={{this.columnMeta}}>
+      await render(<template>
+        <EmberThSortIndicator @columnMeta={{ctx.columnMeta}}>
           template block text
-        </EmberTh::SortIndicator>
-      `);
+        </EmberThSortIndicator>
+      </template>);
 
       assert.strictEqual(sort.indicator.text, 'template block text');
     });
@@ -34,16 +35,17 @@ module('Integration | Component | ember-th/sort-indicator', function() {
         isSorted: false,
       });
 
-      await render(hbs`<EmberTh::SortIndicator @columnMeta={{this.columnMeta}} />`);
+      const ctx = this;
+      await render(<template><EmberThSortIndicator @columnMeta={{ctx.columnMeta}} /></template>);
 
       assert.false(sort.indicator.isPresent);
 
       // Template block usage:
-      await render(hbs`
-        <EmberTh::SortIndicator @columnMeta={{this.columnMeta}}>
+      await render(<template>
+        <EmberThSortIndicator @columnMeta={{ctx.columnMeta}}>
           template block text
-        </EmberTh::SortIndicator>
-      `);
+        </EmberThSortIndicator>
+      </template>);
 
       assert.false(sort.indicator.isPresent);
     });
@@ -54,7 +56,8 @@ module('Integration | Component | ember-th/sort-indicator', function() {
         isSortedAsc: true,
       });
 
-      await render(hbs`<EmberTh::SortIndicator @columnMeta={{this.columnMeta}} />`);
+      const ctx = this;
+      await render(<template><EmberThSortIndicator @columnMeta={{ctx.columnMeta}} /></template>);
       // asc sort
       assert.true(sort.indicator.isAscending);
       assert.false(sort.indicator.isDescending);
@@ -72,7 +75,8 @@ module('Integration | Component | ember-th/sort-indicator', function() {
         sortIndex: 2,
       });
 
-      await render(hbs`<EmberTh::SortIndicator @columnMeta={{this.columnMeta}} />`);
+      const ctx = this;
+      await render(<template><EmberThSortIndicator @columnMeta={{ctx.columnMeta}} /></template>);
 
       assert.strictEqual(sort.indicator.text, '2');
 
@@ -86,7 +90,8 @@ module('Integration | Component | ember-th/sort-indicator', function() {
         isSortable: true,
       });
 
-      await render(hbs`<EmberTh::SortIndicator @columnMeta={{this.columnMeta}} />`);
+      const ctx = this;
+      await render(<template><EmberThSortIndicator @columnMeta={{ctx.columnMeta}} /></template>);
 
       assert.true(sort.toggle.isPresent);
       assert.strictEqual(sort.toggle.text, 'Toggle Sort');
