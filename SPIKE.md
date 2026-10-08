@@ -1,57 +1,47 @@
-# Ember 7 / GJS modernization spike
+# Ember 7 / v2 addon modernization spike
 
-This branch tests upgrading `ember-table` from its Ember 3.28-era addon
-blueprint to the current Ember CLI addon blueprint and moving every shipped
-component to GJS.
+This branch moves `ember-table` from its Ember 3.28-era v1 addon to a v2 addon
+written in TypeScript, tested and documented in a Vite app.
 
-## Baseline
+## Layout
 
-- Source branch: `master`
-- Ember CLI / Ember Source: 3.28
-- Node: 18.20.5
-- Test surface: 202 tests in 26 modules
-- Compatibility matrix: Ember 3.28, 4.4, 4.12, 5.4, 5.12, current release,
-  and Embroider safe
-- Components: 14 JavaScript component modules and 10 separate templates
+- `ember-table/`: the published v2 addon. Components are `.gts` with Glint
+  signatures; declarations are generated from source. The classic
+  `ColumnTree`/`CollapseTree` models stay JavaScript and are typed at their
+  boundary (`src/-private/types.ts`).
+- `test-app/`: an Embroider/Vite Ember app hosting the test suite and the Docfy
+  documentation site (`test-app/docs`).
+- pnpm workspace; CI runs lint, tests, and `@embroider/try` scenarios.
 
-The existing suite covers the public table composition API, cells, headers,
-rows, footers, selection, sorting, resizing, reordering, tree behavior,
-loading-more behavior, scroll indicators, metadata, and the sticky-table
-polyfill. These tests are the behavioral characterization suite for the
-migration.
+## Verified
 
-## Target
+- Ember 7.3: 240 browser tests, 238 pass, 2 skipped (pre-existing `skip`s).
+  This includes the docs acceptance tests, which were always skipped before
+  and now run against the Docfy site.
+- Ember 5.12 (peer floor): 232 pass, 8 skipped. The 6 extra skips are the docs
+  tests, gated on Ember 6.5+ because the docs app needs it.
+- `pnpm lint` passes in both packages, including `ember-tsc` type-checking.
+- The emitted declarations type-check from a consumer `.gts` app, and reject
+  rows of the wrong shape.
 
-- Ember CLI / Ember Source 7.3
-- Node 20.19 or newer
-- Current classic-build-addon blueprint structure and lint/test tooling
-- All addon component modules represented as `.gjs`; paired templates are
-  colocated into their component modules where practical
-- Ember release, beta, canary, and Embroider safe/optimized CI coverage
+## Notable decisions
 
-## Baseline test note
+- Components derive state through autotracking. The classic models read their
+  inputs from component getters (`readOnly` aliases on `@dependentKeyCompat`
+  getters) instead of having arguments pushed in.
+- `hammerjs` is loaded with `importSync` when a header is set up, so evaluating
+  the addon never touches `window` (FastBoot).
+- Try scenarios are applied to both packages so the addon's dev copy of
+  `ember-source` matches the app under test; otherwise its modules resolve a
+  second Ember.
+- The sticky polyfill registers its initial animation frame with
+  `@ember/test-waiters`, which removed a flaky test (and the same race in
+  consumers' tests).
 
-The first frozen-lockfile install stalled in Yarn 1's linking phase and was
-stopped. The partial dependency tree did not contain the `ember` executable,
-so the pre-migration suite could not be executed locally. Existing CI and the
-test sources are therefore the baseline until the modernized dependency tree
-can be installed.
+## Follow-ups
 
-## Spike result
-
-- The current Ember 7.3 classic-build-addon blueprint dependencies install
-  under Node 22 and npm.
-- Every shipped addon component now uses a native `@glimmer/component` class
-  with an embedded `<template>` block. The separate addon `.hbs` files have
-  been removed. The table's non-component models (`CollapseTree`, `ColumnTree`,
-  and cached row/cell metadata) intentionally remain EmberObject-based.
-- `npm run lint` passes.
-- `npm run build` produces a production build on Ember 7.3.
-- `npm run test:ember` builds the test application successfully, but this
-  development container has no Chrome-compatible browser. A Playwright
-  Chromium install was also unavailable for its Ubuntu ARM64 platform, so the
-  202 browser assertions must be confirmed in CI.
-
-DOM ownership and component lifecycle behavior now live in templates and
-modifiers. Classic EmberObject APIs remain only in the table's model/cache
-layer and can be modernized independently of the component migration.
+- Replace `@ember/render-modifiers` with `ember-modifier` (or local modifiers).
+- Modernize the classic models, after which they can move to TypeScript.
+- `data-test-*` attributes now ship in production builds (v2 addons cannot be
+  stripped by `ember-test-selectors`).
+- Docs deployment (GitHub Pages) needs a new workflow for the Docfy site.

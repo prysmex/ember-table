@@ -38,6 +38,11 @@ It works in Embroider/Vite apps and, through `ember-auto-import`, in classic emb
 
 Documentation is available at: https://opensource.addepar.com/ember-table/docs
 
+The documentation site is built with [Docfy](https://docfy.dev) from the Markdown in
+[`test-app/docs`](./test-app/docs). Every example is a live `gjs` component whose source is shown
+alongside it. To run the docs locally, clone the repo, run `pnpm install && pnpm start`, and open
+the URL Vite prints (`/docs`).
+
 ## Usage
 
 To use `Ember Table`, you need to create `columns` and `rows` dataset.
