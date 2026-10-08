@@ -22,7 +22,7 @@ written in TypeScript, tested and documented in a Vite app.
 - Ember 7.3: 240 browser tests, 238 pass, 2 skipped (pre-existing `skip`s).
   This includes the docs acceptance tests, which were always skipped before
   and now run against the Docfy site.
-- Ember 6.4 (peer floor): 232 pass, 8 skipped. The 6 extra skips are the docs
+- Ember 6.4 (oldest the test app runs): 232 pass, 8 skipped. The 6 extra skips are the docs
   tests, gated on Ember 6.5+ because Docfy needs it.
 - `pnpm lint` passes in both packages, including `ember-tsc` type-checking.
 - The emitted declarations type-check from a consumer `.gts` app, and reject
@@ -30,9 +30,10 @@ written in TypeScript, tested and documented in a Vite app.
 
 ## Notable decisions
 
-- The peer floor is `ember-source >= 6.4`. `ember-source` is a v2 addon from
-  6.1; older versions only work through the compat layer, which the test app
-  no longer has.
+- The peer floor is `ember-source >= 5.12`. The addon uses nothing newer, and
+  runs in a 5.12 ember-cli app. CI only covers 6.4 and up: `ember-source` is a
+  v2 addon from 6.1, and older versions need the compat layer, which the test
+  app no longer has.
 - The page objects from the unmaintained `ember-classy-page-object` are
   vendored into `test-support` (MIT), and its helpers are re-exported from
   `ember-table/test-support`.
