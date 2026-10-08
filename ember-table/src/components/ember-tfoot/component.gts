@@ -12,22 +12,37 @@ export interface EmberTfootSignature<
   ColumnType extends EmberTableColumn = EmberTableColumn,
 > {
   Element: HTMLTableSectionElement;
-  Args: TableSectionArgs<RowType> & { class?: string };
+  Args: TableSectionArgs<RowType> & {
+    /** Classes to add to the element, alongside its own. */
+    class?: string;
+  };
   Blocks: {
     default: [
       {
+        /** The row API. Pass it as `@api` to `<EmberTr>` when invoking it directly. */
         api: RowApi<RowType, ColumnType>;
+        /** The cells of this row. */
         cells: CellApi<RowType, ColumnType>[];
+        /** `<EmberTr>` for this row, with `@api` set. */
         row: WithBoundArgs<typeof EmberTr<RowApi<RowType, ColumnType>>, 'api'>;
+        /** The meta object of this row. */
         rowMeta: TableRowMeta;
+        /** The row. */
         rowValue: RowType;
+        /** The number of rows in the section. */
         rowsCount: number;
+        /** The section's `@rowSelectionMode`. */
         rowSelectionMode: SelectionMode;
       },
     ];
   };
 }
 
+/**
+ * The table footer, for summary rows. It takes the same arguments as
+ * `<EmberTbody>` except occlusion: every footer row is rendered, and the footer
+ * stays visible while the body scrolls.
+ */
 export default class EmberTfoot<
   RowType extends EmberTableRow = EmberTableRow,
   ColumnType extends EmberTableColumn = EmberTableColumn,

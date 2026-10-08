@@ -3,13 +3,19 @@ import type { TableColumnMeta } from '../../../index.ts';
 
 export interface SortIndicatorSignature {
   Args: {
+    /** The meta object of the column, as yielded by `<EmberTh>`. */
     columnMeta: TableColumnMeta;
   };
   Blocks: {
+    /** Replaces the default indicator; receives the column's meta object. */
     default: [columnMeta: TableColumnMeta];
   };
 }
 
+/**
+ * The sort direction indicator of a header cell, for custom `<EmberTh>`
+ * blocks. It renders only while the column is sorted.
+ */
 const SortIndicator: TOC<SortIndicatorSignature> = <template>
   {{#if @columnMeta.isSorted}}
     <span

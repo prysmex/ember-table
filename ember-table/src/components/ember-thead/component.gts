@@ -45,6 +45,7 @@ export interface EmberTheadArgs<
   /** @internal The table's API, or the hash `<EmberTable>` yields. */
   api: TableApiArg;
 
+  /** Classes to add to the element, alongside its own. */
   class?: string;
 
   /**
@@ -60,6 +61,10 @@ export interface EmberTheadArgs<
    */
   columns: ColumnType[];
 
+  /**
+   * Compares two cell values when sorting. The default orders empty values (`null`, `undefined`, `NaN` and `''`) first, or last with `@sortEmptyLast`.
+   * @default compareValues
+   */
   compareFunction?: <T = RowType[keyof RowType]>(valueA: T, valueB: T, sortEmptyLast: boolean) => number;
 
   /**
@@ -69,11 +74,13 @@ export interface EmberTheadArgs<
 
   /**
    * Flag that toggles reordering in the table.
+   * @default true
    */
   enableReorder?: boolean;
 
   /**
    * Flag that toggles resizing in the table.
+   * @default true
    */
   enableResize?: boolean;
 
@@ -90,7 +97,8 @@ export interface EmberTheadArgs<
       - `first-column`: extra space is added into the first column.
       - `last-column`: extra space is added into the last column.
       - `nth-column`: extra space is added into the column defined by `fillColumnIndex`.
-    */
+    * @default 'equal-column'
+   */
   fillMode?: FillMode;
 
   /**
@@ -102,8 +110,6 @@ export interface EmberTheadArgs<
 
   /**
    * An action that is sent when columns are reordered.
-   *
-   * @memberof THeadArgs
    */
   onReorder?: (columnA: ColumnType, columnB: ColumnType) => void;
 
@@ -113,13 +119,15 @@ export interface EmberTheadArgs<
   onResize?: (column: ColumnType) => void;
 
   /**
-   * An action that is sent when sorts is updated.
+   * An action that is sent when sorts is updated. Sorting is enabled only when
+   * this is passed; update `@sorts` with the value it receives.
    */
   onUpdateSorts?: (sorts: EmberTableSort[]) => void;
 
   /**
    * Sets which column resizing behavior to use.
    * Possible values are `standard` (resizing a column pushes or pulls all other columns) and `fluid` (resizing a column subtracts width from neighboring columns).
+   * @default 'standard'
    */
   resizeMode?: 'standard' | 'fluid';
 
@@ -127,22 +135,26 @@ export interface EmberTheadArgs<
    * Enables shadows at the edges of the table to show that the user can scroll to view more content.
    * Possible string values are `all`, `horizontal`, `vertical`, and `none`.
    * The boolean values `true` and `false` are aliased to `all` and `none`, respectively.
+   * @default false
    */
   scrollIndicators?: 'none' | 'all' | 'horizontal' | 'vertical' | boolean;
 
   /**
    * Flag that allows to sort empty values after non empty ones.
+   * @default false
    */
   sortEmptyLast?: boolean;
 
   /**
    * An optional sort.
    * If not specified, defaults to `<sortMultiple>`, which sorts by each `sort` in `sorts`, in order.
+   * @default sortMultiple
    */
   sortFunction?: <T = RowType[keyof RowType]>(
     itemA: T,
     itemB: T,
-    sorts: EmberTableSort[],
+    /** @default [] */
+  sorts: EmberTableSort[],
     compare: (valueA: T, valueB: T, sortEmptyLast: boolean) => number,
     sortEmptyLast: boolean
   ) => number;
@@ -154,6 +166,7 @@ export interface EmberTheadArgs<
 
   /**
    * Sets a constraint on the table's size, such that it must be greater than, less than, or equal to the size of the containing element.
+   * @default 'none'
    */
   widthConstraint?: 'none' | 'eq-container' | 'eq-container-slack' | 'gte-container' | 'gte-container-slack' | 'lte-container';
 }
@@ -167,9 +180,13 @@ export interface EmberTheadSignature<
   Blocks: {
     default: [
       {
+        /** The header cells of this row. */
         cells: HeaderCellApi<ColumnType>[];
+        /** Always `true`: this is a header row. */
         isHeader: true;
+        /** The number of header rows (more than one with subcolumns). */
         rowsCount: number;
+        /** `<EmberTr>` for this header row, with `@api` set. */
         row: WithBoundArgs<typeof EmberTr<HeaderRowApi<ColumnType>>, 'api'>;
       },
     ];
@@ -196,6 +213,11 @@ class HeadColumnTree extends ColumnTree {
   @readOnly('_head.enableReorder') declare enableReorder: ColumnTree['enableReorder'];
 }
 
+/**
+ * The table header. It lays out `@columns`, including nested subcolumns, and
+ * handles sorting, resizing and reordering. It yields once per header row (more
+ * than one with subcolumns); without a block it renders default header cells.
+ */
 export default class EmberThead<
     RowType extends EmberTableRow = EmberTableRow,
     ColumnType extends EmberTableColumn = EmberTableColumn,

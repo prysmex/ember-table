@@ -23,6 +23,7 @@ export interface EmberThSignature<ColumnType extends EmberTableColumn = EmberTab
   Args: {
     /** @internal Provided by the yielded `cell` component, or pass the row's yield. */
     api: HeaderCellApi<ColumnType> | { api: HeaderCellApi<ColumnType> };
+    /** Classes to add to the element, alongside its own. */
     class?: string;
     /** Action sent when the user right clicks this element. */
     onContextMenu?: (event: MouseEvent) => void;
@@ -30,10 +31,16 @@ export interface EmberThSignature<ColumnType extends EmberTableColumn = EmberTab
     onDropdownAction?: (...args: unknown[]) => void;
   };
   Blocks: {
+    /** The column, its meta object and the header row's meta object. */
     default: [columnValue: ColumnType, columnMeta: TableColumnMeta, rowMeta: HeaderRowMeta];
   };
 }
 
+/**
+ * A header cell. It sorts its column when clicked (if the header has
+ * `@onUpdateSorts`), and supports resizing and reordering by dragging. Without a
+ * block it renders the column's `name`, a sort indicator and a resize handle.
+ */
 export default class EmberTh<
   ColumnType extends EmberTableColumn = EmberTableColumn,
 > extends BaseTableCell<EmberThSignature<ColumnType>> {

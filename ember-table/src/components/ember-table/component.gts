@@ -25,21 +25,42 @@ export interface EmberTableSignature<
 > {
   Element: HTMLDivElement;
   Args: {
+    /** Classes to add to the element, alongside its own. */
     class?: string;
   };
   Blocks: {
     default: [
       {
+        /** The table API. Pass it as `@api` when invoking the section components directly. */
         api: TableApi;
+        /** `<EmberThead>` with `@api` set. */
         head: WithBoundArgs<typeof EmberThead<RowType, ColumnType>, 'api'>;
+        /** `<EmberTbody>` with `@api` set. */
         body: WithBoundArgs<typeof EmberTbody<RowType, ColumnType>, 'api'>;
+        /** `<EmberTfoot>` with `@api` set. */
         foot: WithBoundArgs<typeof EmberTfoot<RowType, ColumnType>, 'api'>;
+        /** `<EmberTableLoadingMore>` with `@api` set. */
         loadingMore: WithBoundArgs<typeof EmberTableLoadingMore, 'api'>;
       },
     ];
   };
 }
 
+/**
+ * The table. It renders a scrollable container with a `<table>` and yields the
+ * section components: `head` for the header, `body` for the rows, `foot` for
+ * footer rows and `loadingMore` for an infinite-scroll indicator.
+ *
+ * ```gjs
+ * <EmberTable as |t|>
+ *   <t.head @columns={{columns}} />
+ *   <t.body @rows={{rows}} />
+ * </EmberTable>
+ * ```
+ *
+ * Pass a row type to type the rows and the values yielded for them:
+ * `EmberTable<Person>`.
+ */
 export default class EmberTable<
   RowType extends EmberTableRow = EmberTableRow,
   ColumnType extends EmberTableColumn = EmberTableColumn,

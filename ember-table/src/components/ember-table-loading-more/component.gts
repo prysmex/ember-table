@@ -14,16 +14,34 @@ export interface EmberTableLoadingMoreSignature {
   Args: {
     /** @internal Provided by the yielded `loadingMore` component. */
     api?: TableApiArg;
+    /**
+     * Whether more rows can still load. When `false`, the indicator is removed from the layout.
+     * @default true
+     */
     canLoadMore?: boolean;
+    /**
+     * Centers the indicator horizontally in the visible part of the table.
+     * @default true
+     */
     center?: boolean;
+    /** Classes to add to the element, alongside its own. */
     class?: string;
+    /**
+     * Shows the indicator below the rows while more are loading.
+     * @default false
+     */
     isLoading?: boolean;
   };
   Blocks: {
+    /** The indicator, such as a spinner. Ember Table does not provide one. */
     default: [];
   };
 }
 
+/**
+ * An indicator shown below the rows while more load, for infinite scrolling.
+ * Combine it with `<EmberTbody>`'s `@lastReached` to load the next page.
+ */
 export default class EmberTableLoadingMore extends Component<EmberTableLoadingMoreSignature> {
   @tracked translateX = 0;
   private element: HTMLElement | null = null;

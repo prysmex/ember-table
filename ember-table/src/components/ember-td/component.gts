@@ -40,6 +40,7 @@ export interface EmberTdSignature<
   Args: {
     /** @internal Provided by the yielded `cell` component, or pass the row's yield. */
     api: CellApi<RowType, ColumnType> | { api: CellApi<RowType, ColumnType> };
+    /** Classes to add to the element, alongside its own. */
     class?: string;
     /** Action sent when the user clicks this element. */
     onClick?: (values: EmberTdActionValues<RowType, ColumnType>) => void;
@@ -51,6 +52,7 @@ export interface EmberTdSignature<
     onCollapse?: (values: EmberTdActionValues<RowType, ColumnType>) => void;
   };
   Blocks: {
+    /** The cell's value, the column, the row, the cell, column and row meta objects, and the number of rows. */
     default: [
       cellValue: CellValue<RowType>,
       columnValue: ColumnType,
@@ -63,6 +65,10 @@ export interface EmberTdSignature<
   };
 }
 
+/**
+ * A body or footer cell. Without a block it renders the cell's value, plus the
+ * selection checkbox and collapse toggle in the first column when they apply.
+ */
 export default class EmberTd<
   RowType extends EmberTableRow = EmberTableRow,
   ColumnType extends EmberTableColumn = EmberTableColumn,

@@ -27,15 +27,45 @@ export interface SelectionDetails {
 
 /** Arguments shared by the table's row sections (`<EmberTbody>`, `<EmberTfoot>`). */
 export interface TableSectionArgs<RowType extends EmberTableRow> {
+  /** @internal The table's API, or the hash `<EmberTable>` yields. */
   api: TableApiArg;
+  /**
+   * The rows to display.
+   * @default []
+   */
   rows?: RowType[];
+  /**
+   * Lets tree rows collapse and expand.
+   * @default true
+   */
   enableCollapse?: boolean;
+  /**
+   * Renders rows with a `children` array as expandable tree nodes.
+   * @default true
+   */
   enableTree?: boolean;
+  /** The selected rows: an array, or a single row. */
   selection?: RowType[] | RowType | null;
+  /** Decides whether a row is selected, instead of comparing it to `@selection` by identity. */
   selectionMatchFunction?: (selection: RowType, row: RowType) => boolean;
+  /**
+   * Whether selecting all of a row's children also selects the row.
+   * @default true
+   */
   selectingChildrenSelectsParent?: boolean;
+  /**
+   * Called when the selection changes, with the new selection (an array, or a single row in `single` mode) and `{ abort }`. Calling `abort()` keeps the anchor of the next shift-click range unchanged.
+   */
   onSelect?: (rows: RowType[] | RowType, details: SelectionDetails) => void;
+  /**
+   * How each row's selection checkbox behaves: `none` hides the checkboxes, `single` selects only the checked row, and `multiple` adds the row to the selection.
+   * @default 'multiple'
+   */
   checkboxSelectionMode?: SelectionMode;
+  /**
+   * How clicking a row selects it: `none` does nothing, `single` selects only that row, and `multiple` adds rows through ctrl/cmd-click and ranges through shift-click.
+   * @default 'multiple'
+   */
   rowSelectionMode?: SelectionMode;
 }
 

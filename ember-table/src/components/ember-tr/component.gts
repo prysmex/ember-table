@@ -40,26 +40,43 @@ export interface EmberTrBodyCell<
   RowType extends EmberTableRow = EmberTableRow,
   ColumnType extends EmberTableColumn = EmberTableColumn,
 > {
+  /** The cell API. Pass it as `@api` to `<EmberTd>`/`<EmberTh>` when invoking them directly. */
   api: CellApi<RowType, ColumnType>;
+  /** The cell component (`<EmberTd>` or `<EmberTh>`) with `@api` set. */
   cell: WithBoundArgs<typeof EmberTd<RowType, ColumnType>, 'api'>;
+  /** The meta object of the cell, for the app's own per-cell state. */
   cellMeta: TableCellMeta;
+  /** The cell's value: the row's value at the column's `valuePath`. */
   cellValue: CellValue<RowType>;
+  /** The meta object of the column. */
   columnMeta: TableColumnMeta;
+  /** The column. */
   columnValue: ColumnType;
+  /** The meta object of the row. */
   rowMeta: TableRowMeta;
+  /** The row. */
   rowValue: RowType;
+  /** The number of rows in the section. */
   rowsCount: number;
 }
 
 /** What a header row yields for each cell. */
 export interface EmberTrHeaderCell<ColumnType extends EmberTableColumn = EmberTableColumn> {
+  /** The cell API. Pass it as `@api` to `<EmberTd>`/`<EmberTh>` when invoking them directly. */
   api: HeaderCellApi<ColumnType>;
+  /** The cell component (`<EmberTd>` or `<EmberTh>`) with `@api` set. */
   cell: WithBoundArgs<typeof EmberTh<ColumnType>, 'api'>;
+  /** The meta object of the column. */
   columnMeta: TableColumnMeta;
+  /** The column. */
   columnValue: ColumnType;
+  /** The meta object of the header row. */
   rowMeta: HeaderRowMeta;
+  /** The number of rows in the section. */
   rowsCount: number;
+  /** The table's current sorts. */
   sorts: readonly EmberTableSort[];
+  /** Requests new sorts (calls the header's `@onUpdateSorts`). */
   sendUpdateSort(sorts: EmberTableSort[]): void;
 }
 
@@ -85,6 +102,7 @@ export interface EmberTrSignature<Api extends EmberTrApi = EmberTrApi> {
   Args: {
     /** @internal Provided by the yielded `row` component, or pass the section's yield. */
     api: Api;
+    /** Classes to add to the element, alongside its own. */
     class?: string;
     /** Called when the row is clicked. */
     onClick?: (event: EmberTrEvent<RowValueOf<Api>>) => void;
@@ -96,6 +114,11 @@ export interface EmberTrSignature<Api extends EmberTrApi = EmberTrApi> {
   };
 }
 
+/**
+ * A table row. Inside a header it yields header cells; inside a body or footer
+ * it yields body cells, and clicking it selects the row. It yields once per
+ * cell; without a block it renders default cells.
+ */
 export default class EmberTr<Api extends EmberTrApi = EmberTrApi> extends Component<
   EmberTrSignature<Api>
 > {

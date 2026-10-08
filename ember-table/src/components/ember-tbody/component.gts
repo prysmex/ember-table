@@ -14,37 +14,43 @@ export interface EmberTbodyArgs<RowType extends EmberTableRow = EmberTableRow> {
   /** @internal The table's API, or the hash `<EmberTable>` yields. */
   api: TableApiArg;
 
+  /** Classes to add to the element, alongside its own. */
   class?: string;
 
   /**
    * The number of extra rows to render on either side of the table's viewport.
+   * @default 1
    */
   bufferSize?: number;
 
   /**
-   * Sets which row selection behavior to follow.
-   * Possible values are `none` (clicking on a row does nothing), `single` (clicking on a row selects it and deselects other rows), and `multiple` (multiple rows can be selected through ctrl/cmd-click or shift-click).
+   * How each row's selection checkbox behaves: `none` hides the checkboxes, `single` selects only the checked row, and `multiple` adds the row to the selection.
+   * @default 'multiple'
    */
   checkboxSelectionMode?: SelectionMode;
 
   /**
    * A selector string that will select the element from which to calculate the viewable height.
+   * @default the table's scroll container
    */
   containerSelector?: string;
 
   /**
    * Boolean flag that enables collapsing tree nodes.
+   * @default true
    */
   enableCollapse?: boolean;
 
   /**
    * Boolean flag that enables tree behavior if items have a `children` property.
+   * @default true
    */
   enableTree?: boolean;
 
   /**
    * Estimated height for each row.
    * This number is used to decide how many rows will be rendered at initial rendering.
+   * @default 30
    */
   estimateRowHeight?: number;
 
@@ -69,6 +75,7 @@ export interface EmberTbodyArgs<RowType extends EmberTableRow = EmberTableRow> {
    * This key is the property used by the collection to determine whether an array mutation is an append, prepend, or complete replacement.
    * It is also the key that is passed to the actions, and can be used to restore scroll position with `idForFirstItem`.
    * This is passed through to the vertical-collection.
+   * @default '@identity'
    */
   key?: string;
 
@@ -83,34 +90,38 @@ export interface EmberTbodyArgs<RowType extends EmberTableRow = EmberTableRow> {
   lastVisibleChanged?: (...args: unknown[]) => void;
 
   /**
-   * An action that is called when the row selection of the table changes.
-   * Will be called with either an array or individual row, depending on the checkboxSelectionMode.
+   * Called when the selection changes, with the new selection (an array, or a single row in `single` mode) and `{ abort }`. Calling `abort()` keeps the anchor of the next shift-click range unchanged.
    */
   onSelect?: (rows: RowType[] | RowType, details: SelectionDetails) => void;
 
   /**
    * A flag that tells the table to render all of its rows at once.
+   * @default false
    */
   renderAll?: boolean;
 
   /**
    * The row items that the table should display.
+   * @default []
    */
   rows?: RowType[];
 
   /**
    * Sets which row selection behavior to follow.
    * Possible values are `none` (clicking on a row does nothing), `single` (clicking on a row selects it and deselects other rows), and `multiple` (multiple rows can be selected through ctrl/cmd-click or shift-click).
+   * @default 'multiple'
    */
   rowSelectionMode?: SelectionMode;
 
   /**
    * When `true`, this option enables the toggling of rows without using the ctrlKey or metaKey.
+   * @default false
    */
   rowToggleMode?: boolean;
 
   /**
    * When `true`, this option causes selecting all of a node's children to also select the node itself.
+   * @default true
    */
   selectingChildrenSelectsParent?: boolean;
 
@@ -129,6 +140,7 @@ export interface EmberTbodyArgs<RowType extends EmberTableRow = EmberTableRow> {
    * A flag that controls if all rows have same static height or not.
    * By default it is set to `false` and row height is dependent on its internal content.
    * If it is set to `true`, all rows have the same height equivalent to `estimateRowHeight`.
+   * @default false
    */
   staticHeight?: boolean;
 }
@@ -142,20 +154,34 @@ export interface EmberTbodySignature<
   Blocks: {
     default: [
       {
+        /** The row API. Pass it as `@api` to `<EmberTr>` when invoking it directly. */
         api: RowApi<RowType, ColumnType>;
+        /** The cells of this row. */
         cells: CellApi<RowType, ColumnType>[];
+        /** `<EmberTr>` for this row, with `@api` set. */
         row: WithBoundArgs<typeof EmberTr<RowApi<RowType, ColumnType>>, 'api'>;
+        /** The meta object of this row. */
         rowMeta: TableRowMeta;
+        /** The row. */
         rowValue: RowType;
+        /** The number of rows in the section. */
         rowsCount: number;
+        /** The section's `@rowSelectionMode`. */
         rowSelectionMode: SelectionMode;
+        /** The section's `@rowToggleMode`. */
         rowToggleMode: boolean | undefined;
       },
     ];
+    /** Rendered when there are no rows. */
     else: [];
   };
 }
 
+/**
+ * The table body. It renders only the rows in view (occlusion, through
+ * vertical-collection) and handles row selection and tree rows. It yields once
+ * per rendered row; without a block it renders default rows.
+ */
 export default class EmberTbody<
   RowType extends EmberTableRow = EmberTableRow,
   ColumnType extends EmberTableColumn = EmberTableColumn,
