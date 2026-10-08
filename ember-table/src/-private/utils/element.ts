@@ -1,36 +1,9 @@
-const VENDOR_MATCH_FNS = [
-  'matches',
-  'webkitMatchesSelector',
-  'mozMatchesSelector',
-  'msMatchesSelector',
-  'oMatchesSelector',
-];
-let ELEMENT_MATCH_FN;
-
-function setElementMatchFn(el) {
-  VENDOR_MATCH_FNS.forEach(fn => {
-    if (ELEMENT_MATCH_FN === undefined && typeof el[fn] === 'function') {
-      ELEMENT_MATCH_FN = fn;
-    }
-  });
+/** The closest ancestor of `el` (or `el` itself) that matches `selector`. */
+export function closest(el: EventTarget | null | undefined, selector: string): Element | null {
+  return el instanceof Element ? el.closest(selector) : null;
 }
 
-export function closest(el, selector) {
-  if (ELEMENT_MATCH_FN === undefined) {
-    setElementMatchFn(el);
-  }
-  while (el) {
-    // TODO add explicit test
-    if (el[ELEMENT_MATCH_FN](selector)) {
-      return el;
-    }
-    el = el.parentElement;
-  }
-
-  return null;
-}
-
-function parseComputedStyleHeightToPixels(computedHeightStyleValue) {
+function parseComputedStyleHeightToPixels(computedHeightStyleValue: string): number {
   return Number(computedHeightStyleValue.substring(0, computedHeightStyleValue.length - 2));
 }
 
@@ -56,7 +29,7 @@ function parseComputedStyleHeightToPixels(computedHeightStyleValue) {
  *     today, only the `table` tag itself is passed in for measurement.
  *
  */
-export function getScale(element) {
+export function getScale(element: HTMLElement): number {
   let rect = element.getBoundingClientRect();
   let renderedHeight = rect.height;
 
@@ -72,7 +45,7 @@ export function getScale(element) {
   if (isNaN(computedHeightInPixels)) {
     computedHeightInPixels = offsetHeight;
   } else {
-    let [min, max] = [computedHeightInPixels, offsetHeight].sort();
+    let [min, max] = [computedHeightInPixels, offsetHeight].sort() as [number, number];
     let difference = max - min;
 
     /*
@@ -112,7 +85,16 @@ export function getScale(element) {
   }
 }
 
-export function getInnerClientRect(element, scale) {
+export interface ClientRect {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+  height: number;
+  width: number;
+}
+
+export function getInnerClientRect(element: Element, scale: number): ClientRect {
   let outerClientRect = element.getBoundingClientRect();
 
   let computedStyle = window.getComputedStyle(element);
@@ -133,6 +115,6 @@ export function getInnerClientRect(element, scale) {
   };
 }
 
-export function getOuterClientRect(element) {
+export function getOuterClientRect(element: Element): DOMRect {
   return element.getBoundingClientRect();
 }

@@ -1,5 +1,5 @@
 import { collection } from '../../-private/collection.ts';
-import EmberTableBody, { BodyCell } from './ember-table-body';
+import EmberTableBody, { BodyCell } from './ember-table-body.ts';
 
 export default EmberTableBody.extend({
   scope: 'tfoot',

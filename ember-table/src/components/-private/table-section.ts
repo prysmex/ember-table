@@ -4,7 +4,7 @@ import { dependentKeyCompat } from '@ember/object/compat';
 import { assert } from '@ember/debug';
 import { registerDestructor } from '@ember/destroyable';
 import type Owner from '@ember/owner';
-import CollapseTree from '../../-private/collapse-tree';
+import CollapseTree from '../../-private/collapse-tree.ts';
 import { unwrapApi, type TableApiArg } from '../../-private/unwrap-api.ts';
 import type {
   CollapseTree as CollapseTreeShape,
@@ -41,18 +41,22 @@ export interface TableSectionArgs<RowType extends EmberTableRow> {
 
 // See `HeadColumnTree` in `ember-thead`: the collapse tree derives its inputs
 // from the body's getters instead of having them pushed in on every change.
-const BodyCollapseTree = CollapseTree.extend({
-  rows: readOnly('_body.rows'),
-  sorts: readOnly('_body.sorts'),
-  sortFunction: readOnly('_body.sortFunction'),
-  compareFunction: readOnly('_body.compareFunction'),
-  sortEmptyLast: readOnly('_body.sortEmptyLast'),
-  enableCollapse: readOnly('_body.enableCollapse'),
-  enableTree: readOnly('_body.enableTree'),
-  selection: readOnly('_body.selection'),
-  selectionMatchFunction: readOnly('_body.selectionMatchFunction'),
-  selectingChildrenSelectsParent: readOnly('_body.selectingChildrenSelectsParent'),
-}) as unknown as { create(properties: Record<string, unknown>): CollapseTreeShape };
+class BodyCollapseTree extends CollapseTree {
+  declare _body: object;
+
+  @readOnly('_body.rows') declare rows: CollapseTree['rows'];
+  @readOnly('_body.sorts') declare sorts: CollapseTree['sorts'];
+  @readOnly('_body.sortFunction') declare sortFunction: CollapseTree['sortFunction'];
+  @readOnly('_body.compareFunction') declare compareFunction: CollapseTree['compareFunction'];
+  @readOnly('_body.sortEmptyLast') declare sortEmptyLast: CollapseTree['sortEmptyLast'];
+  @readOnly('_body.enableCollapse') declare enableCollapse: CollapseTree['enableCollapse'];
+  @readOnly('_body.enableTree') declare enableTree: CollapseTree['enableTree'];
+  @readOnly('_body.selection') declare selection: CollapseTree['selection'];
+  @readOnly('_body.selectionMatchFunction')
+  declare selectionMatchFunction: CollapseTree['selectionMatchFunction'];
+  @readOnly('_body.selectingChildrenSelectsParent')
+  declare selectingChildrenSelectsParent: CollapseTree['selectingChildrenSelectsParent'];
+}
 
 /**
   A row section of the table. Its collapse tree derives rows, sorting and
@@ -74,12 +78,13 @@ export default abstract class TableSection<
       Boolean(this.unwrappedApi.columnTree)
     );
 
-    this.collapseTree = BodyCollapseTree.create({
+    let collapseTree = BodyCollapseTree.create({
       _body: this,
-      rowMetaCache: this.rowMetaCache,
-      onSelect: (selection: RowType[] | RowType, details: SelectionDetails) =>
-        this.args.onSelect?.(selection, details),
+      rowMetaCache: this.rowMetaCache as unknown as CollapseTree['rowMetaCache'],
+      onSelect: (selection, details) =>
+        this.args.onSelect?.(selection as RowType[] | RowType, details),
     });
+    this.collapseTree = collapseTree;
 
     registerDestructor(this, () => this.teardown());
   }

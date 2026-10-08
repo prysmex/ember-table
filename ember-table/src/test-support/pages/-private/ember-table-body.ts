@@ -1,7 +1,7 @@
 import { hasClass, property, triggerable } from 'ember-cli-page-object';
 import { alias } from 'ember-cli-page-object/macros';
 
-import PageObject from '../../-private/page-object.ts';
+import PageObject, { type PageObjectInstance } from '../../-private/page-object.ts';
 import { collection } from '../../-private/collection.ts';
 import { findElement } from '../../-private/find-element.ts';
 
@@ -75,7 +75,7 @@ export default PageObject.extend({
       scope: '[data-test-select-row]',
       isChecked: property('checked'),
 
-      async clickWith(options) {
+        async clickWith(options: MouseEventInit) {
         await click(findElement(this), options);
       },
     },
@@ -102,7 +102,7 @@ export default PageObject.extend({
 
       @param {Object} options - click event options
     */
-    async clickWith(options) {
+    async clickWith(options: MouseEventInit) {
       await click(findElement(this), options);
     },
 
@@ -112,7 +112,7 @@ export default PageObject.extend({
   /**
     A shortcut to return cell page object specified by row & column indexes.
   */
-  getCell(rowIndex, columnIndex) {
+  getCell(this: PageObjectInstance, rowIndex: number, columnIndex: number) {
     return this.rows.objectAt(rowIndex).cells.objectAt(columnIndex);
   },
 });

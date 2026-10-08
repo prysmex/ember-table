@@ -1,6 +1,6 @@
-// Internal shapes of the classic models (`ColumnTree`, `CollapseTree` and their
-// meta objects) as the components use them. The models themselves remain
-// JavaScript; these interfaces describe the boundary.
+// The classic models (`ColumnTree`, `CollapseTree` and their meta objects) as
+// the components see them. The models are typed in their own modules; these
+// interfaces are the narrower, generic view the components and yields use.
 import type {
   EmberTableColumn,
   EmberTableRow,

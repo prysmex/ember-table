@@ -5,10 +5,11 @@ written in TypeScript, tested and documented in a Vite app.
 
 ## Layout
 
-- `ember-table/`: the published v2 addon. Components are `.gts` with Glint
-  signatures; declarations are generated from source. The classic
-  `ColumnTree`/`CollapseTree` models stay JavaScript and are typed at their
-  boundary (`src/-private/types.ts`).
+- `ember-table/`: the published v2 addon, entirely TypeScript. Components are
+  `.gts` with Glint signatures; declarations are generated from source. The
+  `ColumnTree`/`CollapseTree` models are still classic `EmberObject`s
+  (computed properties, observers), written as native classes; components see
+  them through the interfaces in `src/-private/types.ts`.
 - `test-app/`: a Vite app hosting the test suite and the Docfy documentation
   site (`test-app/docs`). It has no ember-cli or compat layer: just the
   `ember()` Vite plugin and `ember-strict-application-resolver`, with every
@@ -52,7 +53,8 @@ written in TypeScript, tested and documented in a Vite app.
 ## Follow-ups
 
 - Replace `@ember/render-modifiers` with `ember-modifier` (or local modifiers).
-- Modernize the classic models, after which they can move to TypeScript.
+- Move the classic models from computed properties and observers to
+  autotracking.
 - `data-test-*` attributes now ship in production builds (v2 addons cannot be
   stripped by `ember-test-selectors`).
 - Docs deployment (GitHub Pages) needs a new workflow for the Docfy site.

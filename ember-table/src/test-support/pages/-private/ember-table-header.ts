@@ -1,15 +1,15 @@
 import { hasClass, triggerable } from 'ember-cli-page-object';
 import { alias } from 'ember-cli-page-object/macros';
 
-import PageObject from '../../-private/page-object.ts';
+import PageObject, { type PageObjectInstance } from '../../-private/page-object.ts';
 import { collection } from '../../-private/collection.ts';
 import { findElement } from '../../-private/find-element.ts';
 import { click, triggerKeyEvent } from '@ember/test-helpers';
 
-import { mouseDown, mouseMove, mouseUp } from '../../helpers/mouse';
-import { getScale } from '../../helpers/element';
+import { mouseDown, mouseMove, mouseUp } from '../../helpers/mouse.ts';
+import { getScale } from '../../helpers/element.ts';
 
-function computedStyleInPixels(target, property) {
+function computedStyleInPixels(target: Element, property: 'width' | 'height'): number {
   let stringValue = window.getComputedStyle(target)[property];
   let numberValue = Number(stringValue.substring(0, stringValue.length - 2));
   if (isNaN(numberValue)) {
@@ -109,13 +109,14 @@ const Header = PageObject.extend({
    * or rendered size is being passed. It defers to the more explicit
    * logicalResize which should probably be preferred in future use.
    */
-  async resize(targetSize) {
+  async resize(this: PageObjectInstance, targetSize: number) {
     await this.logicalResize(targetSize);
   },
 
-  async logicalResize(targetSize) {
+  async logicalResize(this: PageObjectInstance, targetSize: number) {
     let renderedTargetSize =
-      targetSize / getScale(document.getElementById('ember-testing-container').firstElementChild);
+      targetSize /
+      getScale(document.getElementById('ember-testing-container')!.firstElementChild as HTMLElement);
     await this.renderedResize(renderedTargetSize);
   },
 
@@ -123,7 +124,7 @@ const Header = PageObject.extend({
    * Resizes this column by dragging right border several pixels,
    * unless the column is fixed right in quick case it drags left.
    */
-  async renderedResize(targetSize) {
+  async renderedResize(this: PageObjectInstance, targetSize: number) {
     let resizeHandle = findElement(this, '[data-test-resize-handle]');
 
     if (!resizeHandle) {
@@ -165,9 +166,9 @@ const Header = PageObject.extend({
    * @params deltaPosition Indicates how many index this column should move. This is a positive
    *    number if the column is moved to its right and negative if it's moved to its left.
    */
-  async reorderBy(deltaPosition) {
+  async reorderBy(deltaPosition: number) {
     let header = findElement(this);
-    let targetElement = header;
+    let targetElement: Element = header;
 
     while (deltaPosition !== 0) {
       if (deltaPosition < 0) {
@@ -199,7 +200,7 @@ const Header = PageObject.extend({
 
     @param {Object} options - click event options
   */
-  async clickWith(options) {
+  async clickWith(options: MouseEventInit) {
     await click(findElement(this), options);
   },
 

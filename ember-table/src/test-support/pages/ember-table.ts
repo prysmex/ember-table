@@ -1,14 +1,14 @@
 import { alias } from 'ember-cli-page-object/macros';
 
-import PageObject from '../-private/page-object.ts';
+import PageObject, { type PageObjectInstance } from '../-private/page-object.ts';
 import { findElement } from '../-private/find-element.ts';
 
-import EmberTableBodyPage from './-private/ember-table-body';
-import EmberTableFooterPage from './-private/ember-table-footer';
-import EmberTableHeaderPage from './-private/ember-table-header';
-import EmberTableLoadingMorePage from './-private/ember-table-loading-more';
+import EmberTableBodyPage from './-private/ember-table-body.ts';
+import EmberTableFooterPage from './-private/ember-table-footer.ts';
+import EmberTableHeaderPage from './-private/ember-table-header.ts';
+import EmberTableLoadingMorePage from './-private/ember-table-loading-more.ts';
 
-function computedStyleInPixels(target, property) {
+function computedStyleInPixels(target: Element, property: 'width' | 'height'): number {
   let stringValue = window.getComputedStyle(target)[property];
   let numberValue = Number(stringValue.substring(0, stringValue.length - 2));
   if (isNaN(numberValue)) {
@@ -133,7 +133,7 @@ export default PageObject.extend({
   /**
    * Returns whether the specified scroll indicator is currently visible
    */
-  isScrollIndicatorRendered(side = 'right') {
+  isScrollIndicatorRendered(this: PageObjectInstance, side = 'right') {
     return !!this.scrollIndicator(side);
   },
 
@@ -147,29 +147,29 @@ export default PageObject.extend({
   /**
    * Returns the height of the horizontal scrollbar on the overflow element
    */
-  horizontalScrollbarHeight() {
-    let overflow = this.overflow();
+  horizontalScrollbarHeight(this: PageObjectInstance) {
+    let overflow = this.overflow() as HTMLElement;
     return overflow.offsetHeight - overflow.clientHeight;
   },
 
   /**
    * Returns the width of the vertical scrollbar on the overflow element
    */
-  verticalScrollbarWidth() {
-    let overflow = this.overflow();
+  verticalScrollbarWidth(this: PageObjectInstance) {
+    let overflow = this.overflow() as HTMLElement;
     return overflow.offsetWidth - overflow.clientWidth;
   },
 
   /**
    * Returns the height of the visible portion of the footer
    */
-  visibleFooterHeight() {
+  visibleFooterHeight(this: PageObjectInstance) {
     let footerCells = findElement(this, 'tfoot td', { multiple: true });
 
     if (footerCells.length > 0) {
-      let footerCellY = footerCells[0].getBoundingClientRect().y;
+      let footerCellY = footerCells[0]!.getBoundingClientRect().y;
 
-      let overflow = this.overflow();
+      let overflow = this.overflow() as HTMLElement;
       let overflowRect = overflow.getBoundingClientRect();
       let scale = overflow.offsetHeight / overflowRect.height;
 
@@ -187,7 +187,7 @@ export default PageObject.extend({
    *
    * @param {number} index
    */
-  async selectRow(index) {
+  async selectRow(this: PageObjectInstance, index: number) {
     await this.body.rows.objectAt(index).click();
   },
 
@@ -196,7 +196,7 @@ export default PageObject.extend({
    *
    * @param {number} index
    */
-  async selectRowWithShiftClick(index) {
+  async selectRowWithShiftClick(this: PageObjectInstance, index: number) {
     await this.body.rows.objectAt(index).clickWith({ shiftKey: true });
   },
 
@@ -205,7 +205,7 @@ export default PageObject.extend({
    *
    * @param {number} index
    */
-  async toggleRow(index) {
+  async toggleRow(this: PageObjectInstance, index: number) {
     await this.body.rows.objectAt(index).clickWith({ metaKey: true });
   },
 
@@ -215,7 +215,7 @@ export default PageObject.extend({
    * @param {number} beginIndex
    * @param {number} endIndex
    */
-  async selectRangeFromClick(beginIndex, endIndex) {
+  async selectRangeFromClick(this: PageObjectInstance, beginIndex: number, endIndex: number) {
     await this.body.rows.objectAt(beginIndex).click();
     await this.body.rows.objectAt(endIndex).clickWith({ shiftKey: true });
   },
@@ -226,7 +226,7 @@ export default PageObject.extend({
    * @param {number} beginIndex
    * @param {number} endIndex
    */
-  async selectRangeFromShiftClick(beginIndex, endIndex) {
+  async selectRangeFromShiftClick(this: PageObjectInstance, beginIndex: number, endIndex: number) {
     await this.body.rows.objectAt(beginIndex).clickWith({ shiftKey: true });
     await this.body.rows.objectAt(endIndex).clickWith({ shiftKey: true });
   },

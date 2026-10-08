@@ -2,7 +2,7 @@ import BaseTableCell from '../-private/base-table-cell.gts';
 import { action } from '@ember/object';
 import { on } from '@ember/modifier';
 import { didInsert, didUpdate } from '@ember/render-modifiers';
-import { SELECT_MODE } from '../../-private/collapse-tree';
+import { SELECT_MODE } from '../../-private/collapse-tree.ts';
 import EmberTableSimpleCheckbox from '../ember-table-simple-checkbox.gts';
 import type {
   CellValue,

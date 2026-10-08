@@ -7,7 +7,7 @@ import type { WithBoundArgs } from '@glint/template';
 import {
   setupTableStickyPolyfill,
   teardownTableStickyPolyfill,
-} from '../../-private/sticky/table-sticky-polyfill';
+} from '../../-private/sticky/table-sticky-polyfill.ts';
 import ScrollIndicators, {
   ScrollIndicatorTracker,
 } from '../-private/scroll-indicators/component.gts';

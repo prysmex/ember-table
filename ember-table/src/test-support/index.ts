@@ -1,9 +1,9 @@
-import TablePage from './pages/ember-table';
+import TablePage from './pages/ember-table.ts';
 import { setSetupRowCountForTest } from '../components/ember-tbody/component.gts';
 import { setupTHeadForTest } from '../components/ember-thead/component.gts';
 import { setSimpleCheckboxForTest } from '../components/ember-td/component.gts';
 
-function setupForTest() {
+function setupForTest(): void {
   setSetupRowCountForTest(true);
   setupTHeadForTest(true);
   setSimpleCheckboxForTest(true);

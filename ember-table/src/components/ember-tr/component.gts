@@ -3,8 +3,8 @@ import { action } from '@ember/object';
 import { on } from '@ember/modifier';
 import { hash } from '@ember/helper';
 import type { WithBoundArgs } from '@glint/template';
-import { closest } from '../../-private/utils/element';
-import { SELECT_MODE } from '../../-private/collapse-tree';
+import { closest } from '../../-private/utils/element.ts';
+import { SELECT_MODE } from '../../-private/collapse-tree.ts';
 import EmberTh from '../ember-th/component.gts';
 import EmberTd from '../ember-td/component.gts';
 import type {
@@ -108,7 +108,7 @@ export default class EmberTr<
   @action
   click(event: MouseEvent) {
     let row = this.bodyApi;
-    let inputParent = closest(event.target, 'input, button, label, a, select') as Element | null;
+    let inputParent = closest(event.target, 'input, button, label, a, select');
 
     if (row && !inputParent) {
       if (row.rowSelectionMode === SELECT_MODE.MULTIPLE) {

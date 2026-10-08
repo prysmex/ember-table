@@ -1,11 +1,16 @@
-import { getOuterClientRect, getInnerClientRect } from './element';
+import { getOuterClientRect, getInnerClientRect } from './element.ts';
 
-function createElement(mainClass, dimensions) {
+interface Bounds {
+  leftBound: number;
+  rightBound: number;
+}
+
+function createElement(mainClass: string, dimensions: Record<'top' | 'left' | 'width', number>): HTMLDivElement {
   let element = document.createElement('div');
 
   element.classList.add(mainClass);
 
-  for (let key in dimensions) {
+  for (let key of Object.keys(dimensions) as (keyof typeof dimensions)[]) {
     element.style[key] = `${dimensions[key]}px`;
   }
 
@@ -13,7 +18,22 @@ function createElement(mainClass, dimensions) {
 }
 
 class ReorderIndicator {
-  constructor(container, scale, element, bounds, mainClass, child) {
+  container: HTMLElement;
+  element: HTMLElement;
+  bounds: Bounds;
+  child: Node | undefined;
+  originLeft: number;
+  indicatorElement: HTMLDivElement;
+  private _left: number;
+
+  constructor(
+    container: HTMLElement,
+    scale: number,
+    element: HTMLElement,
+    bounds: Bounds,
+    mainClass: string,
+    child?: Node
+  ) {
     this.container = container;
     this.element = element;
     this.bounds = bounds;
@@ -47,15 +67,15 @@ class ReorderIndicator {
     this.container.removeChild(this.indicatorElement);
   }
 
-  set width(newWidth) {
+  set width(newWidth: number) {
     this.indicatorElement.style.width = `${newWidth}px`;
   }
 
-  get left() {
+  get left(): number {
     return this._left;
   }
 
-  set left(newLeft) {
+  set left(newLeft: number) {
     let { leftBound, rightBound } = this.bounds;
 
     let width = this.indicatorElement.offsetWidth;
@@ -80,7 +100,7 @@ class ReorderIndicator {
 }
 
 export class MainIndicator extends ReorderIndicator {
-  constructor(container, scale, element, bounds) {
+  constructor(container: HTMLElement, scale: number, element: HTMLElement, bounds: Bounds) {
     let child = element.cloneNode(true);
 
     super(container, scale, element, bounds, 'et-reorder-main-indicator', child);
@@ -88,7 +108,7 @@ export class MainIndicator extends ReorderIndicator {
 }
 
 export class DropIndicator extends ReorderIndicator {
-  constructor(container, scale, element, bounds) {
+  constructor(container: HTMLElement, scale: number, element: HTMLElement, bounds: Bounds) {
     super(container, scale, element, bounds, 'et-reorder-drop-indicator');
   }
 }

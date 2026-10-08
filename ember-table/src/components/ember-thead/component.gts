@@ -12,10 +12,10 @@ import { hash } from '@ember/helper';
 import { didInsert, didUpdate } from '@ember/render-modifiers';
 import type Owner from '@ember/owner';
 import type { WithBoundArgs } from '@glint/template';
-import { closest } from '../../-private/utils/element';
-import MetaCache from '../../-private/meta-cache';
-import { sortMultiple, compareValues } from '../../-private/utils/sort';
-import ColumnTree from '../../-private/column-tree';
+import { closest } from '../../-private/utils/element.ts';
+import MetaCache from '../../-private/meta-cache.ts';
+import { sortMultiple, compareValues } from '../../-private/utils/sort.ts';
+import ColumnTree, { type TableColumnMeta, type TreeColumn } from '../../-private/column-tree.ts';
 import EmberTr from '../ember-tr/component.gts';
 import type EmberTh from '../ember-th/component.gts';
 import { unwrapApi, type TableApiArg } from '../../-private/unwrap-api.ts';
@@ -23,7 +23,6 @@ import type { TableHead } from '../../-private/table-api.ts';
 import type {
   ColumnMetaCache,
   ColumnTree as ColumnTreeShape,
-  CompareFunction,
   HeaderCellApi,
   HeaderRowApi,
   HeaderRowMeta,
@@ -184,19 +183,22 @@ export interface EmberTheadSignature<
 // The column tree is a classic model. Rather than pushing Glimmer args into it
 // whenever they change, its inputs are aliases of the header's getters, so the
 // model's computed properties and observers stay in sync through autotracking.
-const HeadColumnTree = ColumnTree.extend({
-  columns: readOnly('_head.columns'),
-  sorts: readOnly('_head.sorts'),
-  fillMode: readOnly('_head.fillMode'),
-  initialFillMode: readOnly('_head.initialFillMode'),
-  fillColumnIndex: readOnly('_head.fillColumnIndex'),
-  resizeMode: readOnly('_head.resizeMode'),
-  widthConstraint: readOnly('_head.widthConstraint'),
-  containerWidthAdjustment: readOnly('_head.containerWidthAdjustment'),
-  enableSort: readOnly('_head.enableSort'),
-  enableResize: readOnly('_head.enableResize'),
-  enableReorder: readOnly('_head.enableReorder'),
-}) as unknown as { create(properties: Record<string, unknown>): ColumnTreeShape };
+class HeadColumnTree extends ColumnTree {
+  declare _head: object;
+
+  @readOnly('_head.columns') declare columns: ColumnTree['columns'];
+  @readOnly('_head.sorts') declare sorts: ColumnTree['sorts'];
+  @readOnly('_head.fillMode') declare fillMode: ColumnTree['fillMode'];
+  @readOnly('_head.initialFillMode') declare initialFillMode: ColumnTree['initialFillMode'];
+  @readOnly('_head.fillColumnIndex') declare fillColumnIndex: ColumnTree['fillColumnIndex'];
+  @readOnly('_head.resizeMode') declare resizeMode: ColumnTree['resizeMode'];
+  @readOnly('_head.widthConstraint') declare widthConstraint: ColumnTree['widthConstraint'];
+  @readOnly('_head.containerWidthAdjustment')
+  declare containerWidthAdjustment: ColumnTree['containerWidthAdjustment'];
+  @readOnly('_head.enableSort') declare enableSort: ColumnTree['enableSort'];
+  @readOnly('_head.enableResize') declare enableResize: ColumnTree['enableResize'];
+  @readOnly('_head.enableReorder') declare enableReorder: ColumnTree['enableReorder'];
+}
 
 export default class EmberThead<
     RowType extends EmberTableRow = EmberTableRow,
@@ -214,13 +216,19 @@ export default class EmberThead<
   constructor(owner: Owner, args: EmberTheadArgs<RowType, ColumnType>) {
     super(owner, args);
 
-    this.columnMetaCache = new MetaCache({ keyPath: this.args.columnKeyPath });
-    this.columnTree = HeadColumnTree.create({
-      _head: this,
-      columnMetaCache: this.columnMetaCache,
-      onReorder: (...values: [ColumnType, ColumnType]) => this.args.onReorder?.(...values),
-      onResize: (column: ColumnType) => this.args.onResize?.(column),
+    let columnMetaCache = new MetaCache<TreeColumn, TableColumnMeta>({
+      keyPath: this.args.columnKeyPath,
     });
+    let columnTree = HeadColumnTree.create({
+      _head: this,
+      columnMetaCache,
+      onReorder: (column, closestColumn) =>
+        this.args.onReorder?.(column as ColumnType, closestColumn as ColumnType),
+      onResize: (column) => this.args.onResize?.(column as ColumnType),
+    });
+    // The components see the models through the interfaces in `types.ts`.
+    this.columnMetaCache = columnMetaCache as unknown as ColumnMetaCache;
+    this.columnTree = columnTree as unknown as ColumnTreeShape;
 
     this.validateUniqueColumnKeys();
     this.unwrappedApi.registerHead(this);
@@ -286,7 +294,7 @@ export default class EmberThead<
   }
 
   get compareFunction() {
-    return this.args.compareFunction ?? (compareValues as CompareFunction);
+    return this.args.compareFunction ?? compareValues;
   }
 
   get sortEmptyLast() {

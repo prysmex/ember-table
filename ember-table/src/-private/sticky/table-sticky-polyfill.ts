@@ -1,17 +1,26 @@
 import ResizeSensor from 'css-element-queries/src/ResizeSensor';
 import { buildWaiter } from '@ember/test-waiters';
-import { getScale } from '../utils/element';
+import { getScale } from '../utils/element.ts';
 
 // Lets `settled()` wait for the initial positioning, which happens on the next
 // animation frame. A no-op in production builds.
 const waiter = buildWaiter('ember-table:table-sticky-polyfill');
 
-/* eslint-disable ember/no-observers */
+const TABLE_POLYFILL_MAP = new WeakMap<HTMLElement, TableStickyPolyfill>();
 
-const TABLE_POLYFILL_MAP = new WeakMap();
+type Side = 'top' | 'bottom';
 
 class TableStickyPolyfill {
-  constructor(element) {
+  element: HTMLElement;
+  maxStickyProportion: number;
+  side: Side;
+  setupToken: unknown;
+  setupRaf: number;
+  mutationObserver: MutationObserver;
+  declare rowMutationObservers: MutationObserver[];
+  declare resizeSensors: [Element, ResizeSensor][];
+
+  constructor(element: HTMLElement) {
     this.element = element;
     this.maxStickyProportion = 0.5;
 
@@ -77,9 +86,9 @@ class TableStickyPolyfill {
 
   setupResizeSensors = () => {
     let rows = Array.from(this.element.children);
-    let firstCells = rows.map(r => r.firstElementChild);
+    let firstCells = rows.map((r) => r.firstElementChild!);
 
-    this.resizeSensors = firstCells.map(cell => {
+    this.resizeSensors = firstCells.map((cell) => {
       let sensor = new ResizeSensor(cell, this.repositionStickyElements);
 
       return [cell, sensor];
@@ -87,7 +96,8 @@ class TableStickyPolyfill {
   };
 
   teardownResizeSensors = () => {
-    this.resizeSensors.forEach(([cell, sensor]) => sensor.detach(cell));
+    // Without a callback, `detach` removes the sensor entirely.
+    this.resizeSensors.forEach(([, sensor]) => sensor.detach());
   };
 
   /**
@@ -189,9 +199,9 @@ class TableStickyPolyfill {
    +--------------------------------+   v---
    */
   repositionStickyElements = () => {
-    let table = this.element.parentNode;
+    let table = this.element.parentElement!;
     let scale = getScale(table);
-    let containerHeight = table.parentNode.offsetHeight;
+    let containerHeight = table.parentElement!.offsetHeight;
 
     // exclude ResizeSensor divs
     let rows = Array.from(this.element.querySelectorAll('tr'));
@@ -208,10 +218,10 @@ class TableStickyPolyfill {
       // Work top-down (index order) for 'top', bottom-up (reverse index
       // order) for 'bottom' rows
       let index = this.side === 'top' ? i : rows.length - 1 - i;
-      let row = rows[index];
-      let height = heights[index];
+      let row = rows[index]!;
+      let height = heights[index]!;
 
-      for (let child of row.children) {
+      for (let child of Array.from(row.children) as HTMLElement[]) {
         child.style.position = '-webkit-sticky';
         child.style.position = 'sticky';
         child.style[this.side] = `${offset}px`;
@@ -222,11 +232,11 @@ class TableStickyPolyfill {
   };
 }
 
-export function setupTableStickyPolyfill(element) {
+export function setupTableStickyPolyfill(element: HTMLElement): void {
   TABLE_POLYFILL_MAP.set(element, new TableStickyPolyfill(element));
 }
 
-export function teardownTableStickyPolyfill(element) {
+export function teardownTableStickyPolyfill(element: HTMLElement): void {
   TABLE_POLYFILL_MAP.get(element)?.destroy();
   TABLE_POLYFILL_MAP.delete(element);
 }

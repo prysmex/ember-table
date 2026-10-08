@@ -73,6 +73,28 @@ export default ts.config(
     },
   },
   {
+    // The column and collapse trees are classic EmberObject models: computed
+    // properties with dependent keys, observers, `init`/`destroy` hooks and
+    // `get`/`set`.
+    files: ['src/-private/column-tree.ts', 'src/-private/collapse-tree.ts'],
+    rules: {
+      'ember/classic-decorator-hooks': 'off',
+      'ember/classic-decorator-no-classic-methods': 'off',
+      'ember/require-computed-property-dependencies': 'off',
+    },
+  },
+  {
+    // Page objects get their properties from runtime definitions
+    // (ember-cli-page-object), so they are typed `any`.
+    files: ['src/test-support/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+    },
+  },
+  {
     files: ['**/*.{js,gjs}'],
     languageOptions: {
       ecmaVersion: 'latest',

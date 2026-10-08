@@ -1,7 +1,7 @@
 import Component from '@glimmer/component';
 import { cached } from '@glimmer/tracking';
 import EmberObject, { get, set } from '@ember/object';
-import { objectAt } from '../../-private/utils/array';
+import { objectAt } from '../../-private/utils/array.ts';
 import type { EmberTableColumn, EmberTableRow } from '../../index.ts';
 import type {
   CellApi as CellApiShape,

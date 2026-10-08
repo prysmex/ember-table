@@ -1,19 +1,24 @@
 import { compare, isNone } from '@ember/utils';
 import { get } from '@ember/object';
 
-function merge(left, right, comparator) {
-  let mergedArray = [];
+import type { EmberTableSort } from '../../index.ts';
+import type { CompareFunction } from '../types.ts';
+
+export type Comparator<T> = (a: T, b: T) => number;
+
+function merge<T>(left: T[], right: T[], comparator: Comparator<T>): T[] {
+  let mergedArray: T[] = [];
   let leftIndex = 0;
   let rightIndex = 0;
 
   while (leftIndex < left.length && rightIndex < right.length) {
-    let comparison = comparator(left[leftIndex], right[rightIndex]);
+    let comparison = comparator(left[leftIndex]!, right[rightIndex]!);
 
     if (comparison <= 0) {
-      mergedArray.push(left[leftIndex]);
+      mergedArray.push(left[leftIndex]!);
       leftIndex++;
     } else {
-      mergedArray.push(right[rightIndex]);
+      mergedArray.push(right[rightIndex]!);
       rightIndex++;
     }
   }
@@ -37,11 +42,11 @@ function merge(left, right, comparator) {
  * are not stable, and `_.sortBy` doesn't take a general comparator. Ideally
  * lodash would add a `_.sort` function whose API would mimic this function's.
  *
- * @param {Array} array The array to be sorted
- * @param {Comparator} comparator The comparator function to compare elements with.
- * @returns {Array} A sorted array
+ * @param array The array to be sorted
+ * @param comparator The comparator function to compare elements with.
+ * @returns A sorted array
  */
-export function mergeSort(array, comparator = compare) {
+export function mergeSort<T>(array: T[], comparator: Comparator<T> = compare): T[] {
   if (array.length <= 1) {
     return array;
   }
@@ -53,12 +58,18 @@ export function mergeSort(array, comparator = compare) {
   return merge(leftArray, rightArray, comparator);
 }
 
-export function sortMultiple(itemA, itemB, sorts, compare, sortEmptyLast) {
-  let compareValue;
+export function sortMultiple(
+  itemA: unknown,
+  itemB: unknown,
+  sorts: readonly EmberTableSort[],
+  compare: CompareFunction,
+  sortEmptyLast: boolean
+): number {
+  let compareValue = 0;
 
   for (let { valuePath, isAscending } of sorts) {
-    let valueA = get(itemA, valuePath);
-    let valueB = get(itemB, valuePath);
+    let valueA: unknown = get(itemA as object, valuePath);
+    let valueB: unknown = get(itemB as object, valuePath);
 
     // The option only influences the outcome of an ascending sort.
     if (sortEmptyLast) {
@@ -77,19 +88,19 @@ export function sortMultiple(itemA, itemB, sorts, compare, sortEmptyLast) {
   return compareValue;
 }
 
-function isExactlyNaN(value) {
+function isExactlyNaN(value: unknown): boolean {
   return typeof value === 'number' && isNaN(value);
 }
 
-function isEmptyString(value) {
+function isEmptyString(value: unknown): boolean {
   return typeof value === 'string' && value === '';
 }
 
-function isEmpty(value) {
+function isEmpty(value: unknown): boolean {
   return isNone(value) || isExactlyNaN(value) || isEmptyString(value);
 }
 
-function orderEmptyValues(itemA, itemB, sortEmptyLast) {
+function orderEmptyValues(itemA: unknown, itemB: unknown, sortEmptyLast: boolean): number {
   let aIsEmpty = isEmpty(itemA);
   let bIsEmpty = isEmpty(itemB);
   let less = -1;
@@ -113,7 +124,7 @@ function orderEmptyValues(itemA, itemB, sortEmptyLast) {
   }
 }
 
-export function compareValues(itemA, itemB, sortEmptyLast) {
+export function compareValues(itemA: unknown, itemB: unknown, sortEmptyLast: boolean): number {
   if (isEmpty(itemA) || isEmpty(itemB)) {
     return orderEmptyValues(itemA, itemB, sortEmptyLast);
   }

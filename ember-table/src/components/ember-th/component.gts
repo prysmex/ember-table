@@ -6,7 +6,7 @@ import { didInsert, didUpdate, willDestroy } from '@ember/render-modifiers';
 import { importSync } from '@embroider/macros';
 import type Hammer from 'hammerjs';
 import type { HammerInput } from 'hammerjs';
-import { closest } from '../../-private/utils/element';
+import { closest } from '../../-private/utils/element.ts';
 import SortIndicator from './sort-indicator/component.gts';
 import ResizeHandle from './resize-handle/component.gts';
 import type { EmberTableColumn, EmberTableSort, TableColumnMeta } from '../../index.ts';
@@ -111,7 +111,7 @@ export default class EmberTh<
 
   @action
   click(event: MouseEvent) {
-    let input = closest(event.target, 'button:not(.et-sort-toggle), input, label, a, select') as Element | null;
+    let input = closest(event.target, 'button:not(.et-sort-toggle), input, label, a, select');
     if (this.columnState === INACTIVE && !input && this.isSortable) {
       this.updateSort({ toggle: event.ctrlKey || event.metaKey });
     }
@@ -126,7 +126,7 @@ export default class EmberTh<
 
   @action
   keyUp(event: KeyboardEvent) {
-    let input = closest(event.target, 'button:not(.et-sort-toggle), input, label, a, select') as Element | null;
+    let input = closest(event.target, 'button:not(.et-sort-toggle), input, label, a, select');
     if (this.columnState === INACTIVE && !input && event.key === 'Enter' && this.isSortable) {
       this.updateSort({ toggle: false });
     }
