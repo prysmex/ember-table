@@ -298,6 +298,11 @@ This repository is a pnpm workspace:
 - `ember-table/` is the published v2 addon (`pnpm --filter ember-table build`).
 - `test-app/` is a Vite app that hosts both the test suite and the documentation site.
 
+In VS Code, install the recommended extensions (`.vscode/extensions.json`), notably
+[Glint](https://marketplace.visualstudio.com/items?itemName=typed-ember.glint2-vscode), for types and
+go-to-definition in `.gts` files, and use the workspace TypeScript version when prompted. Run
+`pnpm build` once so the test app's project reference can follow imports into the addon's source.
+
 Run `pnpm test` from the root to build the addon and run the test suite. Where no local Chrome is
 available, point Testem at a containerized Chromium:
 `CHROME_BIN=$PWD/test-app/scripts/docker-chrome pnpm test`.
