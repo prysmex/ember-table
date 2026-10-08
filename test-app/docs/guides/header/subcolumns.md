@@ -11,7 +11,7 @@ lowest level of subcolumns (the leaves of the column tree). This means that
 `valuePath` is optional for columns that have subcolumns.
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const rows = generateRows(100);
@@ -67,7 +67,7 @@ randomly, demonstrating the flexibility of subcolumns.
 
 ```gjs preview
 import { A } from '@ember/array';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows, generateColumn } from 'test-app/utils/generators';
 
 const COLUMN_COUNT = 4;

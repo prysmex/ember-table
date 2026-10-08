@@ -13,7 +13,7 @@ or `ctrl`.
 ```gjs preview
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { getRandomInt } from 'test-app/utils/generators';
 
 const DEPARTMENTS = ['Books', 'Garden', 'Music', 'Sports', 'Toys'];
@@ -183,7 +183,7 @@ This demo shows that in action:
 ```gjs preview
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { getRandomInt } from 'test-app/utils/generators';
 
 function generateProducts() {
@@ -260,7 +260,7 @@ To see its effect, try sorting the "Material" column in ascending order with and
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { on } from '@ember/modifier';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { getRandomInt } from 'test-app/utils/generators';
 
 const MATERIALS = ['Cotton', 'Granite', 'Plastic', 'Steel', 'Wooden'];

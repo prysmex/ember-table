@@ -39,7 +39,7 @@ import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { fn } from '@ember/helper';
 import { on } from '@ember/modifier';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const WIDTH_CONSTRAINTS = [
@@ -153,7 +153,7 @@ import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { fn } from '@ember/helper';
 import { on } from '@ember/modifier';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const FILL_MODES = ['equal-column', 'first-column', 'last-column', 'nth-column'];
@@ -232,7 +232,7 @@ Note that `eq-container-slack` uses both `fillMode` _and_ `initialFillMode`. The
 In this example, `eq-container-slack` is combined with `equal-column` fill mode and `first-column` initial fill mode. At render, excess whitespace is allocated to the first column. When any column is resized such that the total width of the columns exceeds the container, each column is shrunk equally to satisfy the width constraint.
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const rows = generateRows(100);

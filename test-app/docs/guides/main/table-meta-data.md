@@ -58,7 +58,7 @@ import Component from '@glimmer/component';
 import { action, set } from '@ember/object';
 import { fn } from '@ember/helper';
 import { on } from '@ember/modifier';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 export default class CellSelection extends Component {
@@ -127,7 +127,7 @@ Meta objects can be used in templates to render conditional markup based on
 the index of the current row.
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G'].map((name) => ({

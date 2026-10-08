@@ -17,7 +17,7 @@ to pass in an array of rows. Here is a component with some basic column
 definitions and a rows array:
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 
 const columns = [
   { name: 'First Name', valuePath: 'firstName' },

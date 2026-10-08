@@ -10,7 +10,7 @@ These indicators will show/hide when there is content overflowing in their
 respective direction.
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const rows = generateRows(100);
@@ -36,7 +36,7 @@ Horizontal indicators will respect fixed columns, appearing inside of
 them when they are present, or at the edges of the table when they are not.
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const rows = generateRows(100);
@@ -71,7 +71,7 @@ Vertical scroll indicators respect both headers and footers, appearing just
 inside any sticky rows at the top or bottom of the table.
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const rows = generateRows(100);

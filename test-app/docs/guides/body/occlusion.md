@@ -46,7 +46,7 @@ settings. The current options are:
   table id `"#{tableId}"`.
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 
 const columns = [
   { name: 'A', valuePath: 'A', width: 180 },

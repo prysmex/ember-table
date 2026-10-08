@@ -9,7 +9,7 @@ all be objects, but beyond that there are no specific requirements for the
 objects themselves - they can be anything.
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 
 const columns = [
   { name: 'A', valuePath: 'A', width: 180 },
@@ -61,7 +61,7 @@ import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 import { on } from '@ember/modifier';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 
 const columns = [
   { name: 'A', valuePath: 'A', width: 180 },
@@ -121,7 +121,7 @@ import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 import { on } from '@ember/modifier';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 
 const columns = [
   { name: 'A', valuePath: 'A', width: 180 },

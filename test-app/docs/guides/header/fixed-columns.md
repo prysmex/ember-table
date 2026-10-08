@@ -10,7 +10,7 @@ may be fixed, subcolumns will ignore their own `isFixed` property and use their
 parent's value instead.
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const rows = generateRows(100);
@@ -48,7 +48,7 @@ are marked as fixed and are out of order, Ember Table will sort the columns
 array directly to fix the ordering.
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const rows = generateRows(100);
@@ -89,7 +89,7 @@ import { A } from '@ember/array';
 import { set } from '@ember/object';
 import { fn } from '@ember/helper';
 import { on } from '@ember/modifier';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const rows = generateRows(100);

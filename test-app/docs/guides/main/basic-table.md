@@ -15,7 +15,7 @@ setting up a minimal instance of Ember Table will only require you to define a
 header and a body, with columns and rows passed to it.
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 
 const columns = [
   { name: 'A', valuePath: 'A', width: 180 },
@@ -46,7 +46,7 @@ you can add class names, setup actions, and handle events anywhere.
 This example demonstrates the same table as above, but with each level yielded.
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 
 const columns = [
   { name: 'A', valuePath: 'A', width: 180 },

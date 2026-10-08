@@ -12,7 +12,7 @@ to control the selection using DDAU:
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 
 const columns = [
   { name: 'A', valuePath: 'A', width: 180 },
@@ -57,7 +57,7 @@ selected, all of its children _must_ be selected:
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 
 const columns = [
   { name: 'A', valuePath: 'A', width: 180 },
@@ -135,7 +135,7 @@ import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 import { fn } from '@ember/helper';
 import { on } from '@ember/modifier';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 
 const columns = [
   { name: 'A', valuePath: 'A', width: 180 },
@@ -266,7 +266,7 @@ To reset all internal state relating to an attempted user selection, call the `a
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 
 export default class AbortingASelectionExample extends Component {
   @tracked selection;

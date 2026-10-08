@@ -29,8 +29,8 @@ assert.true(table.body.rows.objectAt(0).isSelected, 'first row is selected');
 assert.false(table.body.rows.objectAt(1).isSelected, 'second row is not selected');
 ```
 
-To learn more about the properties that are present on the table page object, refer to [its source](https://github.com/Addepar/ember-table/blob/master/ember-table/src/test-support/pages/ember-table.js) or
-to [its usage in the ember-table tests](https://github.com/Addepar/ember-table/blob/master/test-app/tests/integration/components/basic-test.js).
+To learn more about the properties that are present on the table page object, refer to [its source](https://github.com/Addepar/ember-table/blob/master/ember-table/src/test-support/pages/ember-table.ts) or
+to [its usage in the ember-table tests](https://github.com/Addepar/ember-table/blob/master/test-app/tests/integration/components/basic-test.gts).
 
 To add properties for your own cells, extend it. `ember-table/test-support`
 also exports the page object helpers (`PageObject`, `collection`, `hasClass`,

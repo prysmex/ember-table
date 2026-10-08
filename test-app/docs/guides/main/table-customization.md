@@ -18,7 +18,7 @@ each cell through yielding alone. No need to pass in components or specify
 lookup paths:
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const columns = ['A', 'B', 'C', 'D', 'E', 'F', 'G'].map((name) => ({
@@ -52,7 +52,7 @@ const rows = generateRows(100);
 ```
 
 If you want to customize a header cell but still want to include the elements to sort and
-to resize a column, use the `ember-th/sort-indicator` and `ember-th/resize-handle`
+to resize a column, use the `EmberThSortIndicator` and `EmberThResizeHandle`
 components:
 
 ```gjs preview
@@ -60,9 +60,7 @@ import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 import { on } from '@ember/modifier';
-import EmberTable from 'ember-table/components/ember-table/component';
-import SortIndicator from 'ember-table/components/ember-th/sort-indicator/component';
-import ResizeHandle from 'ember-table/components/ember-th/resize-handle/component';
+import { EmberTable, EmberThResizeHandle, EmberThSortIndicator } from 'ember-table';
 import { getRandomInt } from 'test-app/utils/generators';
 
 const DEPARTMENTS = ['Books', 'Garden', 'Grocery', 'Music', 'Outdoors', 'Toys'];
@@ -182,11 +180,11 @@ export default class SortableHeaders extends Component {
           <h.row as |r|>
             <r.cell as |columnValue columnMeta|>
               {{#if this.showSortIndicator}}
-                <SortIndicator @columnMeta={{columnMeta}} />
+                <EmberThSortIndicator @columnMeta={{columnMeta}} />
               {{/if}}
               {{columnValue.name}}
               {{#if this.showResizeHandle}}
-                <ResizeHandle @columnMeta={{columnMeta}} />
+                <EmberThResizeHandle @columnMeta={{columnMeta}} />
               {{/if}}
             </r.cell>
           </h.row>
@@ -209,7 +207,7 @@ Because column definitions can hold component references directly, you can
 invoke a different component per cell:
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const CustomHeader = <template>
@@ -276,7 +274,7 @@ itself. The row is also passed to cells (but not headers, which don't have
 rows), allowing us to customize the template in the same way as columns:
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 
 const CustomCell = <template>
   <div class="custom-header text-{{@color}}">
@@ -331,7 +329,7 @@ cell components can be customized using the cell value, column value, or row
 value. Pass extra CSS classes to table elements with the `@class` argument:
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 
 const columns = [
   { name: 'A', valuePath: 'A', width: 180 },

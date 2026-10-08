@@ -11,7 +11,7 @@ each row for that column. If you only want to use the default template, you can
 also specify a `name` on the column which will be rendered in the template.
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const rows = generateRows(100);
@@ -45,7 +45,7 @@ header components by putting the component itself on the column and invoking
 it from the block.
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const CustomHeader = <template>
@@ -100,7 +100,7 @@ your users set on their tables. Below are two tables which share the same column
 definitions, so their widths are tied together.
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const rows = generateRows(100);
@@ -150,7 +150,7 @@ import { tracked } from '@glimmer/tracking';
 import { on } from '@ember/modifier';
 import { fn } from '@ember/helper';
 import { A } from '@ember/array';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 export default class ResizeReorderDemo extends Component {
@@ -245,7 +245,7 @@ reorder has occured.
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { A } from '@ember/array';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 export default class ResizeReorderActionsDemo extends Component {
@@ -293,7 +293,7 @@ A column can have its text aligned left, center or right by setting the `textAli
 When the property is set, the cell will have the matching class (`ember-table__text-align-left`, `ember-table__text-align-center` or `ember-table__text-align-right`).
 
 ```gjs preview
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 import { generateRows } from 'test-app/utils/generators';
 
 const rows = generateRows(100);

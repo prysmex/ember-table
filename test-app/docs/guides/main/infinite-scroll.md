@@ -11,7 +11,7 @@ import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 import { on } from '@ember/modifier';
-import EmberTable from 'ember-table/components/ember-table/component';
+import { EmberTable } from 'ember-table';
 
 export default class InfiniteScroll extends Component {
   // count of records per "page"
@@ -104,4 +104,4 @@ export default class InfiniteScroll extends Component {
 }
 ```
 
-Ember Table does not provide a built-in spinner. You must specify your own by passing a block to `<t.loadingMore>` like in the example above. `<t.loadingMore>` is the `EmberTableLoadingMore` component (`ember-table/components/ember-table-loading-more/component`); it accepts `@isLoading`, `@canLoadMore`, and `@center`.
+Ember Table does not provide a built-in spinner. You must specify your own by passing a block to `<t.loadingMore>` like in the example above. `<t.loadingMore>` is the `EmberTableLoadingMore` component (exported from `ember-table`); it accepts `@isLoading`, `@canLoadMore`, and `@center`.
