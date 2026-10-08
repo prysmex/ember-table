@@ -3,12 +3,12 @@
   "repository": "https://github.com/Addepar/ember-table",
   "license": "BSD-3-Clause",
   "scripts": {
-    "build": "pnpm --filter @prysmex/ember-table build",
+    "build": "pnpm --filter prysmex-ember-table build",
     "lint": "pnpm --filter '*' lint",
     "lint:fix": "pnpm --filter '*' lint:fix",
     "prepare": "pnpm build",
     "start": "concurrently 'pnpm:start:*' --restart-after 5000 --prefixColors auto",
-    "start:addon": "pnpm --filter @prysmex/ember-table start --no-watch.clearScreen",
+    "start:addon": "pnpm --filter prysmex-ember-table start --no-watch.clearScreen",
     "start:test-app": "pnpm --filter test-app start",
     "test": "pnpm --filter '*' test"
   },

@@ -139,7 +139,7 @@ importers:
   test-app:
     dependencies:
       ember-table:
-        specifier: workspace:@prysmex/ember-table@*
+        specifier: workspace:prysmex-ember-table@*
         version: link:../ember-table
     devDependencies:
       '@addepar/style-toolbox':

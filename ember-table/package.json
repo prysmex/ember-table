@@ -1,5 +1,5 @@
 {
-  "name": "@prysmex/ember-table",
+  "name": "prysmex-ember-table",
   "version": "6.0.0-12",
   "description": "An addon to support large data set and a number of features around table.",
   "keywords": [
