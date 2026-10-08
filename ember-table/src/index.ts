@@ -62,3 +62,16 @@ export interface TableColumnMeta {
 */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type CellValue<RowType> = [keyof RowType] extends [never] ? any : RowType[keyof RowType];
+
+// Components, for templates in strict mode (`.gjs`/`.gts`).
+export { default as EmberTable } from './components/ember-table/component.gts';
+export { default as EmberThead } from './components/ember-thead/component.gts';
+export { default as EmberTbody } from './components/ember-tbody/component.gts';
+export { default as EmberTfoot } from './components/ember-tfoot/component.gts';
+export { default as EmberTr } from './components/ember-tr/component.gts';
+export { default as EmberTh } from './components/ember-th/component.gts';
+export { default as EmberTd } from './components/ember-td/component.gts';
+export { default as EmberThResizeHandle } from './components/ember-th/resize-handle/component.gts';
+export { default as EmberThSortIndicator } from './components/ember-th/sort-indicator/component.gts';
+export { default as EmberTableLoadingMore } from './components/ember-table-loading-more/component.gts';
+export { default as EmberTableSimpleCheckbox } from './components/ember-table-simple-checkbox.gts';
