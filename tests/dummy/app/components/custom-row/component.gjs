@@ -1,5 +1,24 @@
-import EmberTableRow from 'ember-table/components/ember-tr/component';
+import EmberTr from 'ember-table/components/ember-tr/component';
 
-export default class CustomRow extends EmberTableRow {
-  get customClass() { return 'custom-row'; }
-}
+<template>
+  {{#if (has-block)}}
+    <EmberTr
+      @api={{@api}}
+      @onClick={{@onClick}}
+      @onDoubleClick={{@onDoubleClick}}
+      @class="custom-row"
+      ...attributes
+      as |cell|
+    >
+      {{yield cell}}
+    </EmberTr>
+  {{else}}
+    <EmberTr
+      @api={{@api}}
+      @onClick={{@onClick}}
+      @onDoubleClick={{@onDoubleClick}}
+      @class="custom-row"
+      ...attributes
+    />
+  {{/if}}
+</template>
