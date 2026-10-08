@@ -49,12 +49,16 @@ written in TypeScript, tested and documented in a Vite app.
 - The sticky polyfill registers its initial animation frame with
   `@ember/test-waiters`, which removed a flaky test (and the same race in
   consumers' tests).
+- `data-test-*` attributes stay in the addon's templates, which ship
+  uncompiled, so the consuming app's build strips them. The docs app does this
+  with `strip-test-selectors` (the Vite successor to `ember-test-selectors`) in
+  production builds: no `data-test-*` remains in the production bundle's
+  templates, while the test build keeps all of them. The README shows
+  consumers the same setup.
 
 ## Follow-ups
 
 - Replace `@ember/render-modifiers` with `ember-modifier` (or local modifiers).
 - Move the classic models from computed properties and observers to
   autotracking.
-- `data-test-*` attributes now ship in production builds (v2 addons cannot be
-  stripped by `ember-test-selectors`).
-- Docs deployment (GitHub Pages) needs a new workflow for the Docfy site.
+- Docs deployment needs a workflow for the Docfy site (Vercel is planned).

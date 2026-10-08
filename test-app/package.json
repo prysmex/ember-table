@@ -67,6 +67,7 @@
     "qunit": "^2.26.0",
     "qunit-dom": "^3.6.0",
     "sass": "^1.93.0",
+    "strip-test-selectors": "^0.1.0",
     "testem": "^3.21.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.71.1",

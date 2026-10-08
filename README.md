@@ -174,6 +174,36 @@ import { setupForTest as setupEmberTableForTest } from 'ember-table/test-support
 setupEmberTableForTest();
 ```
 
+### Stripping test selectors from production builds
+
+Ember Table's templates carry `data-test-*` attributes for its page objects. They are compiled by
+your app, so your app decides whether to strip them. In a Vite app, add
+[`strip-test-selectors`](https://github.com/mainmatter/ember-test-selectors/tree/master/strip-test-selectors)
+to the template transforms for production builds; it strips your own templates' selectors too:
+
+```js
+// babel.config.mjs
+export default function (api) {
+  return {
+    plugins: [
+      [
+        'babel-plugin-ember-template-compilation',
+        {
+          transforms: [
+            ...macros.templateMacros,
+            ...(api.env('production') ? ['strip-test-selectors'] : []),
+          ],
+        },
+      ],
+      // ...
+    ],
+  };
+}
+```
+
+Build your tests in a non-production mode (e.g. `vite build --mode development`) so the
+selectors stay.
+
 ## Using Ember Table with TypeScript and Glint
 
 Ember Table is written in TypeScript, and its type declarations are generated from the
