@@ -32,23 +32,17 @@ module('Integration | meta', function() {
           <EmberTable data-test-main-table as |t| >
             <EmberThead @api={{t}} @columns={{ctx.columns}} as |h|>
               <EmberTr @api={{h}} as |r|>
-                {{! @glint-expect-error: EmberTr's yielded cell is not typed as a header cell }}
                 <EmberTh @api={{r}} as |_column columnMeta|>
-                  {{! @glint-expect-error: the yielded metas don't declare app-defined properties }}
                   {{#if columnMeta.wasClicked}}column{{/if}}
                   clicked
                 </EmberTh>
               </EmberTr>
             </EmberThead>
             <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
-              {{! @glint-expect-error: EmberTbody/EmberTfoot yield the public row meta; EmberTr's @api wants the internal one }}
               <EmberTr @api={{b}} as |r|>
                 <EmberTd @api={{r}} @onClick={{ctx.onClick}} as |_value _column _row cellMeta columnMeta rowMeta|>
-                  {{! @glint-expect-error: the yielded metas don't declare app-defined properties }}
                   {{#if cellMeta.wasClicked}}cell{{/if}}
-                  {{! @glint-expect-error: the yielded metas don't declare app-defined properties }}
                   {{#if columnMeta.wasClicked}}column{{/if}}
-                  {{! @glint-expect-error: the yielded metas don't declare app-defined properties }}
                   {{#if rowMeta.wasClicked}}row{{/if}}
                   clicked
                 </EmberTd>
@@ -56,10 +50,8 @@ module('Integration | meta', function() {
             </EmberTbody>
 
             <EmberTfoot @api={{t}} @rows={{ctx.footerRows}} as |f|>
-              {{! @glint-expect-error: EmberTbody/EmberTfoot yield the public row meta; EmberTr's @api wants the internal one }}
               <EmberTr @api={{f}} as |r|>
                 <EmberTd @api={{r}} as |_value _column _row _cellMeta columnMeta _rowMeta|>
-                  {{! @glint-expect-error: the yielded metas don't declare app-defined properties }}
                   {{#if columnMeta.wasClicked}}column{{/if}}
                   clicked
                 </EmberTd>
@@ -132,9 +124,7 @@ module('Integration | meta', function() {
           <EmberTable data-test-main-table as |t| >
             <EmberThead @api={{t}} @columns={{ctx.columns}} as |h|>
               <EmberTr @api={{h}} as |r|>
-                {{! @glint-expect-error: EmberTr's yielded cell is not typed as a header cell }}
                 <EmberTh @api={{r}} as |_column columnMeta|>
-                  {{! @glint-expect-error: the yielded metas don't declare app-defined properties }}
                   {{#if columnMeta.wasClicked}}column{{/if}}
                   clicked
                 </EmberTh>
@@ -142,14 +132,10 @@ module('Integration | meta', function() {
             </EmberThead>
 
             <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
-              {{! @glint-expect-error: EmberTbody/EmberTfoot yield the public row meta; EmberTr's @api wants the internal one }}
               <EmberTr @api={{b}} as |r|>
                 <EmberTd @api={{r}} @onClick={{ctx.onClick}} as |_value _column _row cellMeta columnMeta rowMeta|>
-                  {{! @glint-expect-error: the yielded metas don't declare app-defined properties }}
                   {{#if cellMeta.wasClicked}}cell{{/if}}
-                  {{! @glint-expect-error: the yielded metas don't declare app-defined properties }}
                   {{#if columnMeta.wasClicked}}column{{/if}}
-                  {{! @glint-expect-error: the yielded metas don't declare app-defined properties }}
                   {{#if rowMeta.wasClicked}}row{{/if}}
                   clicked
                 </EmberTd>
@@ -157,10 +143,8 @@ module('Integration | meta', function() {
             </EmberTbody>
 
             <EmberTfoot @api={{t}} @rows={{ctx.footerRows}} as |f|>
-              {{! @glint-expect-error: EmberTbody/EmberTfoot yield the public row meta; EmberTr's @api wants the internal one }}
               <EmberTr @api={{f}} as |r|>
                 <EmberTd @api={{r}} as |_value _column _row _cellMeta columnMeta _rowMeta|>
-                  {{! @glint-expect-error: the yielded metas don't declare app-defined properties }}
                   {{#if columnMeta.wasClicked}}column{{/if}}
                   clicked
                 </EmberTd>
@@ -172,9 +156,7 @@ module('Integration | meta', function() {
           <EmberTable data-test-other-table as |t| >
             <EmberThead @api={{t}} @columns={{ctx.columns}} as |h|>
               <EmberTr @api={{h}} as |r|>
-                {{! @glint-expect-error: EmberTr's yielded cell is not typed as a header cell }}
                 <EmberTh @api={{r}} as |_column columnMeta|>
-                  {{! @glint-expect-error: the yielded metas don't declare app-defined properties }}
                   {{#if columnMeta.wasClicked}}column{{/if}}
                   clicked
                 </EmberTh>
@@ -182,14 +164,10 @@ module('Integration | meta', function() {
             </EmberThead>
 
             <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
-              {{! @glint-expect-error: EmberTbody/EmberTfoot yield the public row meta; EmberTr's @api wants the internal one }}
               <EmberTr @api={{b}} as |r|>
                 <EmberTd @api={{r}} @onClick={{ctx.onClick}} as |_value _column _row cellMeta columnMeta rowMeta|>
-                  {{! @glint-expect-error: the yielded metas don't declare app-defined properties }}
                   {{#if cellMeta.wasClicked}}cell{{/if}}
-                  {{! @glint-expect-error: the yielded metas don't declare app-defined properties }}
                   {{#if columnMeta.wasClicked}}column{{/if}}
-                  {{! @glint-expect-error: the yielded metas don't declare app-defined properties }}
                   {{#if rowMeta.wasClicked}}row{{/if}}
                   clicked
                 </EmberTd>
@@ -197,10 +175,8 @@ module('Integration | meta', function() {
             </EmberTbody>
 
             <EmberTfoot @api={{t}} @rows={{ctx.footerRows}} as |f|>
-              {{! @glint-expect-error: EmberTbody/EmberTfoot yield the public row meta; EmberTr's @api wants the internal one }}
               <EmberTr @api={{f}} as |r|>
                 <EmberTd @api={{r}} as |_value _column _row _cellMeta columnMeta _rowMeta|>
-                  {{! @glint-expect-error: the yielded metas don't declare app-defined properties }}
                   {{#if columnMeta.wasClicked}}column{{/if}}
                   clicked
                 </EmberTd>
@@ -261,7 +237,6 @@ module('Integration | meta', function() {
         <EmberTable data-test-main-table as |t| >
           <EmberThead @api={{t}} @columns={{ctx.columns}} as |h|>
             <EmberTr @api={{h}} as |r|>
-              {{! @glint-expect-error: EmberTr's yielded cell is not typed as a header cell }}
               <EmberTh @api={{r}} as |_column _columnMeta rowMeta|>
                 {{rowMeta.index}}
               </EmberTh>

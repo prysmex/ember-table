@@ -11,12 +11,68 @@ import type {
   CellValue,
   EmberTableColumn,
   EmberTableRow,
+  EmberTableSort,
+  TableCellMeta,
   TableColumnMeta,
   TableRowMeta,
 } from '../../index.ts';
-import type { CellApi, HeaderRowApi, RowApi } from '../../-private/types.ts';
+import type {
+  CellApi,
+  HeaderCellApi,
+  HeaderRowApi,
+  HeaderRowMeta,
+  RowApi,
+} from '../../-private/types.ts';
 
 const SELECTABLE_MODES: readonly string[] = [SELECT_MODE.MULTIPLE, SELECT_MODE.SINGLE];
+
+/**
+  What `<EmberTr @api>` accepts: a body or footer row (or the hash its section
+  yields, which carries it as `api`), or a header row.
+*/
+export type EmberTrApi<
+  RowType extends EmberTableRow = EmberTableRow,
+  ColumnType extends EmberTableColumn = EmberTableColumn,
+> = RowApi<RowType, ColumnType> | { api: RowApi<RowType, ColumnType> } | HeaderRowApi<ColumnType>;
+
+/** What a body or footer row yields for each cell. */
+export interface EmberTrBodyCell<
+  RowType extends EmberTableRow = EmberTableRow,
+  ColumnType extends EmberTableColumn = EmberTableColumn,
+> {
+  api: CellApi<RowType, ColumnType>;
+  cell: WithBoundArgs<typeof EmberTd<RowType, ColumnType>, 'api'>;
+  cellMeta: TableCellMeta;
+  cellValue: CellValue<RowType>;
+  columnMeta: TableColumnMeta;
+  columnValue: ColumnType;
+  rowMeta: TableRowMeta;
+  rowValue: RowType;
+  rowsCount: number;
+}
+
+/** What a header row yields for each cell. */
+export interface EmberTrHeaderCell<ColumnType extends EmberTableColumn = EmberTableColumn> {
+  api: HeaderCellApi<ColumnType>;
+  cell: WithBoundArgs<typeof EmberTh<ColumnType>, 'api'>;
+  columnMeta: TableColumnMeta;
+  columnValue: ColumnType;
+  rowMeta: HeaderRowMeta;
+  rowsCount: number;
+  sorts: readonly EmberTableSort[];
+  sendUpdateSort(sorts: EmberTableSort[]): void;
+}
+
+/** The cell an `<EmberTr>` with the given `@api` yields. */
+export type EmberTrCell<Api> =
+  Api extends HeaderRowApi<infer ColumnType>
+    ? EmberTrHeaderCell<ColumnType>
+    : Api extends RowApi<infer RowType, infer ColumnType> | { api: RowApi<infer RowType, infer ColumnType> }
+      ? EmberTrBodyCell<RowType, ColumnType>
+      : never;
+
+type RowValueOf<Api> =
+  Api extends RowApi<infer RowType> | { api: RowApi<infer RowType> } ? RowType : never;
 
 export interface EmberTrEvent<RowType> {
   event: MouseEvent;
@@ -24,59 +80,40 @@ export interface EmberTrEvent<RowType> {
   rowMeta: TableRowMeta | undefined;
 }
 
-export interface EmberTrSignature<
-  RowType extends EmberTableRow = EmberTableRow,
-  ColumnType extends EmberTableColumn = EmberTableColumn,
-  CellComponentType = WithBoundArgs<typeof EmberTd<RowType, ColumnType>, 'api'>,
-> {
+export interface EmberTrSignature<Api extends EmberTrApi = EmberTrApi> {
   Element: HTMLTableRowElement;
   Args: {
     /** @internal Provided by the yielded `row` component, or pass the section's yield. */
-    api: RowApi<RowType, ColumnType> | HeaderRowApi<ColumnType>;
+    api: Api;
     class?: string;
     /** Called when the row is clicked. */
-    onClick?: (event: EmberTrEvent<RowType>) => void;
+    onClick?: (event: EmberTrEvent<RowValueOf<Api>>) => void;
     /** Called when the row is double clicked. */
-    onDoubleClick?: (event: EmberTrEvent<RowType>) => void;
+    onDoubleClick?: (event: EmberTrEvent<RowValueOf<Api>>) => void;
   };
   Blocks: {
-    default: [
-      {
-        api: CellApi<RowType, ColumnType>;
-        cell: CellComponentType;
-        cellMeta: unknown;
-        cellValue: CellValue<RowType>;
-        columnMeta: TableColumnMeta;
-        columnValue: ColumnType;
-        rowMeta: TableRowMeta;
-        rowValue: RowType;
-        rowsCount: number;
-      },
-    ];
+    default: [EmberTrCell<Api>];
   };
 }
 
-export default class EmberTr<
-  RowType extends EmberTableRow = EmberTableRow,
-  ColumnType extends EmberTableColumn = EmberTableColumn,
-  CellComponentType = WithBoundArgs<typeof EmberTd<RowType, ColumnType>, 'api'>,
-> extends Component<EmberTrSignature<RowType, ColumnType, CellComponentType>> {
-  // The cell component is picked at runtime (header or body row), while
-  // `CellComponentType` describes it to consumers; this is the one place the
-  // yielded hash is asserted to match the signature.
-  asCellYield = (cell: object) =>
-    cell as EmberTrSignature<RowType, ColumnType, CellComponentType>['Blocks']['default'][0];
+export default class EmberTr<Api extends EmberTrApi = EmberTrApi> extends Component<
+  EmberTrSignature<Api>
+> {
+  // The template builds the cell hash for whichever kind of row it renders;
+  // this is the one place it is asserted to match the signature.
+  asCellYield = (cell: object) => cell as EmberTrCell<Api>;
 
-  get api() {
-    return this.args.api;
+  get api(): RowApi | HeaderRowApi {
+    let api: EmberTrApi = this.args.api;
+    return 'api' in api ? api.api : api;
   }
 
-  get headerApi(): HeaderRowApi<ColumnType> | undefined {
+  get headerApi(): HeaderRowApi | undefined {
     let api = this.api;
     return api.isHeader ? api : undefined;
   }
 
-  get bodyApi(): RowApi<RowType, ColumnType> | undefined {
+  get bodyApi(): RowApi | undefined {
     let api = this.api;
     return api.isHeader ? undefined : api;
   }
@@ -129,9 +166,16 @@ export default class EmberTr<
     this.sendEventAction(this.args.onDoubleClick, event);
   }
 
-  sendEventAction(callback: ((event: EmberTrEvent<RowType>) => void) | undefined, event: MouseEvent) {
+  sendEventAction(
+    callback: ((event: EmberTrEvent<RowValueOf<Api>>) => void) | undefined,
+    event: MouseEvent
+  ) {
     let row = this.bodyApi;
-    callback?.({ event, rowValue: row?.rowValue, rowMeta: row?.rowMeta });
+    callback?.({
+      event,
+      rowValue: row?.rowValue as RowValueOf<Api> | undefined,
+      rowMeta: row?.rowMeta,
+    });
   }
 
   <template>
@@ -151,6 +195,7 @@ export default class EmberTr<
             {{yield
               (this.asCellYield
                 (hash
+                  api=api
                   columnValue=api.columnValue
                   columnMeta=api.columnMeta
                   sorts=api.sorts

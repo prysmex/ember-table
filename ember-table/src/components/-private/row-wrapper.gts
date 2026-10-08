@@ -2,7 +2,7 @@ import Component from '@glimmer/component';
 import { cached } from '@glimmer/tracking';
 import EmberObject, { get, set } from '@ember/object';
 import { objectAt } from '../../-private/utils/array.ts';
-import type { EmberTableColumn, EmberTableRow } from '../../index.ts';
+import type { EmberTableColumn, EmberTableRow, TableCellMeta } from '../../index.ts';
 import type {
   CellApi as CellApiShape,
   ColumnMeta,
@@ -89,12 +89,13 @@ class CellApi<RowType extends EmberTableRow, ColumnType extends EmberTableColumn
     }
   }
 
-  get cellMeta(): unknown {
+  get cellMeta(): TableCellMeta {
     let cache = this.rowMeta._cellMetaCache;
     let columnValue = this.columnValue;
     let meta = cache.get(columnValue);
     if (!meta) {
-      meta = EmberObject.create();
+      // An EmberObject, so apps' `set()` calls on it are tracked.
+      meta = EmberObject.create() as unknown as TableCellMeta;
       cache.set(columnValue, meta);
     }
     return meta;

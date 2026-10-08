@@ -5,7 +5,7 @@ import RowWrapper from '../-private/row-wrapper.gts';
 import TableSection, { type SelectionDetails } from '../-private/table-section.ts';
 import EmberTr from '../ember-tr/component.gts';
 import type { TableApiArg } from '../../-private/unwrap-api.ts';
-import type { CellApi, SelectionMode } from '../../-private/types.ts';
+import type { CellApi, RowApi, SelectionMode } from '../../-private/types.ts';
 import type { EmberTableColumn, EmberTableRow, TableRowMeta } from '../../index.ts';
 
 export { setSetupRowCountForTest } from '../-private/table-section.ts';
@@ -96,7 +96,7 @@ export interface EmberTbodyArgs<RowType extends EmberTableRow = EmberTableRow> {
   /**
    * The row items that the table should display.
    */
-  rows: RowType[];
+  rows?: RowType[];
 
   /**
    * Sets which row selection behavior to follow.
@@ -142,8 +142,9 @@ export interface EmberTbodySignature<
   Blocks: {
     default: [
       {
+        api: RowApi<RowType, ColumnType>;
         cells: CellApi<RowType, ColumnType>[];
-        row: WithBoundArgs<typeof EmberTr<RowType, ColumnType>, 'api'>;
+        row: WithBoundArgs<typeof EmberTr<RowApi<RowType, ColumnType>>, 'api'>;
         rowMeta: TableRowMeta;
         rowValue: RowType;
         rowsCount: number;
@@ -189,7 +190,7 @@ export default class EmberTbody<
 
   // `EmberTr`'s generic parameters describe the rows to consumers; this is
   // the one place the yielded row component is asserted to match.
-  asRow = (row: object) => row as WithBoundArgs<typeof EmberTr<RowType, ColumnType>, 'api'>;
+  asRow = (row: object) => row as WithBoundArgs<typeof EmberTr<RowApi<RowType, ColumnType>>, 'api'>;
 
   // The virtual collection yields untyped items; they are this body's rows.
   asRowValue = (item: unknown) => item as RowType;
@@ -226,6 +227,7 @@ export default class EmberTbody<
             {{#if (has-block)}}
               {{yield
                 (hash
+                  api=api
                   rowValue=api.rowValue
                   rowMeta=api.rowMeta
                   cells=api.cells

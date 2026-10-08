@@ -188,8 +188,8 @@ componentModule('Unit | Private | TableStickyPolyfill', function() {
 
     await render(standardTemplate(this));
 
-    setupTableStickyPolyfill(find('thead'));
-    setupTableStickyPolyfill(find('tfoot'));
+    setupTableStickyPolyfill(find('thead') as HTMLElement);
+    setupTableStickyPolyfill(find('tfoot') as HTMLElement);
 
     await scrollTo('.ember-table-overflow', 0, 500);
 
@@ -212,8 +212,8 @@ componentModule('Unit | Private | TableStickyPolyfill', function() {
 
     await render(standardTemplate(this));
 
-    setupTableStickyPolyfill(find('thead'));
-    setupTableStickyPolyfill(find('tfoot'));
+    setupTableStickyPolyfill(find('thead') as HTMLElement);
+    setupTableStickyPolyfill(find('tfoot') as HTMLElement);
 
     await scrollTo('.ember-table-overflow', 0, 500);
 
@@ -233,8 +233,8 @@ componentModule('Unit | Private | TableStickyPolyfill', function() {
 
     await render(standardTemplate(this));
 
-    setupTableStickyPolyfill(find('thead'));
-    setupTableStickyPolyfill(find('tfoot'));
+    setupTableStickyPolyfill(find('thead') as HTMLElement);
+    setupTableStickyPolyfill(find('tfoot') as HTMLElement);
 
     await scrollTo('.ember-table-overflow', 0, 500);
 
@@ -254,8 +254,8 @@ componentModule('Unit | Private | TableStickyPolyfill', function() {
 
     await render(standardTemplate(this));
 
-    setupTableStickyPolyfill(find('thead'));
-    setupTableStickyPolyfill(find('tfoot'));
+    setupTableStickyPolyfill(find('thead') as HTMLElement);
+    setupTableStickyPolyfill(find('tfoot') as HTMLElement);
 
     await scrollTo('.ember-table-overflow', 0, 500);
 
@@ -281,8 +281,8 @@ componentModule('Unit | Private | TableStickyPolyfill', function() {
 
     await render(standardTemplate(this));
 
-    setupTableStickyPolyfill(find('thead'));
-    setupTableStickyPolyfill(find('tfoot'));
+    setupTableStickyPolyfill(find('thead') as HTMLElement);
+    setupTableStickyPolyfill(find('tfoot') as HTMLElement);
 
     await settled();
 
@@ -335,8 +335,8 @@ componentModule('Unit | Private | TableStickyPolyfill', function() {
 
     await render(standardTemplate(this));
 
-    setupTableStickyPolyfill(find('thead'));
-    setupTableStickyPolyfill(find('tfoot'));
+    setupTableStickyPolyfill(find('thead') as HTMLElement);
+    setupTableStickyPolyfill(find('tfoot') as HTMLElement);
 
     await settled();
 
@@ -392,8 +392,8 @@ componentModule('Unit | Private | TableStickyPolyfill', function() {
 
     await render(standardTemplate(this));
 
-    setupTableStickyPolyfill(find('thead'));
-    setupTableStickyPolyfill(find('tfoot'));
+    setupTableStickyPolyfill(find('thead') as HTMLElement);
+    setupTableStickyPolyfill(find('tfoot') as HTMLElement);
 
     await settled();
 
@@ -413,8 +413,8 @@ componentModule('Unit | Private | TableStickyPolyfill', function() {
 
     await render(standardTemplate(this));
 
-    setupTableStickyPolyfill(find('thead'));
-    setupTableStickyPolyfill(find('tfoot'));
+    setupTableStickyPolyfill(find('thead') as HTMLElement);
+    setupTableStickyPolyfill(find('tfoot') as HTMLElement);
 
     await settled();
 

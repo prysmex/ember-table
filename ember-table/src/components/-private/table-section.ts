@@ -28,7 +28,7 @@ export interface SelectionDetails {
 /** Arguments shared by the table's row sections (`<EmberTbody>`, `<EmberTfoot>`). */
 export interface TableSectionArgs<RowType extends EmberTableRow> {
   api: TableApiArg;
-  rows: RowType[];
+  rows?: RowType[];
   enableCollapse?: boolean;
   enableTree?: boolean;
   selection?: RowType[] | RowType | null;

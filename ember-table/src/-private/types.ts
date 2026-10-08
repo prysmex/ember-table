@@ -5,6 +5,7 @@ import type {
   EmberTableColumn,
   EmberTableRow,
   EmberTableSort,
+  TableCellMeta,
   TableColumnMeta,
   TableRowMeta,
 } from '../index.ts';
@@ -24,9 +25,7 @@ export interface ColumnMeta extends TableColumnMeta, Destroyable {
 }
 
 export interface RowMeta extends TableRowMeta, Destroyable {
-  _cellMetaCache: Map<unknown, unknown>;
-  select(options?: { toggle?: boolean; range?: boolean; single?: boolean }): void;
-  toggleCollapse(): void;
+  _cellMetaCache: Map<unknown, TableCellMeta>;
   set(key: string, value: unknown): void;
 }
 
@@ -90,13 +89,13 @@ export interface CellApi<
   ColumnType extends EmberTableColumn = EmberTableColumn,
 > {
   readonly rowValue: RowType;
-  readonly rowMeta: RowMeta;
+  readonly rowMeta: TableRowMeta;
   readonly rowsCount: number;
   readonly columnValue: ColumnType;
   readonly columnMeta: ColumnMeta;
   readonly rowSelectionMode: SelectionMode;
   readonly checkboxSelectionMode: SelectionMode;
-  readonly cellMeta: unknown;
+  readonly cellMeta: TableCellMeta;
   cellValue: unknown;
 }
 
@@ -106,7 +105,7 @@ export interface RowApi<
   ColumnType extends EmberTableColumn = EmberTableColumn,
 > {
   readonly rowValue: RowType;
-  readonly rowMeta: RowMeta;
+  readonly rowMeta: TableRowMeta;
   readonly cells: CellApi<RowType, ColumnType>[];
   readonly rowSelectionMode: SelectionMode;
   readonly rowToggleMode?: boolean;

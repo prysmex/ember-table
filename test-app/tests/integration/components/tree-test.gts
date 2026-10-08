@@ -130,7 +130,6 @@ module('Integration | Tree', () => {
         <EmberTable as |t|>
           <EmberThead @api={{t}} @columns={{ctx.columns}} />
           <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
-            {{! @glint-expect-error: EmberTbody/EmberTfoot yield the public row meta; EmberTr's @api wants the internal one }}
             <EmberTr @api={{b}} as |r|>
               <EmberTd @api={{r}} as |_c|>
                 {{b.rowsCount}}

@@ -62,13 +62,11 @@ async function renderTable(ctx: TableTestContext) {
         @columnKeyPath={{ctx.columnKeyPath}} as |h|
       >
         <EmberTr @api={{h}} as |r|>
-          {{! @glint-expect-error: EmberTr's yielded cell is not typed as a header cell }}
           <EmberTh @api={{r}} />
         </EmberTr>
       </EmberThead>
 
       <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
-        {{! @glint-expect-error: EmberTbody/EmberTfoot yield the public row meta; EmberTr's @api wants the internal one }}
         <EmberTr @api={{b}} as |r|>
           <EmberTd @api={{r}} as |cellValue|>
             {{cellValue}}

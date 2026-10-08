@@ -67,7 +67,7 @@ async function scrollToEdge(
     current = current + (finalTargetX - current) / steps;
   }
   await mouseMove(targetElement, finalTargetX, 0);
-  await mouseUp(targetElement, undefined, undefined);
+  await mouseUp(targetElement);
 }
 
 const USE_EMBER_ARRAY_PARAMETERS = {

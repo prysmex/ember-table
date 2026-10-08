@@ -21,7 +21,12 @@ export interface EmberTableSort {
   valuePath: string;
 }
 
+/**
+  Per-row state. Apps may store their own properties on it (see the Table Meta
+  Data guide), which is why it accepts unknown keys.
+*/
 export interface TableRowMeta {
+  [property: string]: unknown;
   index: number;
   isCollapsed: boolean;
   isSelected: boolean;
@@ -32,9 +37,15 @@ export interface TableRowMeta {
   last: unknown;
   next: unknown;
   prev: unknown;
+  /** Selects the row, as clicking it would. */
+  select(options?: { toggle?: boolean; range?: boolean; single?: boolean }): void;
+  /** Collapses or expands the row's children, if it can collapse. */
+  toggleCollapse(): void;
 }
 
+/** Per-column state. Apps may store their own properties on it. */
 export interface TableColumnMeta {
+  [property: string]: unknown;
   isLeaf: boolean;
   isFixed: 'left' | 'right' | undefined;
   isSortable: boolean;
@@ -54,6 +65,9 @@ export interface TableColumnMeta {
   isMultiSorted: boolean;
   isSortedAsc: boolean;
 }
+
+/** Per-cell state, for apps to store their own properties on. */
+export type TableCellMeta = Record<string, unknown>;
 
 /**
   The value of a cell in a row of `RowType`. Templates usually cannot infer the

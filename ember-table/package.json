@@ -22,7 +22,10 @@
       "types": "./declarations/template-registry.d.ts",
       "default": "./dist/template-registry.js"
     },
-    "./test-support": "./dist/test-support/index.js",
+    "./test-support": {
+      "types": "./declarations/test-support/index.d.ts",
+      "default": "./dist/test-support/index.js"
+    },
     "./default.scss": {
       "sass": "./dist/styles/default.scss",
       "default": "./dist/styles/default.scss"

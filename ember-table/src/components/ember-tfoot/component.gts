@@ -4,7 +4,7 @@ import type { WithBoundArgs } from '@glint/template';
 import TableSection, { type TableSectionArgs } from '../-private/table-section.ts';
 import RowWrapper from '../-private/row-wrapper.gts';
 import EmberTr from '../ember-tr/component.gts';
-import type { CellApi, SelectionMode } from '../../-private/types.ts';
+import type { CellApi, RowApi, SelectionMode } from '../../-private/types.ts';
 import type { EmberTableColumn, EmberTableRow, TableRowMeta } from '../../index.ts';
 
 export interface EmberTfootSignature<
@@ -16,8 +16,9 @@ export interface EmberTfootSignature<
   Blocks: {
     default: [
       {
+        api: RowApi<RowType, ColumnType>;
         cells: CellApi<RowType, ColumnType>[];
-        row: WithBoundArgs<typeof EmberTr<RowType, ColumnType>, 'api'>;
+        row: WithBoundArgs<typeof EmberTr<RowApi<RowType, ColumnType>>, 'api'>;
         rowMeta: TableRowMeta;
         rowValue: RowType;
         rowsCount: number;
@@ -44,7 +45,7 @@ export default class EmberTfoot<
   }
 
   // See `asRow` in `ember-tbody`.
-  asRow = (row: object) => row as WithBoundArgs<typeof EmberTr<RowType, ColumnType>, 'api'>;
+  asRow = (row: object) => row as WithBoundArgs<typeof EmberTr<RowApi<RowType, ColumnType>>, 'api'>;
 
   <template>
     <tfoot ...attributes data-test-row-count={{this.dataTestRowCount}}>
@@ -63,6 +64,7 @@ export default class EmberTfoot<
           {{#if (has-block)}}
             {{yield
               (hash
+                api=api
                 rowValue=api.rowValue
                 rowMeta=api.rowMeta
                 cells=api.cells

@@ -16,7 +16,6 @@ module('Integration | loading more', function() {
       await render(<template>
         <EmberTable as |t|>
           <EmberThead @columns={{ctx.columns}} @api={{t}} />
-          {{! @glint-expect-error: EmberTbody declares @rows as required }}
           <EmberTbody @api={{t}} />
           <EmberTableLoadingMore @isLoading={{true}} @api={{t}}>
             <span data-test-custom-spinner></span>
@@ -35,7 +34,6 @@ module('Integration | loading more', function() {
       await render(<template>
         <EmberTable as |t|>
           <EmberThead @columns={{ctx.columns}} @api={{t}} />
-          {{! @glint-expect-error: EmberTbody declares @rows as required }}
           <EmberTbody @api={{t}} />
           <EmberTableLoadingMore @isLoading={{true}} @api={{t}} />
         </EmberTable>
@@ -52,7 +50,6 @@ module('Integration | loading more', function() {
       await render(<template>
         <EmberTable as |t|>
           <EmberThead @columns={{ctx.columns}} @api={{t}} />
-          {{! @glint-expect-error: EmberTbody declares @rows as required }}
           <EmberTbody @api={{t}} />
           <EmberTableLoadingMore @isLoading={{false}} @api={{t}} />
         </EmberTable>
@@ -69,7 +66,6 @@ module('Integration | loading more', function() {
       await render(<template>
         <EmberTable as |t|>
           <EmberThead @columns={{ctx.columns}} @api={{t}} />
-          {{! @glint-expect-error: EmberTbody declares @rows as required }}
           <EmberTbody @api={{t}} />
           <EmberTableLoadingMore @canLoadMore={{true}} @api={{t}} />
         </EmberTable>
@@ -89,7 +85,6 @@ module('Integration | loading more', function() {
       await render(<template>
         <EmberTable as |t|>
           <EmberThead @columns={{ctx.columns}} @api={{t}} />
-          {{! @glint-expect-error: EmberTbody declares @rows as required }}
           <EmberTbody @api={{t}} />
           <EmberTableLoadingMore @canLoadMore={{false}} @api={{t}} />
         </EmberTable>
@@ -113,7 +108,6 @@ module('Integration | loading more', function() {
       await render(<template>
         <EmberTable as |t|>
           <EmberThead @columns={{ctx.columns}} @api={{t}} />
-          {{! @glint-expect-error: EmberTbody declares @rows as required }}
           <EmberTbody @api={{t}} />
           <EmberTableLoadingMore @isLoading={{true}} @center={{true}} @api={{t}}>
             <div style="display: inline-block; width: 10px; height: 10px; background: red"></div>

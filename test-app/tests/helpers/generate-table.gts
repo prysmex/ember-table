@@ -46,7 +46,6 @@ function fullTable(ctx: TableTestContext) {
       >
         <EmberTr @api={{h}} as |r|>
           <EmberTh
-            {{! @glint-expect-error: EmberTr's yielded cell is not typed as a header cell }}
             @api={{r}}
             @onContextMenu={{ctx.onHeaderCellContextMenu}}
             @class={{if r.columnMeta.isResizing "is-resizing"}}
@@ -96,7 +95,6 @@ function fullTable(ctx: TableTestContext) {
         @rows={{ctx.footerRows}}
         as |f|
       >
-        {{! @glint-expect-error: EmberTbody/EmberTfoot yield the public row meta; EmberTr's @api wants the internal one }}
         <EmberTr @api={{f}} as |r|>
           <EmberTd @api={{r}} as |value|>
             {{value}}

@@ -19,12 +19,10 @@ module('Integration | attributes', function (hooks) {
       <EmberTable class="attr-table" @class="arg-table" as |t|>
         <EmberThead @api={{t}} @columns={{ctx.columns}} as |h|>
           <EmberTr @api={{h}} class="attr-head-row" @class="arg-head-row" as |r|>
-            {{! @glint-expect-error: EmberTr's yielded cell is not typed as a header cell }}
             <EmberTh @api={{r}} class="attr-th" @class="arg-th" />
           </EmberTr>
         </EmberThead>
         <EmberTbody @api={{t}} @rows={{ctx.rows}} as |b|>
-          {{! @glint-expect-error: EmberTbody/EmberTfoot yield the public row meta; EmberTr's @api wants the internal one }}
           <EmberTr @api={{b}} class="attr-row" @class="arg-row" as |r|>
             <EmberTd @api={{r}} class="attr-td" @class="arg-td" />
           </EmberTr>

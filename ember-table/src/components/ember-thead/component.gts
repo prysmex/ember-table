@@ -17,7 +17,6 @@ import MetaCache from '../../-private/meta-cache.ts';
 import { sortMultiple, compareValues } from '../../-private/utils/sort.ts';
 import ColumnTree, { type TableColumnMeta, type TreeColumn } from '../../-private/column-tree.ts';
 import EmberTr from '../ember-tr/component.gts';
-import type EmberTh from '../ember-th/component.gts';
 import { unwrapApi, type TableApiArg } from '../../-private/unwrap-api.ts';
 import type { TableHead } from '../../-private/table-api.ts';
 import type {
@@ -171,10 +170,7 @@ export interface EmberTheadSignature<
         cells: HeaderCellApi<ColumnType>[];
         isHeader: true;
         rowsCount: number;
-        row: WithBoundArgs<
-          typeof EmberTr<RowType, ColumnType, WithBoundArgs<typeof EmberTh<ColumnType>, 'api'>>,
-          'api'
-        >;
+        row: WithBoundArgs<typeof EmberTr<HeaderRowApi<ColumnType>>, 'api'>;
       },
     ];
   };
@@ -235,8 +231,8 @@ export default class EmberThead<
 
     registerDestructor(this, () => this.teardown());
   }
-
-  // `CellComponentType` tells consumers the yielded row renders header cells;
+  // The yielded row is typed as a header row (`EmberTr<HeaderRowApi>`), so it
+  // yields header cells; this is the one place that is asserted.
   // this is the one place that is asserted.
   asHeaderRow = (row: object) =>
     row as EmberTheadSignature<RowType, ColumnType>['Blocks']['default'][0]['row'];

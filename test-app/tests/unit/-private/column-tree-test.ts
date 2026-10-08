@@ -11,11 +11,11 @@ function createTree(properties: object): any {
   return ColumnTree.create(properties as never);
 }
 
-let columnMetaCache: MetaCache, tree: ReturnType<typeof createTree>;
+let columnMetaCache: MetaCache<unknown, { destroy(): void }>, tree: ReturnType<typeof createTree>;
 
 module('Unit | Private | ColumnTree', function(hooks) {
   hooks.beforeEach(function () {
-    columnMetaCache = new MetaCache();
+    columnMetaCache = new MetaCache<unknown, { destroy(): void }>();
   });
 
   hooks.afterEach(function () {

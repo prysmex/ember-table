@@ -8,6 +8,7 @@ import type {
   CellValue,
   EmberTableColumn,
   EmberTableRow,
+  TableCellMeta,
   TableColumnMeta,
   TableRowMeta,
 } from '../../index.ts';
@@ -24,7 +25,7 @@ const SELECTABLE_MODES: readonly string[] = [SELECT_MODE.MULTIPLE, SELECT_MODE.S
 export interface EmberTdActionValues<RowType, ColumnType> {
   event?: MouseEvent;
   cellValue: CellValue<RowType>;
-  cellMeta: unknown;
+  cellMeta: TableCellMeta;
   columnValue: ColumnType;
   columnMeta: TableColumnMeta;
   rowValue: RowType;
@@ -54,7 +55,7 @@ export interface EmberTdSignature<
       cellValue: CellValue<RowType>,
       columnValue: ColumnType,
       rowValue: RowType,
-      cellMeta: unknown,
+      cellMeta: TableCellMeta,
       columnMeta: TableColumnMeta,
       rowMeta: TableRowMeta,
       rowsCount: number,

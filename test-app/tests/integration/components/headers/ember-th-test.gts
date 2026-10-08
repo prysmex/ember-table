@@ -44,7 +44,6 @@ module('[Unit] ember-th', function(hooks) {
         @onUpdateSorts={{ctx.onUpdateSorts}} as |h|
       >
         <EmberTr @api={{h}} as |r|>
-          {{! @glint-expect-error: EmberTr's yielded cell is not typed as a header cell }}
           <EmberTh @api={{r}} as |column|>
             <div data-test-block>
               {{column.name}}

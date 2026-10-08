@@ -22,7 +22,7 @@ export interface EmberThSignature<ColumnType extends EmberTableColumn = EmberTab
   Element: HTMLTableCellElement;
   Args: {
     /** @internal Provided by the yielded `cell` component, or pass the row's yield. */
-    api: HeaderCellApi<ColumnType>;
+    api: HeaderCellApi<ColumnType> | { api: HeaderCellApi<ColumnType> };
     class?: string;
     /** Action sent when the user right clicks this element. */
     onContextMenu?: (event: MouseEvent) => void;
@@ -42,8 +42,9 @@ export default class EmberTh<
   private originalClientX = 0;
   private originalTargetWasResize = false;
 
-  get api() {
-    return this.args.api;
+  get api(): HeaderCellApi<ColumnType> {
+    let api = this.args.api;
+    return 'api' in api ? api.api : api;
   }
 
   get columnValue() {

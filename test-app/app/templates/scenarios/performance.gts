@@ -62,7 +62,6 @@ class PerformanceScenario extends Component {
           as |h|
         >
           <EmberTr @api={{h}} as |r|>
-            {{! @glint-expect-error: EmberTr yields body cells, not header cells }}
             <EmberTh @api={{r}} />
           </EmberTr>
         </EmberThead>
@@ -74,7 +73,6 @@ class PerformanceScenario extends Component {
           @onSelect={{this.onSelect}}
           as |b|
         >
-          {{! @glint-expect-error: EmberTbody yields the public TableRowMeta, EmberTr wants RowMeta }}
           <EmberTr @api={{b}} as |r|>
             <EmberTd @api={{r}} as |value _column _row _cellMeta columnMeta|>
               {{value}}
