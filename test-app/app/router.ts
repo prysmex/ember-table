@@ -1,10 +1,10 @@
-import EmberRouter from '@embroider/router';
+import EmberRouter from '@ember/routing/router';
+import { isTesting } from '@embroider/macros';
 import { addDocfyRoutes } from '@docfy/ember';
-import config from 'test-app/config/environment';
 
 export default class Router extends EmberRouter {
-  location = config.locationType;
-  rootURL = config.rootURL;
+  location = isTesting() ? 'none' : 'history';
+  rootURL = import.meta.env.BASE_URL;
 }
 
 Router.map(function () {

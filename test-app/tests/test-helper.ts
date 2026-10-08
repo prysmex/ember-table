@@ -1,9 +1,9 @@
-import Application from 'test-app/app';
-import config from 'test-app/config/environment';
+import Application from '../app/app.ts';
 import * as QUnit from 'qunit';
 import { setApplication } from '@ember/test-helpers';
 import { setup } from 'qunit-dom';
 import { start as qunitStart, setupEmberOnerrorValidation } from 'ember-qunit';
+import { setTesting } from '@embroider/macros';
 import { setupForTest as setupEmberTableForTest } from 'ember-table/test-support';
 import {
   setup as setupWarnHandlers,
@@ -11,7 +11,8 @@ import {
 } from './helpers/warn-handlers';
 
 export function start() {
-  setApplication(Application.create(config.APP));
+  setTesting(true);
+  setApplication(Application.create({ autoboot: false, rootElement: '#ember-testing' }));
 
   setup(QUnit.assert);
   setupEmberOnerrorValidation();

@@ -22,7 +22,14 @@ pnpm add ember-table
 ```
 
 Ember Table is a [v2 addon](https://rfcs.emberjs.com/id/0507-embroider-v2-package-format/).
-It works in Embroider/Vite apps and, through `ember-auto-import`, in classic ember-cli apps.
+It works in Vite apps and, through `ember-auto-import`, in classic ember-cli apps. In `.gjs`/`.gts`
+templates, import the components from the package:
+
+```gjs
+import { EmberTable, EmberThead, EmberTbody } from 'ember-table';
+```
+
+Classic apps can also invoke them by name (`<EmberTable>`) from loose-mode templates.
 
 ## Features
 

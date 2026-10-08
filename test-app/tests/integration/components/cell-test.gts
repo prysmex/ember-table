@@ -7,7 +7,6 @@ import { set } from '@ember/object';
 import { fillIn, render, settled } from '@ember/test-helpers';
 
 import TablePage from 'ember-table/test-support/pages/ember-table';
-import { run } from '@ember/runloop';
 import { EmberTable, EmberTbody, EmberTd, EmberThead, EmberTr } from 'ember-table';
 import { Input } from '@ember/component';
 
@@ -73,10 +72,8 @@ module('Integration | cell', function() {
       assert.strictEqual(table.getCell(0, 0).text, 'A', 'renders correct initial value');
       assert.strictEqual(table.getCell(0, 1).text, 'B', 'renders correct initial value');
 
-      run(() => {
-        set(rows[0], 'A', 'Y');
-        set(rows[0], 'B', 'Z');
-      });
+      set(rows[0], 'A', 'Y');
+      set(rows[0], 'B', 'Z');
 
       await settled();
 

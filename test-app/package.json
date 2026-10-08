@@ -36,16 +36,11 @@
     "@docfy/core": "^0.14.2",
     "@docfy/ember": "^0.14.2",
     "@docfy/ember-vite": "^0.14.2",
-    "@ember/optional-features": "^3.0.0",
     "@ember/string": "^4.0.1",
     "@ember/test-helpers": "^5.7.0",
     "@ember/test-waiters": "^4.1.2",
-    "@embroider/compat": "^4.1.25",
-    "@embroider/config-meta-loader": "^1.0.0",
-    "@embroider/core": "^4.6.7",
     "@embroider/legacy-inspector-support": "^0.1.3",
     "@embroider/macros": "^1.21.3",
-    "@embroider/router": "^3.0.6",
     "@embroider/vite": "^1.7.13",
     "@eslint/js": "^9.39.5",
     "@glimmer/component": "^2.1.1",
@@ -55,14 +50,11 @@
     "concurrently": "^9.2.4",
     "decorator-transforms": "^2.4.0",
     "ember-a11y-testing": "^8.0.1",
-    "ember-cli": "~7.3.0",
-    "ember-cli-babel": "^8.3.2",
     "ember-cli-deprecation-workflow": "^4.0.1",
-    "ember-load-initializers": "^3.0.1",
     "ember-page-title": "^9.0.3",
     "ember-qunit": "^9.2.0",
-    "ember-resolver": "^13.2.0",
     "ember-source": "~7.3.0",
+    "ember-strict-application-resolver": "^0.1.1",
     "ember-template-lint": "^7.9.3",
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
@@ -76,12 +68,11 @@
     "qunit-dom": "^3.6.0",
     "sass": "^1.93.0",
     "testem": "^3.21.0",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.1",
     "vite": "^8.3.0"
   },
   "engines": {
     "node": ">= 20.19.0"
-  },
-  "ember": {
-    "edition": "octane"
   }
 }

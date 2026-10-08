@@ -9,8 +9,11 @@ written in TypeScript, tested and documented in a Vite app.
   signatures; declarations are generated from source. The classic
   `ColumnTree`/`CollapseTree` models stay JavaScript and are typed at their
   boundary (`src/-private/types.ts`).
-- `test-app/`: an Embroider/Vite Ember app hosting the test suite and the Docfy
-  documentation site (`test-app/docs`).
+- `test-app/`: a Vite app hosting the test suite and the Docfy documentation
+  site (`test-app/docs`). It has no ember-cli or compat layer: just the
+  `ember()` Vite plugin and `ember-strict-application-resolver`, with every
+  module it resolves listed in `app/app.ts`. Tests use strict-mode
+  `<template>`s.
 - pnpm workspace; CI runs lint, tests, and `@embroider/try` scenarios.
 
 ## Verified
@@ -18,13 +21,21 @@ written in TypeScript, tested and documented in a Vite app.
 - Ember 7.3: 240 browser tests, 238 pass, 2 skipped (pre-existing `skip`s).
   This includes the docs acceptance tests, which were always skipped before
   and now run against the Docfy site.
-- Ember 5.12 (peer floor): 232 pass, 8 skipped. The 6 extra skips are the docs
-  tests, gated on Ember 6.5+ because the docs app needs it.
+- Ember 6.4 (peer floor): 232 pass, 8 skipped. The 6 extra skips are the docs
+  tests, gated on Ember 6.5+ because Docfy needs it.
 - `pnpm lint` passes in both packages, including `ember-tsc` type-checking.
 - The emitted declarations type-check from a consumer `.gts` app, and reject
   rows of the wrong shape.
 
 ## Notable decisions
+
+- The peer floor is `ember-source >= 6.4`. `ember-source` is a v2 addon from
+  6.1; older versions only work through the compat layer, which the test app
+  no longer has.
+- The page objects from the unmaintained `ember-classy-page-object` are
+  vendored into `test-support` (MIT), and its helpers are re-exported from
+  `ember-table/test-support`.
+- Components are exported from the package root for strict-mode apps.
 
 - Components derive state through autotracking. The classic models read their
   inputs from component getters (`readOnly` aliases on `@dependentKeyCompat`

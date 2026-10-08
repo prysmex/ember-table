@@ -1,17 +1,24 @@
 import { defineConfig } from 'vite';
-import { extensions, classicEmberSupport, ember } from '@embroider/vite';
+import { extensions, ember } from '@embroider/vite';
 import { babel } from '@rollup/plugin-babel';
 import docfy from '@docfy/ember-vite';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     docfy(),
-    classicEmberSupport(),
     ember(),
-    // extra plugins here
     babel({
       babelHelpers: 'runtime',
       extensions,
     }),
   ],
-});
+  build: {
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+        // The test suite is only built for `--mode development` (see `pnpm test`).
+        ...(mode === 'production' ? {} : { tests: 'tests/index.html' }),
+      },
+    },
+  },
+}));

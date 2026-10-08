@@ -5,6 +5,7 @@ import eslintConfigPrettier from 'eslint-config-prettier';
 import qunit from 'eslint-plugin-qunit';
 import n from 'eslint-plugin-n';
 import babelParser from '@babel/eslint-parser';
+import ts from 'typescript-eslint';
 
 // Parse standalone: the app's babel config is async and build-oriented.
 const parserOptions = {
@@ -16,7 +17,7 @@ const parserOptions = {
   },
 };
 
-export default [
+export default ts.config(
   js.configs.recommended,
   eslintConfigPrettier,
   ember.configs.base,
@@ -41,7 +42,32 @@ export default [
     languageOptions: { parserOptions },
   },
   {
-    files: ['**/*.{js,gjs}'],
+    files: ['**/*.{ts,gts}'],
+    languageOptions: { parser: ember.parser },
+    extends: [...ts.configs.recommended, ember.configs.gts],
+    rules: {
+      // House style declares bindings with `let`.
+      'prefer-const': 'off',
+    },
+  },
+  {
+    files: ['**/*.gts'],
+    rules: {
+      // ember-eslint-parser reports variables read only by a <template> as
+      // "only used as a type"; type-checking catches unused locals instead.
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
+  {
+    files: ['tests/**/*.gts'],
+    rules: {
+      // Strict-mode templates cannot see the test context's `this`, so tests
+      // bind it to a local (`const ctx = this`) for their templates.
+      '@typescript-eslint/no-this-alias': 'off',
+    },
+  },
+  {
+    files: ['**/*.{js,gjs,ts,gts}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -50,12 +76,12 @@ export default [
   },
   {
     ...qunit.configs.recommended,
-    files: ['tests/**/*-test.{js,gjs}'],
+    files: ['tests/**/*-test.{js,gjs,ts,gts}'],
     plugins: { qunit },
   },
   {
     ...n.configs['flat/recommended-script'],
-    files: ['**/*.cjs', 'config/**/*.js'],
+    files: ['**/*.cjs'],
     plugins: { n },
     languageOptions: {
       sourceType: 'script',
@@ -74,4 +100,4 @@ export default [
     },
     rules: { 'n/no-unpublished-import': 'off' },
   },
-];
+);
