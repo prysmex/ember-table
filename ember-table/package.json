@@ -1,6 +1,6 @@
 {
   "name": "prysmex-ember-table",
-  "version": "6.0.0-12",
+  "version": "6.0.0-14",
   "description": "An addon to support large data set and a number of features around table.",
   "keywords": [
     "ember-addon"
@@ -78,7 +78,7 @@
   "peerDependencies": {
     "@ember/test-helpers": ">= 3.0.0",
     "@glimmer/component": ">= 1.1.2",
-    "ember-source": ">= 6.4.0"
+    "ember-source": ">= 5.12.0"
   },
   "peerDependenciesMeta": {
     "@ember/test-helpers": {
