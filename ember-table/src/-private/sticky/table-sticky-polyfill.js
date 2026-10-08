@@ -1,5 +1,10 @@
 import ResizeSensor from 'css-element-queries/src/ResizeSensor';
+import { buildWaiter } from '@ember/test-waiters';
 import { getScale } from '../utils/element';
+
+// Lets `settled()` wait for the initial positioning, which happens on the next
+// animation frame. A no-op in production builds.
+const waiter = buildWaiter('ember-table:table-sticky-polyfill');
 
 /* eslint-disable ember/no-observers */
 
@@ -13,7 +18,11 @@ class TableStickyPolyfill {
     this.element.style.position = 'static';
     this.side = element.tagName === 'THEAD' ? 'top' : 'bottom';
 
-    this.setupRaf = requestAnimationFrame(this.repositionStickyElements);
+    this.setupToken = waiter.beginAsync();
+    this.setupRaf = requestAnimationFrame(() => {
+      this.repositionStickyElements();
+      this.endSetup();
+    });
 
     this.setupResizeSensors();
     this.setupRowMutationObservers();
@@ -35,11 +44,19 @@ class TableStickyPolyfill {
     this.element.style.position = 'sticky';
 
     cancelAnimationFrame(this.setupRaf);
+    this.endSetup();
 
     this.teardownResizeSensors();
     this.teardownRowMutationObservers();
 
     this.mutationObserver.disconnect();
+  }
+
+  endSetup() {
+    if (this.setupToken) {
+      waiter.endAsync(this.setupToken);
+      this.setupToken = null;
+    }
   }
 
   setupRowMutationObservers = () => {

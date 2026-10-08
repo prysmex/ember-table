@@ -62,6 +62,7 @@
   },
   "dependencies": {
     "@ember/render-modifiers": "^4.0.0",
+    "@ember/test-waiters": "^4.1.2",
     "@embroider/addon-shim": "^1.10.3",
     "@embroider/macros": "^1.21.3",
     "@html-next/vertical-collection": "^5.0.5",
