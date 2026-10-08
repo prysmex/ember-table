@@ -24,7 +24,7 @@
     "lint:types": "ember-tsc --noEmit"
   },
   "dependencies": {
-    "ember-table": "workspace:*"
+    "ember-table": "workspace:@prysmex/ember-table@*"
   },
   "devDependencies": {
     "@addepar/style-toolbox": "~0.8.1",
