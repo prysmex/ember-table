@@ -726,7 +726,6 @@ export default EmberObject.extend({
     }
 
     this._isSorting = false;
-    this.syncResizedColumnElements();
   },
 
   /**
@@ -1128,28 +1127,6 @@ export default EmberObject.extend({
     set(node, 'width', newWidth);
 
     this.ensureWidthConstraint.call(this);
-    this.syncResizedColumnElements();
-  },
-
-  syncResizedColumnElements() {
-    let table = this.container?.querySelector('table');
-    if (!table) return;
-
-    for (let node of get(this, 'root.leaves')) {
-      let width = `${get(node, 'width')}px`;
-      let index = get(node, 'offsetIndex') + 1;
-      for (let element of table.querySelectorAll(`thead th:nth-child(${index}), tbody td:nth-child(${index}), tfoot td:nth-child(${index})`)) {
-        element.style.width = width;
-        element.style.minWidth = width;
-        element.style.maxWidth = width;
-        let fixed = get(node, 'isFixed');
-        element.style.left = fixed === 'left' ? `${Math.round(get(node, 'offsetLeft'))}px` : '';
-        element.style.right = fixed === 'right' ? `${Math.round(get(node, 'offsetRight'))}px` : '';
-        element.classList.toggle('is-fixed-left', fixed === 'left');
-        element.classList.toggle('is-fixed-right', fixed === 'right');
-        element.classList.toggle('is-resizing', get(node, 'isResizing'));
-      }
-    }
   },
 
   endResize(node) {
@@ -1160,7 +1137,6 @@ export default EmberObject.extend({
 
     this.container.classList.remove('is-resizing');
     node.set('isResizing', false);
-    this.syncResizedColumnElements();
 
     this.onResize?.(get(node, 'column'));
   },

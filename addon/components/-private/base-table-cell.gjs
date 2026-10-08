@@ -9,6 +9,7 @@ export default class BaseTableCell extends Component {
   get isFixedLeft() { return this.columnMeta?.isFixed === 'left'; }
   get isFixedRight() { return this.columnMeta?.isFixed === 'right'; }
   get isSlack() { return this.columnMeta?.isSlack; }
+  get isResizing() { return this.columnMeta?.isResizing; }
 
   get cellClass() {
     let classes = [];
@@ -17,10 +18,12 @@ export default class BaseTableCell extends Component {
     if (this.isFixedLeft) classes.push('is-fixed-left');
     if (this.isFixedRight) classes.push('is-fixed-right');
     if (this.isSlack) classes.push('is-slack');
+    if (this.isResizing) classes.push('is-resizing');
     let alignment = this.columnValue?.textAlign;
     if (['left', 'center', 'right'].includes(alignment)) {
       classes.push(`ember-table__text-align-${alignment}`);
     }
+    if (this.args.class) classes.push(this.args.class);
     return classes.join(' ');
   }
 

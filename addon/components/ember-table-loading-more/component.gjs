@@ -9,6 +9,7 @@ import { didInsert, didUpdate } from '@ember/render-modifiers';
 export default class EmberTableLoadingMore extends Component {
   @tracked translateX = 0;
   element = null;
+  _listeningTo = null;
 
   constructor(owner, args) {
     super(owner, args);
@@ -33,28 +34,29 @@ export default class EmberTableLoadingMore extends Component {
   @action
   setup(element) {
     this.element = element;
-    this.updateListeners();
-    this.updateTransform();
+    this.sync();
   }
 
   @action
-  update(element) {
-    this.element = element;
-    this.updateListeners();
+  sync() {
+    let target = this.center ? this.scrollElement : null;
+    if (target !== this._listeningTo) {
+      this.removeListeners();
+      if (target) {
+        target.addEventListener('scroll', this.updateTransform);
+        this._resizeSensor = new ResizeSensor(target, this.updateTransform);
+        this._listeningTo = target;
+      }
+    }
     this.updateTransform();
   }
 
-  updateListeners() {
-    this.removeListeners();
-    if (!this.center || !this.scrollElement) return;
-    this.scrollElement.addEventListener('scroll', this.updateTransform);
-    this._resizeSensor = new ResizeSensor(this.scrollElement, this.updateTransform);
-  }
-
   removeListeners() {
-    this.scrollElement?.removeEventListener('scroll', this.updateTransform);
-    this._resizeSensor?.detach();
+    if (!this._listeningTo) return;
+    this._listeningTo.removeEventListener('scroll', this.updateTransform);
+    this._resizeSensor.detach();
     this._resizeSensor = null;
+    this._listeningTo = null;
   }
 
   @action
@@ -69,11 +71,11 @@ export default class EmberTableLoadingMore extends Component {
   <template>
     <div
       ...attributes
-      class="ember-table-loading-more"
+      class="ember-table-loading-more {{@class}}"
       data-test-ember-table-loading-more
       style={{this.style}}
       {{didInsert this.setup}}
-      {{didUpdate this.update @center @canLoadMore @isLoading}}
+      {{didUpdate this.sync @center @canLoadMore @isLoading}}
     >
       {{yield}}
     </div>

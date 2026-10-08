@@ -1,8 +1,9 @@
 /* global ResizeSensor */
 import Component from '@glimmer/component';
-import { tracked } from '@glimmer/tracking';
-import { next } from '@ember/runloop';
+import { cached } from '@glimmer/tracking';
 import EmberObject, { action, get } from '@ember/object';
+import { readOnly } from '@ember/object/computed';
+import { dependentKeyCompat } from '@ember/object/compat';
 import { A as emberA } from '@ember/array';
 import { assert } from '@ember/debug';
 import { isPresent } from '@ember/utils';
@@ -10,102 +11,114 @@ import { registerDestructor } from '@ember/destroyable';
 import { didInsert, didUpdate } from '@ember/render-modifiers';
 import { closest } from '../../-private/utils/element';
 import MetaCache from '../../-private/meta-cache';
-import { notifyPropertyChange } from '../../-private/utils/ember';
-import { addObserver, removeObserver } from '../../-private/utils/observer';
 import { sortMultiple, compareValues } from '../../-private/utils/sort';
 import ColumnTree, { RESIZE_MODE, FILL_MODE, WIDTH_CONSTRAINT } from '../../-private/column-tree';
 import EmberTr from '../ember-tr/component';
 
 let isTestingThead = false;
-export function setupTHeadForTest(value) { isTestingThead = value; }
+export function setupTHeadForTest(value) {
+  isTestingThead = value;
+}
+
+const EMPTY = Object.freeze([]);
+
+// The column tree is a classic model. Rather than pushing Glimmer args into it
+// whenever they change, its inputs are aliases of the header's getters, so the
+// model's computed properties and observers stay in sync through autotracking.
+const HeadColumnTree = ColumnTree.extend({
+  columns: readOnly('_head.columns'),
+  sorts: readOnly('_head.sorts'),
+  fillMode: readOnly('_head.fillMode'),
+  initialFillMode: readOnly('_head.initialFillMode'),
+  fillColumnIndex: readOnly('_head.fillColumnIndex'),
+  resizeMode: readOnly('_head.resizeMode'),
+  widthConstraint: readOnly('_head.widthConstraint'),
+  containerWidthAdjustment: readOnly('_head.containerWidthAdjustment'),
+  enableSort: readOnly('_head.enableSort'),
+  enableResize: readOnly('_head.enableResize'),
+  enableReorder: readOnly('_head.enableReorder'),
+});
 
 export default class EmberThead extends Component {
-  @tracked layoutRevision = 0;
   rowMetaCache = new Map();
 
   constructor(owner, args) {
     super(owner, args);
+
     this.columnMetaCache = new MetaCache({ keyPath: this.args.columnKeyPath });
-    this.columnTree = ColumnTree.create({
-      onReorder: (...values) => this.handleLayoutChange(this.args.onReorder, values),
-      onResize: (...values) => this.handleLayoutChange(this.args.onResize, values),
+    this.columnTree = HeadColumnTree.create({
+      _head: this,
       columnMetaCache: this.columnMetaCache,
-      containerWidthAdjustment: this.args.containerWidthAdjustment,
+      onReorder: (...values) => this.args.onReorder?.(...values),
+      onResize: (...values) => this.args.onResize?.(...values),
     });
+
     this.validateUniqueColumnKeys();
-    this.syncModels();
-    this._syncedColumns = this.args.columns;
-    this._syncedSorts = this.args.sorts;
-    this.watchColumns();
+    this.unwrappedApi.registerHead(this);
+
     registerDestructor(this, () => this.teardown());
   }
 
-  watchColumns() {
-    let columns = this.args.columns;
-    if (columns === this._observedColumns) return;
-    if (this._observedColumns) removeObserver(this._observedColumns, '[]', this.syncColumnMutation);
-    this._observedColumns = columns;
-    if (columns) addObserver(columns, '[]', this.syncColumnMutation);
+  get unwrappedApi() {
+    return this.args.api?.api ?? this.args.api;
   }
 
-  @action
-  syncColumnMutation() {
-    next(this, () => {
-      if (this.isDestroying) return;
-      this.syncModels();
-      this.fillupHandler();
-      this.layoutRevision++;
-    });
-  }
+  @dependentKeyCompat get columns() { return this.args.columns ?? EMPTY; }
+  @dependentKeyCompat get sorts() { return this.args.sorts ?? EMPTY; }
+  @dependentKeyCompat get fillMode() { return this.args.fillMode ?? FILL_MODE.EQUAL_COLUMN; }
+  @dependentKeyCompat get initialFillMode() { return this.args.initialFillMode ?? FILL_MODE.NONE; }
+  @dependentKeyCompat get fillColumnIndex() { return this.args.fillColumnIndex; }
+  @dependentKeyCompat get resizeMode() { return this.args.resizeMode ?? RESIZE_MODE.STANDARD; }
+  @dependentKeyCompat get widthConstraint() { return this.args.widthConstraint ?? WIDTH_CONSTRAINT.NONE; }
+  @dependentKeyCompat get containerWidthAdjustment() { return this.args.containerWidthAdjustment; }
+  @dependentKeyCompat get enableSort() { return Boolean(this.args.onUpdateSorts); }
+  @dependentKeyCompat get enableResize() { return this.args.enableResize ?? true; }
+  @dependentKeyCompat get enableReorder() { return this.args.enableReorder ?? true; }
 
-  handleLayoutChange(callback, values) {
-    this.layoutRevision++;
-    callback?.(...values);
-  }
-
-  get unwrappedApi() { return this.args.api?.api ?? this.args.api; }
-  get columns() { return this.args.columns ?? []; }
-  get sorts() { return this.args.sorts ?? []; }
   get sortFunction() { return this.args.sortFunction ?? sortMultiple; }
   get compareFunction() { return this.args.compareFunction ?? compareValues; }
-  get enableSort() { return Boolean(this.args.onUpdateSorts); }
-  get enableResize() { return this.args.enableResize ?? true; }
-  get enableReorder() { return this.args.enableReorder ?? true; }
-  get wrappedRowsCount() { return isTestingThead ? this.wrappedRows.length : null; }
+  get sortEmptyLast() { return this.args.sortEmptyLast ?? false; }
+  get scrollIndicators() { return this.args.scrollIndicators ?? false; }
 
-  syncModels() {
-    Object.assign(this.unwrappedApi, {
-      columnTree: this.columnTree,
-      compareFunction: this.compareFunction,
-      scrollIndicators: this.args.scrollIndicators ?? false,
-      sorts: this.sorts,
-      sortEmptyLast: this.args.sortEmptyLast ?? false,
-      sortFunction: this.sortFunction,
-    });
-    this.unwrappedApi.registerColumnTree?.(this.columnTree);
-    this.columnTree.setProperties({
-      sorts: this.sorts,
-      columns: this.columns,
-      fillMode: this.args.fillMode ?? FILL_MODE.EQUAL_COLUMN,
-      initialFillMode: this.args.initialFillMode ?? FILL_MODE.NONE,
-      fillColumnIndex: this.args.fillColumnIndex,
-      resizeMode: this.args.resizeMode ?? RESIZE_MODE.STANDARD,
-      widthConstraint: this.args.widthConstraint ?? WIDTH_CONSTRAINT.NONE,
-      enableSort: this.enableSort,
-      enableResize: this.enableResize,
-      enableReorder: this.enableReorder,
-    });
-    // Columns and sorts are often EmberArrays mutated in place.  In that case
-    // the reference is unchanged, so invalidate the classic computed tree
-    // explicitly after synchronizing the Glimmer args.
-    notifyPropertyChange(this.columnTree, 'columns');
-    notifyPropertyChange(this.columnTree, 'sorts');
-    notifyPropertyChange(this.columnTree, '[]');
+  get wrappedRowsCount() {
+    return isTestingThead ? this.wrappedRows.length : null;
+  }
+
+  @cached
+  get wrappedRows() {
+    let rows = this.columnTree.rows;
+    let head = this;
+
+    return emberA(
+      rows.map((row, index) => {
+        let rowMeta = this.rowMetaCache.get(row);
+        if (!rowMeta) {
+          rowMeta = EmberObject.create();
+          this.rowMetaCache.set(row, rowMeta);
+        }
+        rowMeta.set('index', index);
+
+        let cells = emberA(
+          row.map(columnValue => ({
+            columnValue,
+            columnMeta: this.columnMetaCache.get(columnValue),
+            rowMeta,
+            get sorts() {
+              return head.sorts;
+            },
+            sendUpdateSort: this.sendUpdateSort,
+          }))
+        );
+
+        return { cells, rowMeta, rowsCount: rows.length, isHeader: true };
+      })
+    );
   }
 
   validateUniqueColumnKeys() {
     let keyPath = this.args.columnKeyPath;
     if (!keyPath) return;
+
     let keys = [];
     let queue = [...this.columns];
     while (queue.length) {
@@ -113,41 +126,50 @@ export default class EmberThead extends Component {
       keys.push(get(column, keyPath));
       if (column.subcolumns) queue.push(...column.subcolumns);
     }
+
     let present = emberA(keys.filter(isPresent));
     assert('if columnKeyPath is specified, every column must have a key', present.length === keys.length);
-    assert('if columnKeyPath is specified, no two columns can share the same key', present.uniq().length === present.length);
+    assert(
+      'if columnKeyPath is specified, no two columns can share the same key',
+      present.uniq().length === present.length
+    );
   }
 
   @action
   setup(element) {
-    this.syncModels();
     this._container = closest(element, '.ember-table-overflow');
     this.columnTree.registerContainer(this._container);
     this.columnTree.performInitialLayout();
-    this.columnTree.syncResizedColumnElements();
-    this.layoutRevision++;
     this._tableResizeSensor = new ResizeSensor(this._container, this.fillupHandler);
   }
 
   @action
-  syncAfterArgsChange() {
-    let columns = this.args.columns;
-    let sorts = this.args.sorts;
-    if (columns === this._syncedColumns && sorts === this._syncedSorts) return;
-    this._syncedColumns = columns;
-    this._syncedSorts = sorts;
-    this.watchColumns();
-    next(this, () => {
-      this.syncModels();
+  columnsDidChange() {
+    this.validateUniqueColumnKeys();
+    this.columnMetaCache.keyPath = this.args.columnKeyPath;
+
+    if (get(this.columns, 'length') > 0) {
       this.fillupHandler();
-      this.layoutRevision++;
-    });
+    }
+  }
+
+  @action
+  sendUpdateSort(sorts) {
+    this.args.onUpdateSorts?.(sorts);
+  }
+
+  @action
+  fillupHandler() {
+    if (!this.isDestroying) {
+      this.columnTree.ensureWidthConstraint();
+    }
   }
 
   teardown() {
-    if (this._observedColumns) removeObserver(this._observedColumns, '[]', this.syncColumnMutation);
+    this.unwrappedApi.unregisterHead(this);
     this._tableResizeSensor?.detach(this._container);
     this.columnTree.destroy();
+
     for (let cache of [this.columnMetaCache, this.rowMetaCache]) {
       for (let [key, meta] of cache.entries()) {
         meta.destroy();
@@ -156,47 +178,19 @@ export default class EmberThead extends Component {
     }
   }
 
-  get wrappedRows() {
-    let rows = this.columnTree.rows;
-    return emberA(rows.map((row, index) => {
-      let rowMeta = this.rowMetaCache.get(row) ?? EmberObject.create();
-      this.rowMetaCache.set(row, rowMeta);
-      rowMeta.set('index', index);
-      return {
-        cells: emberA(row.map(columnValue => ({
-          columnValue,
-              columnMeta: this.columnMetaCache.get(columnValue),
-              layoutRevision: this.layoutRevision,
-          rowMeta,
-          sorts: this.sorts,
-          sendUpdateSort: this.sendUpdateSort,
-        }))),
-        rowMeta,
-        rowsCount: rows.length,
-        isHeader: true,
-      };
-    }));
-  }
-
-  @action sendUpdateSort(sorts) {
-    this.layoutRevision++;
-    this.args.onUpdateSorts?.(sorts);
-    this.unwrappedApi.body?.updateSorts(sorts);
-  }
-  @action fillupHandler() {
-    if (!this.isDestroying) {
-      this.columnTree.ensureWidthConstraint();
-      this.columnTree.syncResizedColumnElements();
-      this.layoutRevision++;
-    }
-  }
-
   <template>
-    <thead ...attributes data-test-row-count={{this.wrappedRowsCount}} data-layout-revision={{this.layoutRevision}} {{didInsert this.setup}} {{didUpdate this.syncAfterArgsChange @columns @sorts}}>
+    <thead
+      ...attributes
+      data-test-row-count={{this.wrappedRowsCount}}
+      {{didInsert this.setup}}
+      {{didUpdate this.columnsDidChange this.columnTree.leaves @columnKeyPath}}
+    >
       {{#each this.wrappedRows as |api|}}
         {{#if (has-block)}}
           {{yield (hash
-            cells=api.cells isHeader=api.isHeader rowsCount=api.rowsCount
+            cells=api.cells
+            isHeader=api.isHeader
+            rowsCount=api.rowsCount
             row=(component EmberTr api=api)
           )}}
         {{else}}

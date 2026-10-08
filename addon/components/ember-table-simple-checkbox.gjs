@@ -8,14 +8,10 @@ export default class EmberTableSimpleCheckbox extends Component {
     return this.args.type ?? 'checkbox';
   }
 
+  // `indeterminate` is a DOM property with no attribute equivalent.
   @action
-  captureElement(element) {
+  syncIndeterminate(element) {
     element.indeterminate = Boolean(this.args.indeterminate);
-  }
-
-  @action
-  updateIndeterminate(element, [indeterminate]) {
-    element.indeterminate = Boolean(indeterminate);
   }
 
   @action
@@ -44,8 +40,8 @@ export default class EmberTableSimpleCheckbox extends Component {
       value={{@value}}
       data-test-select-row={{@dataTestSelectRow}}
       data-test-collapse-row={{@dataTestCollapseRow}}
-      {{didInsert this.captureElement}}
-      {{didUpdate this.updateIndeterminate @indeterminate}}
+      {{didInsert this.syncIndeterminate}}
+      {{didUpdate this.syncIndeterminate @indeterminate}}
       {{on "click" this.click}}
       {{on "change" this.change}}
     />

@@ -1,31 +1,22 @@
 import Component from '@glimmer/component';
 import { action } from '@ember/object';
 import { guidFor } from '@ember/object/internals';
-import { didInsert, willDestroy } from '@ember/render-modifiers';
+import { didInsert, didUpdate, willDestroy } from '@ember/render-modifiers';
 import {
   setupTableStickyPolyfill,
   teardownTableStickyPolyfill,
 } from '../../-private/sticky/table-sticky-polyfill';
-import ScrollIndicators from '../-private/scroll-indicators/component';
+import ScrollIndicators, { ScrollIndicatorTracker } from '../-private/scroll-indicators/component';
 import EmberThead from '../ember-thead/component';
 import EmberTbody from '../ember-tbody/component';
 import EmberTfoot from '../ember-tfoot/component';
 import EmberTableLoadingMore from '../ember-table-loading-more/component';
+import TableApi from '../../-private/table-api';
 
 export default class EmberTable extends Component {
   tableId = `${guidFor(this)}-overflow`;
-  api = {
-    columns: null,
-    columnTree: null,
-    registerColumnTree: this.registerColumnTree,
-    tableId: this.tableId,
-    registerBody: body => (this.api.body = body),
-  };
-
-  @action
-  registerColumnTree(columnTree) {
-    this.api.columnTree = columnTree;
-  }
+  api = new TableApi(this.tableId);
+  scrollIndicators = new ScrollIndicatorTracker(this.api);
 
   @action
   setup(element) {
@@ -48,12 +39,19 @@ export default class EmberTable extends Component {
   <template>
     <div
       ...attributes
-      class="ember-table"
+      class="ember-table {{@class}}"
       data-test-ember-table
       {{didInsert this.setup}}
       {{willDestroy this.teardown}}
     >
-      <div data-test-ember-table-overflow class="ember-table-overflow" id={{this.tableId}}>
+      <div
+        data-test-ember-table-overflow
+        class="ember-table-overflow"
+        id={{this.tableId}}
+        {{didInsert this.scrollIndicators.attach}}
+        {{didUpdate this.scrollIndicators.sync this.api.scrollIndicators}}
+        {{willDestroy this.scrollIndicators.detach}}
+      >
         <table>
           {{yield (hash
             api=this.api
@@ -64,7 +62,7 @@ export default class EmberTable extends Component {
           )}}
         </table>
       </div>
-      <ScrollIndicators @api={{this.api}} />
+      <ScrollIndicators @api={{this.api}} @tracker={{this.scrollIndicators}} />
     </div>
   </template>
 }

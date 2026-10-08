@@ -1,19 +1,19 @@
-import EmberObject from '@ember/object';
+import { cached } from '@glimmer/tracking';
 import EmberTbody from '../ember-tbody/component';
 import RowWrapper from '../-private/row-wrapper';
 import EmberTr from '../ember-tr/component';
 
 export default class EmberTfoot extends EmberTbody {
+  // Footers render every row, so the collapse tree is flattened directly
+  // instead of going through the virtualized collection.
+  @cached
   get wrappedRowArray() {
-    let rows = Array.from(this.args.rows ?? []);
-    return rows.map((rowValue, index) => {
-      let rowMeta = this.rowMetaCache.get(rowValue);
-      if (!rowMeta) {
-        rowMeta = EmberObject.create({ index, _cellMetaCache: new Map() });
-        this.rowMetaCache.set(rowValue, rowMeta);
-      }
-      return rowValue;
-    });
+    let tree = this.collapseTree;
+    let rows = [];
+    for (let i = 0; i < tree.length; i++) {
+      rows.push(tree.objectAt(i));
+    }
+    return rows;
   }
 
   <template>
@@ -32,8 +32,11 @@ export default class EmberTfoot extends EmberTbody {
         >
           {{#if (has-block)}}
             {{yield (hash
-              rowValue=api.rowValue rowMeta=api.rowMeta cells=api.cells
-              rowSelectionMode=api.rowSelectionMode rowsCount=api.rowsCount
+              rowValue=api.rowValue
+              rowMeta=api.rowMeta
+              cells=api.cells
+              rowSelectionMode=api.rowSelectionMode
+              rowsCount=api.rowsCount
               row=(component EmberTr api=api)
             )}}
           {{else}}
